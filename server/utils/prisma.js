@@ -5,17 +5,10 @@ let prisma;
 
 const createPrismaClient = () => {
   return new PrismaClient({
-    log: process.env.NODE_ENV === "production" ? ["error", "warn"] : ["query", "error", "warn"],
+    log: process.env.NODE_ENV === "production" ? ["error", "warn"] : ["error", "warn"],
     datasources: {
       db: {
         url: process.env.DATABASE_URL,
-      },
-    },
-    // Connection pool optimization
-    __internal: {
-      engine: {
-        // No connection limit - use database's default limits
-        endpoint: process.env.DATABASE_URL,
       },
     },
   });

@@ -30,19 +30,18 @@ app.use(async (req, res, next) => {
     await next();
   } catch (error) {
     console.error("Error in request:", error);
-    res.status(500).json({ 
-      error: "An internal server error occurred",
-      message: process.env.NODE_ENV === "production" ? null : error.message
-    });
-  } finally {
-    // Minimize any operations that might affect connection pool
-    try {
-      // Run extremely rarely to maximize connection availability
-      if (Math.random() < 0.001) { // Run only 0.1% of the time
-        await prisma.$executeRaw`SELECT 1`; // Keep-alive ping
-      }
-    } catch (e) {
-      console.error("Database connection error:", e);
+    
+    // Check if it's a database connection error
+    if (error.message?.includes('connection') || error.message?.includes('FATAL')) {
+      res.status(503).json({ 
+        error: "Database temporarily unavailable. Please try again in a moment.",
+        message: "Service temporarily unavailable"
+      });
+    } else {
+      res.status(500).json({ 
+        error: "An internal server error occurred",
+        message: process.env.NODE_ENV === "production" ? null : error.message
+      });
     }
   }
 });

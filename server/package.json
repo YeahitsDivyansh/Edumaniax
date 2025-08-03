@@ -7,6 +7,11 @@
     "build": "npx prisma generate",
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "db:push": "npx prisma db push",
+    "db:test": "node testConnection.js",
+    "db:maintenance": "node maintenance.js",
+    "db:kill-idle": "node killIdleConnections.js",
+    "restart": "node restart.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
