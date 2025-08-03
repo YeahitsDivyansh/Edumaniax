@@ -9,6 +9,7 @@ export const BlogProvider = ({ children }) => {
   const [similarBlogs, setSimilarBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
+    // const server = "http://localhost:3000"; // Use local backend for testing
   
   // Get all blogs
   const getAllBlogs = async () => {
@@ -95,9 +96,16 @@ export const BlogProvider = ({ children }) => {
   };
 
   // Post comment
-  const postComment = useCallback(async (blogId, name, content) => {
+  const postComment = useCallback(async (blogId, name, content, userId = null) => {
     try {
-      const response = await axios.post(`${server}/blogs/comment`, { blogId, name, content });
+      // Create a composite name that includes userId for future retrieval
+      const commentName = userId ? `${name}|userId:${userId}` : name;
+      
+      const response = await axios.post(`${server}/blogs/comment`, { 
+        blogId, 
+        name: commentName, 
+        content
+      });
       getBlogById(blogId); // refresh comments
       return { success: true, data: response.data };
     } catch (error) {
@@ -107,7 +115,7 @@ export const BlogProvider = ({ children }) => {
   }, [server, getBlogById]);
 
   // Get user comments by fetching all blogs and filtering comments
-  const getUserComments = useCallback(async (name) => {
+  const getUserComments = useCallback(async (identifier, isUserId = false) => {
     try {
       // First get all blogs
       const blogsRes = await axios.get(`${server}/blogs`);
@@ -121,23 +129,36 @@ export const BlogProvider = ({ children }) => {
           const blogRes = await axios.get(`${server}/blogs/${blog.id}`);
           const blogData = blogRes.data.blog;
           
-          // Filter comments by user name
+          // Filter comments by user ID or name based on the flag
           if (blogData.comments && Array.isArray(blogData.comments)) {
             const userCommentsInBlog = blogData.comments.filter(
-              comment => comment.name === name
+              comment => {
+                if (isUserId) {
+                  // Check if comment name contains the userId pattern
+                  return comment.name.includes(`|userId:${identifier}`);
+                } else {
+                  // Fallback to name-based filtering for backward compatibility
+                  // This handles old comments that don't have userId
+                  return comment.name === identifier || comment.name.startsWith(`${identifier}|userId:`);
+                }
+              }
             );
             
-            // Add each comment with blog info
+            // Add each comment with blog info and clean up the display name
             userCommentsInBlog.forEach(comment => {
+              // Extract the actual display name (before |userId:)
+              const displayName = comment.name.split('|userId:')[0];
+              
               userComments.push({
                 blogId: blog.id,
                 blogTitle: blog.title,
                 comment: comment.content,
-                date: comment.date
+                date: comment.date,
+                displayName: displayName
               });
             });
           }
-        } catch (blogErr) {
+        } catch (err) {
           console.warn("Failed to fetch blog:", blog.id);
           // Continue with other blogs
         }

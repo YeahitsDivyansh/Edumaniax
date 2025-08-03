@@ -6,6 +6,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
+  // const server = "http://localhost:3000";
 
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(
@@ -122,6 +123,36 @@ export function AuthProvider({ children }) {
     navigate("/login");
   };
 
+  // 🔹 Update User Profile
+  const updateUser = async (field, value) => {
+    if (!token) return { success: false, message: "Not authenticated" };
+    
+    try {
+      const res = await axios.put(`${server}/update-profile`, {
+        [field]: value
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (res.data.success) {
+        // Update user state with the returned user data from server
+        const updatedUser = res.data.user;
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        toast.success("Profile updated successfully");
+        return { success: true };
+      } else {
+        toast.error(res.data.message || "Update failed");
+        return { success: false, message: res.data.message || "Update failed" };
+      }
+    } catch (err) {
+      console.error("Update profile failed:", err);
+      const errorMessage = err.response?.data?.message || "Update failed";
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
+    }
+  };
+
   // 🔹 Admin login
   const loginAsAdmin = (username, password, navigate) => {
     if (username === "admin" && password === "admin123") {
@@ -148,6 +179,7 @@ export function AuthProvider({ children }) {
         verifyOtpAndLogin,
         fetchMe,
         logout,
+        updateUser,
         role,
         loginAsAdmin,
       }}
