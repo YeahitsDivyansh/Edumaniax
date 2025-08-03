@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-
-const prisma = new PrismaClient();
 
 // Get all blogs
 export const getAllBlogs = async (req, res) => {

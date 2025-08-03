@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
-  // const server = "http://localhost:3000";
+  const server = import.meta.env.VITE_API_URL;
 
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(

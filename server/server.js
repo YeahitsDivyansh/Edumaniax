@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
+
 app.use("/", userRoutes);
 app.use("/finance", financeRoutes);
 app.use("/digital-marketing", DMRoutes);

@@ -1,12 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken"; 
 import axios from "axios";
-
-const prisma = new PrismaClient();
 
 
 const sendOtpForRegistration = async (req, res) => {
