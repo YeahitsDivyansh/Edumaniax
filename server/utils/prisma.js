@@ -14,6 +14,7 @@ const createPrismaClient = () => {
     // Connection pool optimization
     __internal: {
       engine: {
+        // No connection limit - use database's default limits
         endpoint: process.env.DATABASE_URL,
       },
     },
@@ -31,19 +32,43 @@ if (process.env.NODE_ENV === "production") {
   prisma = globalThis.__prisma;
 }
 
-// Graceful shutdown
+// Graceful shutdown with improved connection handling
 process.on("beforeExit", async () => {
+  console.log("Disconnecting Prisma on beforeExit");
   await prisma.$disconnect();
 });
 
 process.on("SIGINT", async () => {
+  console.log("Disconnecting Prisma on SIGINT");
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
+  console.log("Disconnecting Prisma on SIGTERM");
   await prisma.$disconnect();
   process.exit(0);
 });
+
+// Middleware to close only very long idle connections - export this to use in your main app
+export const prismaMiddleware = async (req, res, next) => {
+  try {
+    await next();
+  } finally {
+    // Only terminate extremely long idle connections (> 2 hours)
+    // and do this very rarely to prioritize connection availability (0.1% of requests)
+    if (Math.random() < 0.001) {
+      try {
+        await prisma.$queryRaw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity 
+                              WHERE application_name = 'prisma' 
+                              AND state = 'idle' 
+                              AND (now() - state_change) > interval '2 hours'`;
+      } catch (err) {
+        // Silently handle any errors in this maintenance operation
+        console.warn("Failed to terminate idle connections:", err.message);
+      }
+    }
+  }
+};
 
 export default prisma;

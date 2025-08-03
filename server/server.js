@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
+import { prismaMiddleware } from "./utils/prisma.js";
 import userRoutes from "./routes/userRoutes.js";
 import financeRoutes from "./routes/financeRoutes.js";
 import DMRoutes from "./routes/DMRoutes.js";
@@ -23,6 +24,28 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
+// Add Prisma middleware to manage database connections
+app.use(async (req, res, next) => {
+  try {
+    await next();
+  } catch (error) {
+    console.error("Error in request:", error);
+    res.status(500).json({ 
+      error: "An internal server error occurred",
+      message: process.env.NODE_ENV === "production" ? null : error.message
+    });
+  } finally {
+    // Minimize any operations that might affect connection pool
+    try {
+      // Run extremely rarely to maximize connection availability
+      if (Math.random() < 0.001) { // Run only 0.1% of the time
+        await prisma.$executeRaw`SELECT 1`; // Keep-alive ping
+      }
+    } catch (e) {
+      console.error("Database connection error:", e);
+    }
+  }
+});
 
 app.use("/", userRoutes);
 app.use("/finance", financeRoutes);
@@ -37,5 +60,33 @@ app.use("/sel", SELRoutes);
 app.use("/performance", performanceRoutes);
 app.use("/blogs", blogRoutes);
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ 
+    error: "An internal server error occurred",
+    message: process.env.NODE_ENV === "production" ? null : err.message
+  });
+});
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Graceful shutdown handling
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('HTTP server closed');
+    // prisma.$disconnect is already handled in prisma.js
+    process.exit(0);
+  });
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Keep the process alive but log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Keep the process alive but log the error
+});

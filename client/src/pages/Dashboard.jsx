@@ -593,12 +593,57 @@ const Dashboard = () => {
                           </div>
 
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="text-gray-500 text-xs">Email ID</p>
+                              {editingField === "email" ? (
+                                <div className="relative">
+                                  <input
+                                    type="email"
+                                    value={editValues.email || ""}
+                                    onChange={(e) => handleInputChange("email", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "email")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                    placeholder="Enter email address"
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("email")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="relative group">
+                                  <p className="font-semibold truncate">
+                                    {user.email || "Not set"}
+                                  </p>
+                                  {user.email && user.email.length > 20 && (
+                                    <div className="hidden group-hover:block absolute z-10 bg-gray-800 text-white text-xs rounded p-2 mt-1 whitespace-nowrap">
+                                      {user.email}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            <button className="bg-[#068F36] text-white text-xs px-3 py-1 rounded-lg">
-                              Add Now
-                            </button>
+                            {editingField !== "email" && (
+                              <button 
+                                onClick={() => handleEditClick("email")}
+                                className={`${user.email ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200" : "bg-[#068F36] text-white hover:bg-green-700"} text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
+                              >
+                                {user.email ? "Edit" : "Add Now"}
+                              </button>
+                            )}
                           </div>
 
                           <div>

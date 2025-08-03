@@ -199,6 +199,7 @@ const getMe = async (req, res) => {
       select: {
         id: true,
         phonenumber: true,
+        email: true,
         name: true,
         age: true,
         userClass: true,
@@ -231,7 +232,7 @@ const updateProfile = async (req, res) => {
   try {
     // User is already authenticated by middleware and available in req.user
     const userId = req.user.id;
-    const allowedFields = ['name', 'age', 'userClass', 'phonenumber'];
+    const allowedFields = ['name', 'age', 'userClass', 'phonenumber', 'email'];
     const updateData = {};
 
     // Only allow updating specific fields
@@ -268,12 +269,33 @@ const updateProfile = async (req, res) => {
       }
     }
 
+    if (updateData.email) {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updateData.email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      // Check if email is already taken by another user
+      const existingEmailUser = await prisma.user.findFirst({
+        where: {
+          email: updateData.email,
+          NOT: { id: userId }
+        }
+      });
+      
+      if (existingEmailUser) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
       select: {
         id: true,
         phonenumber: true,
+        email: true,
         name: true,
         age: true,
         userClass: true,
