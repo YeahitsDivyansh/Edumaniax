@@ -46,16 +46,35 @@ const SingleBlog = () => {
 
   useEffect(() => {
     getBlogById(id);
-  }, [id]);
+  }, [id, getBlogById]);
 
   if (loading || !singleBlog) return <div>Loading...</div>;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const name = user?.name || (role === "admin" ? "Admin" : null);
-    if (!name || !comment.content) return;
-    postComment(id, name, comment.content);
-    setComment({ name: "", content: "" });
+    
+    // console.log("Submitting comment:", { 
+    //   blogId: id, 
+    //   name: name, 
+    //   content: comment.content,
+    //   user: user
+    // });
+    
+    if (!name || !comment.content) {
+      console.log("Missing required fields:", { name, content: comment.content });
+      return;
+    }
+    
+    try {
+      // console.log("Sending comment to server...");
+      await postComment(id, name, comment.content);
+      // console.log("Comment posted successfully:", result);
+      setComment({ content: "" }); // Clear only the content field
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      // Could add user notification here
+    }
   };
 
   return (
@@ -63,7 +82,7 @@ const SingleBlog = () => {
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col lg:flex-row items-start gap-8 mt-6">
         {/* LEFT: Main Blog Content */}
         <div className="w-full lg:flex-[3] sm:ml-0">
-          <div className="max-w-[95%] ml-0 sm:ml-0 md:-ml-5 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
+          <div className="max-w-[95%] ml-0 sm:ml-0 md:-ml-5 mx-auto px-2 sm:px-4 md:px-6">
             {/* Breadcrumb */}
             <nav className="text-sm mt-8">
               <div className="bg-gray-50 border border-gray-300 text-gray-800 px-4 py-3 rounded-xl inline-flex items-center space-x-3">

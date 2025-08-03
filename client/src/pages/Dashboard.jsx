@@ -14,10 +14,43 @@ const Dashboard = () => {
   const { getUserComments } = useBlog();
 
   useEffect(() => {
-    if (user?.name) {
-      getUserComments(user.name).then(setUserComments);
-    }
-  }, [user]);
+    const fetchUserComments = async () => {
+      if (user?.name && typeof user.name === 'string' && user.name.trim()) {
+        // console.log("Fetching comments for user:", user.name);
+        try {
+          const comments = await getUserComments(user.name.trim());
+          // console.log("Received comments:", comments);
+          setUserComments(Array.isArray(comments) ? comments : []);
+        } catch (error) {
+          console.log("Failed to fetch user comments:", error);
+          setUserComments([]);
+        }
+      } else {
+        // console.log("No valid user name found:", user?.name);
+        setUserComments([]);
+      }
+    };
+
+    fetchUserComments();
+  }, [user?.name, getUserComments]);
+
+  // Refresh comments when user returns to the dashboard (page focus)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user?.name && typeof user.name === 'string' && user.name.trim()) {
+        // console.log("Refreshing comments due to page focus for:", user.name);
+        getUserComments(user.name.trim()).then((comments) => {
+          // console.log("Refreshed comments:", comments);
+          setUserComments(Array.isArray(comments) ? comments : []);
+        }).catch((error) => {
+          console.log("Failed to refresh comments:", error);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user?.name, getUserComments]);
 
   useEffect(() => {
     if (!user && role !== "admin") {
@@ -38,6 +71,16 @@ const Dashboard = () => {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setAvatar(imageUrl);
+    }
+  };
+
+  const handleCommentClick = (blogId) => {
+    try {
+      navigate(`/blog/${blogId}`);
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      // Fallback: could show an error message or redirect to all blogs
+      navigate('/blogs');
     }
   };
 
@@ -327,30 +370,37 @@ const Dashboard = () => {
 
                     {/* Comments Section */}
                     <div className="bg-white rounded-xl shadow-md p-5">
-                      <h4 className="text-lg font-semibold mb-3 text-gray-800">
-                        Comments Written
-                      </h4>
-                      <div className="flex flex-wrap gap-3">
-                        {userComments.length === 0 ? (
-                          <p className="text-sm text-gray-500">
-                            No comments written yet.
-                          </p>
-                        ) : (
-                          userComments.map((item, index) => (
-                            <div
-                              key={index}
-                              onClick={() => navigate(`/blogs/${item.blogId}`)}
-                              className="bg-white border border-gray-200 px-4 py-3 rounded-lg shadow-sm flex-1 cursor-pointer hover:shadow-md transition"
-                            >
-                              <h5 className="text-sm font-semibold mb-1 text-blue-800">
-                                {item.blogTitle}
-                              </h5>
-                              <p className="text-sm text-gray-600 line-clamp-3">
-                                {item.comment}
-                              </p>
+                      <div className="mb-3">
+                        <h4 className="text-lg font-semibold text-gray-800">
+                          Comments Written
+                        </h4>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        <div className="flex flex-wrap gap-3">
+                          {userComments.length === 0 ? (
+                            <div className="text-sm text-gray-500">
+                              <p>No comments written yet.</p>
                             </div>
-                          ))
-                        )}
+                          ) : (
+                            userComments.map((item, index) => (
+                              <div
+                                key={index}
+                                onClick={() => handleCommentClick(item.blogId)}
+                                className="bg-white border border-gray-200 px-4 py-3 rounded-lg shadow-sm flex-1 cursor-pointer hover:shadow-md transition"
+                              >
+                                <h5 className="text-sm font-semibold mb-1 text-blue-800">
+                                  {item.blogTitle}
+                                </h5>
+                                <p className="text-sm text-gray-600 line-clamp-3">
+                                  {item.comment}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {new Date(item.date).toLocaleDateString()}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
