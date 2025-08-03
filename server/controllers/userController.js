@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import prisma from "../utils/prisma.js";
+import connectionManager from "../connectionManager.js";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken"; 
 import axios from "axios";
