@@ -68,7 +68,7 @@ const SingleBlog = () => {
     
     try {
       // console.log("Sending comment to server...");
-      await postComment(id, name, comment.content);
+      await postComment(id, name, comment.content, user?.id || null);
       // console.log("Comment posted successfully:", result);
       setComment({ content: "" }); // Clear only the content field
     } catch (error) {

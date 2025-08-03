@@ -6,19 +6,33 @@ import { useBlog } from "@/contexts/BlogContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, logout, role } = useAuth();
+  const { user, logout, role, updateUser } = useAuth();
   const fileInputRef = useRef(null);
   const [avatar, setAvatar] = useState("/dashboardDesign/uploadPic.svg");
   const [selectedSection, setSelectedSection] = useState("profile");
   const [userComments, setUserComments] = useState([]);
+  const [editingField, setEditingField] = useState(null);
+  const [editValues, setEditValues] = useState({});
   const { getUserComments } = useBlog();
 
   useEffect(() => {
     const fetchUserComments = async () => {
-      if (user?.name && typeof user.name === 'string' && user.name.trim()) {
-        // console.log("Fetching comments for user:", user.name);
+      if (user?.id) {
+        // Use user ID for fetching comments to avoid issues when name changes
+        // console.log("Fetching comments for user ID:", user.id);
         try {
-          const comments = await getUserComments(user.name.trim());
+          const comments = await getUserComments(user.id, true); // true means use userId
+          // console.log("Received comments:", comments);
+          setUserComments(Array.isArray(comments) ? comments : []);
+        } catch (error) {
+          console.log("Failed to fetch user comments:", error);
+          setUserComments([]);
+        }
+      } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
+        // Fallback to name-based fetching for backward compatibility
+        // console.log("Fetching comments for user name:", user.name);
+        try {
+          const comments = await getUserComments(user.name.trim(), false); // false means use name
           // console.log("Received comments:", comments);
           setUserComments(Array.isArray(comments) ? comments : []);
         } catch (error) {
@@ -26,31 +40,43 @@ const Dashboard = () => {
           setUserComments([]);
         }
       } else {
-        // console.log("No valid user name found:", user?.name);
+        // console.log("No valid user ID or name found:", user);
         setUserComments([]);
       }
     };
 
     fetchUserComments();
-  }, [user?.name, getUserComments]);
+  }, [user?.id, user?.name, getUserComments]);
 
   // Refresh comments when user returns to the dashboard (page focus)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && user?.name && typeof user.name === 'string' && user.name.trim()) {
-        // console.log("Refreshing comments due to page focus for:", user.name);
-        getUserComments(user.name.trim()).then((comments) => {
-          // console.log("Refreshed comments:", comments);
-          setUserComments(Array.isArray(comments) ? comments : []);
-        }).catch((error) => {
-          console.log("Failed to refresh comments:", error);
-        });
+      if (!document.hidden) {
+        if (user?.id) {
+          // Use user ID for refreshing comments
+          // console.log("Refreshing comments due to page focus for user ID:", user.id);
+          getUserComments(user.id, true).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
+        } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
+          // Fallback to name-based refreshing
+          // console.log("Refreshing comments due to page focus for user name:", user.name);
+          getUserComments(user.name.trim(), false).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
+        }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user?.name, getUserComments]);
+  }, [user?.id, user?.name, getUserComments]);
 
   useEffect(() => {
     if (!user && role !== "admin") {
@@ -81,6 +107,85 @@ const Dashboard = () => {
       console.error("Navigation failed:", error);
       // Fallback: could show an error message or redirect to all blogs
       navigate('/blogs');
+    }
+  };
+
+  const handleEditClick = (field) => {
+    setEditingField(field);
+    setEditValues({
+      ...editValues,
+      [field]: user[field] || ""
+    });
+  };
+
+  const handleSaveClick = async (field) => {
+    try {
+      const value = editValues[field];
+      
+      // Basic validation
+      if (!value || value.toString().trim() === "") {
+        alert("Please enter a valid value");
+        return;
+      }
+
+      // Field-specific validation
+      if (field === "age") {
+        const age = parseInt(value);
+        if (age < 1 || age > 100) {
+          alert("Please enter a valid age between 1 and 100");
+          return;
+        }
+      }
+
+      if (field === "phonenumber") {
+        // Basic phone number validation (you can make this more sophisticated)
+        if (value.length < 10) {
+          alert("Please enter a valid phone number");
+          return;
+        }
+      }
+
+      if (field === "name") {
+        if (value.trim().length < 2) {
+          alert("Name must be at least 2 characters long");
+          return;
+        }
+      }
+
+      // Call the updateUser function from AuthContext
+      const result = await updateUser(field, value);
+      
+      if (result.success) {
+        setEditingField(null);
+        setEditValues({});
+        console.log("Profile updated successfully");
+      } else {
+        console.error("Update failed:", result.message);
+        alert(result.message || "Failed to update. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to update field:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const handleCancelClick = () => {
+    setEditingField(null);
+    setEditValues({});
+  };
+
+  const handleInputChange = (field, value) => {
+    setEditValues({
+      ...editValues,
+      [field]: value
+    });
+  };
+
+  const handleKeyPress = (e, field) => {
+    if (e.key === 'Enter') {
+      handleSaveClick(field);
+    } else if (e.key === 'Escape') {
+      handleCancelClick();
     }
   };
 
@@ -301,50 +406,190 @@ const Dashboard = () => {
                         {/* Left Section: Name, Class, Age */}
                         <div className="border rounded-lg p-4 flex flex-col gap-4">
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-gray-500 text-xs">Your Name</p>
-                              <p className="font-semibold">{user.name}</p>
+                              {editingField === "name" ? (
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={editValues.name || ""}
+                                    onChange={(e) => handleInputChange("name", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "name")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                    placeholder="Enter your name"
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("name")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="font-semibold">{user.name}</p>
+                              )}
                             </div>
-                            <button className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg">
-                              Edit
-                            </button>
+                            {editingField !== "name" && (
+                              <button 
+                                onClick={() => handleEditClick("name")}
+                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
+                              >
+                                Edit
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-gray-500 text-xs">Class</p>
-                              <p className="font-semibold">{user.userClass}</p>
+                              {editingField === "userClass" ? (
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={editValues.userClass || ""}
+                                    onChange={(e) => handleInputChange("userClass", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "userClass")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("userClass")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="font-semibold">{user.userClass}</p>
+                              )}
                             </div>
-                            <button className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg">
-                              Edit
-                            </button>
+                            {editingField !== "userClass" && (
+                              <button 
+                                onClick={() => handleEditClick("userClass")}
+                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
+                              >
+                                Edit
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-gray-500 text-xs">Age</p>
-                              <p className="font-semibold">{user.age} Yrs.</p>
+                              {editingField === "age" ? (
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    value={editValues.age || ""}
+                                    onChange={(e) => handleInputChange("age", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "age")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                    min="1"
+                                    max="100"
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("age")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="font-semibold">{user.age} Yrs.</p>
+                              )}
                             </div>
-                            <button className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg">
-                              Edit
-                            </button>
+                            {editingField !== "age" && (
+                              <button 
+                                onClick={() => handleEditClick("age")}
+                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
+                              >
+                                Edit
+                              </button>
+                            )}
                           </div>
                         </div>
 
                         {/* Right Section: Phone, Email, Account Created On */}
                         <div className="border rounded-lg p-4 flex flex-col gap-4">
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1">
                               <p className="text-gray-500 text-xs">
                                 Phone Number
                               </p>
-                              <p className="font-semibold">
-                                {user.phonenumber}
-                              </p>
+                              {editingField === "phonenumber" ? (
+                                <div className="relative">
+                                  <input
+                                    type="tel"
+                                    value={editValues.phonenumber || ""}
+                                    onChange={(e) => handleInputChange("phonenumber", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "phonenumber")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                    placeholder="Enter phone number"
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("phonenumber")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="font-semibold">
+                                  {user.phonenumber}
+                                </p>
+                              )}
                             </div>
-                            <button className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg">
-                              Edit
-                            </button>
+                            {editingField !== "phonenumber" && (
+                              <button 
+                                onClick={() => handleEditClick("phonenumber")}
+                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
+                              >
+                                Edit
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex justify-between items-center">
