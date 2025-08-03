@@ -8,8 +8,7 @@ export const BlogProvider = ({ children }) => {
   const [singleBlog, setSingleBlog] = useState(null);
   const [similarBlogs, setSimilarBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
-    // const server = "http://localhost:3000"; // Use local backend for testing
+  const server = import.meta.env.VITE_API_URL; 
   
   // Get all blogs
   const getAllBlogs = async () => {

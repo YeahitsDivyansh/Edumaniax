@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 export const markChallengeComplete = async (req, res) => {
   const { userClass , moduleIndex, challengeIndex } = req.body;
