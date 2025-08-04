@@ -25,13 +25,102 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+// List of Indian states
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
+  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Lakshadweep", "Puducherry"
+];
+
+// Custom State Combobox Component with filtering
+const StateCombobox = ({ value, onChange, label, placeholder, name }) => {
+  const [inputValue, setInputValue] = useState(value);
+  const [filteredStates, setFilteredStates] = useState(indianStates);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange({ target: { name, value: newValue } });
+
+    // Filter the states based on input
+    const newFilteredStates = indianStates.filter(state =>
+      state.toLowerCase().includes(newValue.toLowerCase())
+    );
+    setFilteredStates(newFilteredStates);
+    setIsOpen(true);
+  };
+
+  const handleSelectState = (state) => {
+    setInputValue(state);
+    onChange({ target: { name, value: state } });
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        type="text"
+        id={name}
+        name={name}
+        value={inputValue}
+        onChange={handleInputChange}
+        onFocus={() => {
+          setIsOpen(true);
+          setFilteredStates(indianStates); // Show all options on focus
+        }}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
+        placeholder={placeholder}
+      />
+      {isOpen && filteredStates.length > 0 && (
+        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+          {filteredStates.map((state) => (
+            <li
+              key={state}
+              className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSelectState(state)}
+            >
+              {state}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 // Trial Booking Modal Component
 const TrialBookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    class: "",
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    class: '',
+    state: '',
+    city: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -54,10 +143,12 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        class: "",
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        class: '',
+        state: '',
+        city: ''
       });
       setShowSuccess(false);
       setError("");
@@ -78,10 +169,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      // EmailJS configuration - You need to set these up in your EmailJS account
-      const serviceId = "service_52co609"; // Replace with your EmailJS service ID
-      const templateId = "template_50ibn0n"; // Replace with your EmailJS template ID
-      const publicKey = "zgnJuM3MRywVUxjcR"; // Replace with your EmailJS public key
+
+      const serviceId = 'service_52co609';
+      const templateId = 'template_50ibn0n';
+      const publicKey = 'zgnJuM3MRywVUxjcR';
 
       const templateParams = {
         to_email: "anujyelve3074@gmail.com",
@@ -90,18 +181,21 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
         email: formData.email,
         phone: formData.phoneNumber,
         class: formData.class,
+        state: formData.state,
+        city: formData.city,
         message: `A new user wants to book a free trial:
         Name: ${formData.fullName}
         Email: ${formData.email}
         Phone Number: ${formData.phoneNumber}
-        Class: ${formData.class}`,
+        Class: ${formData.class}
+        State: ${formData.state}
+        City: ${formData.city}`
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
 
       setShowSuccess(true);
 
-      // Close modal after 2 seconds
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -131,7 +225,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto"
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto mt-[10vh]" 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
@@ -146,13 +240,13 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
           </button>
 
           {/* Modal content */}
-          <div className="p-6 sm:p-8">
+          <div className="py-6 px-7">
             {!showSuccess ? (
               <>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">
                   Book Your Free Trial
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-5 text-sm">
                   Fill out the form below and we'll contact you soon!
                 </p>
 
@@ -172,7 +266,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.fullName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -192,7 +286,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your email address"
                     />
                   </div>
@@ -212,7 +306,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.phoneNumber}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your phone number"
                     />
                   </div>
@@ -231,18 +325,41 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.class}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                     >
                       <option value="">Select your class</option>
-
                       <option value="Class 6">Class 6</option>
                       <option value="Class 7">Class 7</option>
                       <option value="Class 8">Class 8</option>
                       <option value="Class 9">Class 9</option>
                       <option value="Class 10">Class 10</option>
-                      <option value="Class 11">Class 11</option>
-                      <option value="Class 12">Class 12</option>
+                      <option value="Class 11">Class 11 and above</option>
                     </select>
+                  </div>
+
+                  {/* State and City Fields  */}
+                  <div>
+                    <StateCombobox
+                      label="State"
+                      name="state"
+                      placeholder="Enter your state, e.g., Delhi"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
+                      placeholder="Enter your city, e.g., New Delhi"
+                    />
                   </div>
 
                   {/* Error message */}
