@@ -28,7 +28,11 @@ const Dashboard = () => {
           console.log("Failed to fetch user comments:", error);
           setUserComments([]);
         }
-      } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
+      } else if (
+        user?.name &&
+        typeof user.name === "string" &&
+        user.name.trim()
+      ) {
         // Fallback to name-based fetching for backward compatibility
         // console.log("Fetching comments for user name:", user.name);
         try {
@@ -55,27 +59,36 @@ const Dashboard = () => {
         if (user?.id) {
           // Use user ID for refreshing comments
           // console.log("Refreshing comments due to page focus for user ID:", user.id);
-          getUserComments(user.id, true).then((comments) => {
-            // console.log("Refreshed comments:", comments);
-            setUserComments(Array.isArray(comments) ? comments : []);
-          }).catch((error) => {
-            console.log("Failed to refresh comments:", error);
-          });
-        } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
+          getUserComments(user.id, true)
+            .then((comments) => {
+              // console.log("Refreshed comments:", comments);
+              setUserComments(Array.isArray(comments) ? comments : []);
+            })
+            .catch((error) => {
+              console.log("Failed to refresh comments:", error);
+            });
+        } else if (
+          user?.name &&
+          typeof user.name === "string" &&
+          user.name.trim()
+        ) {
           // Fallback to name-based refreshing
           // console.log("Refreshing comments due to page focus for user name:", user.name);
-          getUserComments(user.name.trim(), false).then((comments) => {
-            // console.log("Refreshed comments:", comments);
-            setUserComments(Array.isArray(comments) ? comments : []);
-          }).catch((error) => {
-            console.log("Failed to refresh comments:", error);
-          });
+          getUserComments(user.name.trim(), false)
+            .then((comments) => {
+              // console.log("Refreshed comments:", comments);
+              setUserComments(Array.isArray(comments) ? comments : []);
+            })
+            .catch((error) => {
+              console.log("Failed to refresh comments:", error);
+            });
         }
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [user?.id, user?.name, getUserComments]);
 
   useEffect(() => {
@@ -106,7 +119,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Navigation failed:", error);
       // Fallback: could show an error message or redirect to all blogs
-      navigate('/blogs');
+      navigate("/blogs");
     }
   };
 
@@ -114,14 +127,14 @@ const Dashboard = () => {
     setEditingField(field);
     setEditValues({
       ...editValues,
-      [field]: user[field] || ""
+      [field]: user[field] || "",
     });
   };
 
   const handleSaveClick = async (field) => {
     try {
       const value = editValues[field];
-      
+
       // Basic validation
       if (!value || value.toString().trim() === "") {
         alert("Please enter a valid value");
@@ -154,7 +167,7 @@ const Dashboard = () => {
 
       // Call the updateUser function from AuthContext
       const result = await updateUser(field, value);
-      
+
       if (result.success) {
         setEditingField(null);
         setEditValues({});
@@ -177,14 +190,14 @@ const Dashboard = () => {
   const handleInputChange = (field, value) => {
     setEditValues({
       ...editValues,
-      [field]: value
+      [field]: value,
     });
   };
 
   const handleKeyPress = (e, field) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSaveClick(field);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleCancelClick();
     }
   };
@@ -229,8 +242,8 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white shadow-lg flex flex-col py-8 px-4">
+      {/* Sidebar (Desktop) / Bottom Navigation (Mobile) */}
+      <aside className="hidden md:flex w-56 bg-white shadow-lg flex-col py-8 px-4">
         <div>
           <Link to="/" className="flex items-center gap-2 mb-10">
             <img
@@ -244,7 +257,7 @@ const Dashboard = () => {
           </Link>
 
           <nav className="flex flex-col gap-7 ml-5 text-sm font-medium">
-            {/* My Profile Button */}
+            {/* My Profile */}
             <button
               className={`flex items-center gap-3 hover:text-green-700 ${
                 selectedSection === "profile"
@@ -267,7 +280,7 @@ const Dashboard = () => {
               <span className="font-bold">My Profile</span>
             </button>
 
-            {/* My Modules Button - Only if NOT Admin */}
+            {/* My Modules (If Not Admin) */}
             {role !== "admin" && (
               <button
                 className={`flex items-center gap-3 hover:text-green-700 ${
@@ -290,6 +303,7 @@ const Dashboard = () => {
               </button>
             )}
 
+            {/* Logout */}
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 text-red-500 hover:text-red-600"
@@ -304,6 +318,41 @@ const Dashboard = () => {
           </nav>
         </div>
       </aside>
+
+      {/* Bottom Navigation for Mobile */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around items-center py-3 md:hidden">
+        <button onClick={() => setSelectedSection("profile")}>
+          <img
+            src="/dashboardDesign/profile.svg"
+            alt="Profile"
+            className={`w-6 h-6 mx-auto ${
+              selectedSection === "profile" ? "opacity-100" : "opacity-50"
+            }`}
+          />
+        </button>
+
+        {role !== "admin" && (
+          <button onClick={() => setSelectedSection("modules")}>
+            <img
+              src={
+                selectedSection === "modules"
+                  ? "/dashboardDesign/moduleGreen.svg"
+                  : "/dashboardDesign/modules.svg"
+              }
+              alt="Modules"
+              className="w-6 h-6 mx-auto"
+            />
+          </button>
+        )}
+
+        <button onClick={handleLogout}>
+          <img
+            src="/dashboardDesign/logout.svg"
+            alt="Logout"
+            className="w-6 h-6 mx-auto"
+          />
+        </button>
+      </nav>
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-100 overflow-x-hidden">
@@ -413,21 +462,23 @@ const Dashboard = () => {
                                   <input
                                     type="text"
                                     value={editValues.name || ""}
-                                    onChange={(e) => handleInputChange("name", e.target.value)}
+                                    onChange={(e) =>
+                                      handleInputChange("name", e.target.value)
+                                    }
                                     onKeyDown={(e) => handleKeyPress(e, "name")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter your name"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button 
+                                    <button
                                       onClick={() => handleSaveClick("name")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -441,7 +492,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "name" && (
-                              <button 
+                              <button
                                 onClick={() => handleEditClick("name")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -458,20 +509,29 @@ const Dashboard = () => {
                                   <input
                                     type="text"
                                     value={editValues.userClass || ""}
-                                    onChange={(e) => handleInputChange("userClass", e.target.value)}
-                                    onKeyDown={(e) => handleKeyPress(e, "userClass")}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        "userClass",
+                                        e.target.value
+                                      )
+                                    }
+                                    onKeyDown={(e) =>
+                                      handleKeyPress(e, "userClass")
+                                    }
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button 
-                                      onClick={() => handleSaveClick("userClass")}
+                                    <button
+                                      onClick={() =>
+                                        handleSaveClick("userClass")
+                                      }
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -481,11 +541,13 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="font-semibold">{user.userClass}</p>
+                                <p className="font-semibold">
+                                  {user.userClass}
+                                </p>
                               )}
                             </div>
                             {editingField !== "userClass" && (
-                              <button 
+                              <button
                                 onClick={() => handleEditClick("userClass")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -502,7 +564,9 @@ const Dashboard = () => {
                                   <input
                                     type="number"
                                     value={editValues.age || ""}
-                                    onChange={(e) => handleInputChange("age", e.target.value)}
+                                    onChange={(e) =>
+                                      handleInputChange("age", e.target.value)
+                                    }
                                     onKeyDown={(e) => handleKeyPress(e, "age")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
@@ -510,14 +574,14 @@ const Dashboard = () => {
                                     max="100"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button 
+                                    <button
                                       onClick={() => handleSaveClick("age")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -531,7 +595,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "age" && (
-                              <button 
+                              <button
                                 onClick={() => handleEditClick("age")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -553,21 +617,30 @@ const Dashboard = () => {
                                   <input
                                     type="tel"
                                     value={editValues.phonenumber || ""}
-                                    onChange={(e) => handleInputChange("phonenumber", e.target.value)}
-                                    onKeyDown={(e) => handleKeyPress(e, "phonenumber")}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        "phonenumber",
+                                        e.target.value
+                                      )
+                                    }
+                                    onKeyDown={(e) =>
+                                      handleKeyPress(e, "phonenumber")
+                                    }
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter phone number"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button 
-                                      onClick={() => handleSaveClick("phonenumber")}
+                                    <button
+                                      onClick={() =>
+                                        handleSaveClick("phonenumber")
+                                      }
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -583,7 +656,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "phonenumber" && (
-                              <button 
+                              <button
                                 onClick={() => handleEditClick("phonenumber")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -600,21 +673,25 @@ const Dashboard = () => {
                                   <input
                                     type="email"
                                     value={editValues.email || ""}
-                                    onChange={(e) => handleInputChange("email", e.target.value)}
-                                    onKeyDown={(e) => handleKeyPress(e, "email")}
+                                    onChange={(e) =>
+                                      handleInputChange("email", e.target.value)
+                                    }
+                                    onKeyDown={(e) =>
+                                      handleKeyPress(e, "email")
+                                    }
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter email address"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button 
+                                    <button
                                       onClick={() => handleSaveClick("email")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -637,9 +714,13 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "email" && (
-                              <button 
+                              <button
                                 onClick={() => handleEditClick("email")}
-                                className={`${user.email ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200" : "bg-[#068F36] text-white hover:bg-green-700"} text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
+                                className={`${
+                                  user.email
+                                    ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200"
+                                    : "bg-[#068F36] text-white hover:bg-green-700"
+                                } text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
                               >
                                 {user.email ? "Edit" : "Add Now"}
                               </button>
