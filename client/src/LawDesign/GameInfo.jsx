@@ -11,7 +11,7 @@ const GameInfo = () => {
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* Heading */}
       <div className="mb-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        <h2 className="text-3xl lg:max-w-5xl font-bold text-gray-900 mb-3">
           What’s in the game!
         </h2>
         <p className="text-gray-600 max-w-2xl text-sm md:text-base">

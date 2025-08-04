@@ -1695,7 +1695,7 @@ const Home = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-10 sm:py-20">
+      <section className="py-10 sm:py-20 mb-20" style={{background: "linear-gradient(180deg, #FFF 0%, #FFF49A 100%)"}} >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="relative flex justify-center items-center mb-8 sm:mb-16">
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
@@ -1704,20 +1704,15 @@ const Home = () => {
 
             <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10 text-center">
               {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold sigmar-font leading-tight text-black">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight text-[#111827]">
                 <div>Pick the plan that powers</div>
                 <div className="inline-flex items-center justify-center">
                   your progress
-                  <img
-                    src="/pricingDesign/runwk899FVEasw-ar-11-video-1-d-unscreen.gif"
-                    alt="Run animation"
-                    className="inline-block w-10 h-10 sm:w-11 sm:h-11 ml-2 mt-1 align-middle"
-                  />
                 </div>
               </h1>
 
               {/* Subtext */}
-              <p className="text-gray-600 text-sm sm:text-lg -mt-2">
+              <p className="text-sm sm:text-lg -mt-2 text-[#111827] inter-font">
                 Affordable and scalable plans packed with features,
                 <br className="block sm:hidden" />
                 notes, and learning tools.
@@ -1726,41 +1721,38 @@ const Home = () => {
           </div>
 
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 inter-font" >
             {plans.map((plan, idx) => (
               <div
                 key={idx}
-                className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${plan.title === "PRO PLAN"
-                    ? "border-[#068F36]"
-                    : "border-gray-200 hover:border-[#068F36]"
-                  }`}
+                className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
               >
                 <div className="relative mb-4">
                   {plan.title === "PRO PLAN" && (
                     <img
                       src="/pricingDesign/save20.svg"
                       alt="Save 20%"
-                      className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
+                      className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                     />
                   )}
                   {plan.tag && (
-                    <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
+                    <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
                       {plan.tag}
                     </span>
                   )}
                 </div>
 
-                <div className="flex justify-start">
+                <div className="flex justify-start -mx-[1px]">
                   <h3
-                    className="text-xs font-bold uppercase text-[#007127] px-3 py-1 rounded"
+                    className="text-xs font-extrabold uppercase text-[#007127] px-3 py-1 rounded"
                     style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
                   >
                     {plan.title}
                   </h3>
                 </div>
-                <p className="text-sm text-black mt-2">{plan.description}</p>
+                <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
                 <hr className="my-3 border-gray-300" />
-                <p className="text-4xl font-extrabold text-[#042038] mt-1">
+                <p className="text-4xl font-extrabold text-[#000B33] mt-1">
                   {plan.price}
                 </p>
                 <p className="text-xs text-black font-semibold mt-1">
@@ -1768,7 +1760,7 @@ const Home = () => {
                 </p>
                 <hr className="my-3 border-gray-300 mt-5" />
 
-                <ul className="text-sm space-y-2 flex-1 mt-2">
+                <ul className="text-xs space-y-2 flex-1 mt-2">
                   {plan.features.map((feat, i) => {
                     const text = typeof feat === "string" ? feat : feat.text;
                     const excluded = typeof feat === "object" && feat.excluded === true;
@@ -1786,7 +1778,7 @@ const Home = () => {
                               }`}
                           />
                         </span>
-                        <span className={excluded ? "text-red-600" : ""}>
+                        <span className="text-black font-normal text-xs">
                           {text}
                         </span>
                       </li>
@@ -1824,6 +1816,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {pricingFaqData.map((faq, index) => (
               <motion.div
+
                 key={index}
                 onClick={() => toggleFAQ(index)}
                 initial={{ opacity: 0, y: 20 }}
