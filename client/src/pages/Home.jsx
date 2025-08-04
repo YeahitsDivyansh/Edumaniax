@@ -1832,7 +1832,7 @@ const Home = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-10 sm:py-20 mb-20" style={{background: "linear-gradient(180deg, #FFF 0%, #FFF49A 100%)"}} >
+      <section className="py-10 sm:py-20 mb-20" style={{background: "linear-gradient(180deg, #FFF 0%, #FFFEF7 29.73%, #FFFBDE 57.47%, #FFF49A 100%)"}} >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="relative flex justify-center items-center mb-8 sm:mb-16">
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
