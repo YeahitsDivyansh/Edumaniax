@@ -36,7 +36,7 @@ const PersuasionGame = () => {
   const [score, setScore] = useState(0);
   // ✅ for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleReasonClick = (reason) => {
     setSelectedReasons((prev) =>
@@ -90,9 +90,9 @@ const PersuasionGame = () => {
       avgResponseTimeSec, // ✅ simplified
       score: finalScore,
       accuracy,
-      
-    });
 
+    });
+    setStartTime(Date.now());
 
     setScore(finalScore);
 
@@ -116,6 +116,7 @@ const PersuasionGame = () => {
     setSelectedReasons([]);
     setSelectedSlogan(null);
     setSubmitted(false);
+    setStartTime(Date.now());
   };
 
   return (

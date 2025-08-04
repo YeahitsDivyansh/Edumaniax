@@ -44,6 +44,8 @@ const VisionBlueprintBuilder = () => {
       completed: isSuccess,
       
     });
+    setStartTime(Date.now());
+
   }, [submitted, isSuccess]);
 
 
@@ -134,6 +136,8 @@ Let’s keep it simple, cool, and motivating! 😎`,
     setVerifyMessage("");
     setSubmitted(false);
     setIsSuccess(null);
+    setStartTime(Date.now());
+
   };
 
   return (

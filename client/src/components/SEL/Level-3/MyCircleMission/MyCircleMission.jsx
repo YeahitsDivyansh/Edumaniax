@@ -81,7 +81,7 @@ const MyCircleMission = () => {
   });
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     const handleResize = () => {
@@ -122,8 +122,10 @@ const MyCircleMission = () => {
         avgResponseTimeSec: totalSeconds / thoughtsData.length,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: isWin,
-      
+
       });
+      setStartTime(Date.now());
+
     }
   }, [showResult]);
 
@@ -133,6 +135,8 @@ const MyCircleMission = () => {
     setShowResult(false);
     setActionText("");
     setVerifyMessage("");
+    setStartTime(Date.now());
+
   };
 
   const verifyActionWithGemini = async (text) => {

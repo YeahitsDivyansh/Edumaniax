@@ -52,6 +52,7 @@ const TortLawGame3 = () => {
       studyTimeMinutes: timeSpent,
       completed: score >= 60,
     });
+    setStartTime(Date.now());
   }, [currentPage]);
 
 
@@ -213,6 +214,8 @@ const TortLawGame3 = () => {
     setShowFeedback(false);
     setIsCorrect(false);
     setShowCelebration(false);
+    setStartTime(Date.now());
+
   }, []); // useCallback to memoize the function
 
   // These `const` declarations were inside the `GamePage` component, but needed access

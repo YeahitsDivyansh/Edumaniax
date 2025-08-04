@@ -422,8 +422,8 @@ const StartupSimulationGame = () => {
           avgResponseTimeSec,
           studyTimeMinutes,
           completed,
-          
         });
+        setStartTime(Date.now());
       }
     } catch (err) {
       setError("Error fetching AI response");
@@ -450,6 +450,7 @@ const StartupSimulationGame = () => {
     setPitchData({ pitch: "", logo: null });
     setGtmData({ channels: "", targetAudience: "" });
     setLaunchData({ timeline: "", objectives: "" });
+    setStartTime(Date.now());
   };
 
   if (loading) {

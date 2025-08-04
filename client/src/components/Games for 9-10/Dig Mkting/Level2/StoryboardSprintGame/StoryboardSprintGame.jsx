@@ -49,7 +49,7 @@ export default function StoryboardSprintGame() {
     const [currentSlide, setCurrentSlide] = useState(0);
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
     useEffect(() => {
         if (step === 4 && points >= 7) {
             completeDMChallenge(1, 1);
@@ -120,9 +120,9 @@ export default function StoryboardSprintGame() {
             avgResponseTimeSec: timeTakenSec,
             completed: scaledScore >= 7,
             studyTimeMinutes: Math.ceil(timeTakenSec / 60),
-            
-        });
 
+        });
+        setStartTime(Date.now());
         setStep(4);
     };
 
@@ -134,6 +134,8 @@ export default function StoryboardSprintGame() {
         setHeadings({ cover: "", tip1: "", tip2: "", cta: "" });
         setPoints(0);
         setStep(1);
+        setStartTime(Date.now());
+
     };
 
     const getFrameClass = () => {

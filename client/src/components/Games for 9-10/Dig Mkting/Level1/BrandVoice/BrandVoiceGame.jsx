@@ -219,6 +219,8 @@ const BrandVoiceGame = () => {
       completed: true,
       
     });
+    setStartTime(Date.now());
+
 
     // Navigate to result page
     setTimeout(() => {
@@ -246,6 +248,8 @@ const BrandVoiceGame = () => {
     setScores({});
     setTotalScore(0);
     setShowResults(false);
+    setStartTime(Date.now());
+
   };
 
   if (currentStep === "intro") {

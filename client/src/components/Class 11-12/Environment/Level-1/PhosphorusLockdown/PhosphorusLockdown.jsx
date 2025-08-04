@@ -65,6 +65,8 @@ const PhosphorusLockdown = () => {
     setQ3Correct(null);
     setFinal(null);
     setPage("intro");
+    setStartTime(Date.now());
+
   };
 
   return (
@@ -283,8 +285,8 @@ const PhosphorusLockdown = () => {
                       avgResponseTimeSec: parseFloat((totalTimeMs / 3000).toFixed(2)), // 3 questions
                       studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
                       completed: allCorrect,
-                     
                     });
+                    setStartTime(Date.now());
                   }}
                   className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-blue-700 transition"
                 >

@@ -12,7 +12,7 @@ export default function ThoughtReframer() {
     const [loading, setLoading] = useState(false);
     //for performance
     const { updatePerformance } = usePerformance();
-    const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
     const handleChange = (i, value) => {
         const updated = [...thoughts];
@@ -68,8 +68,9 @@ export default function ThoughtReframer() {
             avgResponseTimeSec: durationSec,
             studyTimeMinutes: Math.ceil(durationSec / 60),
             completed: true,
-         
+
         });
+        setStartTime(Date.now());
 
         setLoading(false);
     };
@@ -174,8 +175,7 @@ export default function ThoughtReframer() {
 
 
 
-                {/* Reframed Results */}
-                {/* Reframed Results */}
+                 {/* Reframed Results */}
                 {reframes.filter((r) => r).length > 0 && !loading && (
                     <motion.div
                         initial={{ opacity: 0 }}

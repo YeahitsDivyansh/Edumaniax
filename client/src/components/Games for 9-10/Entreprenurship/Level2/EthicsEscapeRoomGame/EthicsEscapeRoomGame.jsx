@@ -39,6 +39,8 @@ export default function EthicsEscapeRoomGame() {
         completed: true,
         
       });
+      setStartTime(Date.now());
+
     }
   }, [currentRoom]);
 
@@ -50,6 +52,8 @@ export default function EthicsEscapeRoomGame() {
     setRoomComplete(false);
     setFeedback("");
     setJustification("");
+    setStartTime(Date.now());
+
   };
 
   const handleAnswer = (room, value) => {

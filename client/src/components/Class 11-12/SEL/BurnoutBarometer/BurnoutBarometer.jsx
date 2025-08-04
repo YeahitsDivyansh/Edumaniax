@@ -53,7 +53,7 @@ export default function BurnoutBarometer() {
   const [error, setError] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const handleChange = (key, val) => {
     setValues({ ...values, [key]: parseInt(val) });
   };
@@ -125,10 +125,9 @@ No explanation or extra text. Only JSON.
         avgResponseTimeSec: durationSec,
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: true,
-        
+
       });
-
-
+      setStartTime(Date.now());
       // ✅ Mark SEL challenge complete here
       completeSELChallenge(0, 2);
     } catch (e) {
@@ -299,6 +298,7 @@ No explanation or extra text. Only JSON.
                   setShowReport(false);
                   setFeedback([]);
                   setSelfCarePlans([]);
+                  setStartTime(Date.now());
                 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-yellow-400 hover:bg-yellow-500 text-purple-800 font-semibold py-2 px-6 rounded-full shadow"

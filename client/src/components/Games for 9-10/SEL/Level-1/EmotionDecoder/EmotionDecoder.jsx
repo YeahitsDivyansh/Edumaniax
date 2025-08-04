@@ -58,7 +58,7 @@ const EmotionDecoder = () => {
   const [feedbackGif, setFeedbackGif] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
-  const startTimeRef = useRef(Date.now());
+  const [startTime,setStartTime] = useState(Date.now());
 
 
   const handleHint = () => {
@@ -83,6 +83,8 @@ const EmotionDecoder = () => {
     setShowIntro(true);
     setCurrent(0);
     setScore(0);
+    setStartTime(Date.now());
+
   };
 
   const verifyWithGemini = async (text, chosen) => {
@@ -165,8 +167,8 @@ const EmotionDecoder = () => {
       }
 
       const endTime = Date.now();
-      const durationSec = Math.round((endTime - startTimeRef.current) / 1000);
-
+      const durationSec = Math.round((endTime - startTime) / 1000);
+ 
       updatePerformance({
         moduleName: "SEL",
         topicName: "emotionalAwareness",
@@ -177,6 +179,8 @@ const EmotionDecoder = () => {
         completed: score >= 4,
         
       });
+      setStartTime(Date.now());
+
     }
   }, [current, score]);
 

@@ -128,6 +128,8 @@ export default function ReelArchitectGame() {
             completed: true,
           
         });
+        setStartTime(Date.now());
+
     };
 
 
@@ -140,6 +142,8 @@ export default function ReelArchitectGame() {
         setStep(1);
         setStyleFeedback("");
         setCampaignName("");
+        setStartTime(Date.now());
+
     };
 
     const getStyleVisual = (key) => {

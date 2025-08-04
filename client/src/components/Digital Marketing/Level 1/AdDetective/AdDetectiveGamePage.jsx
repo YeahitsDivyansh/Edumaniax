@@ -22,7 +22,7 @@ const AdDetectiveGamePage = () => {
   );
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleChange = (index, field, value) => {
     console.log(index, field, value);
@@ -243,8 +243,9 @@ const AdDetectiveGamePage = () => {
                   avgResponseTimeSec: timeTakenSec,
                   studyTimeMinutes: Math.ceil(timeTakenSec / 60),
                   completed: true,
-                  
+
                 });
+                setStartTime(Date.now());
 
                 navigate("/ad-detective-mission-complete");
               } else {

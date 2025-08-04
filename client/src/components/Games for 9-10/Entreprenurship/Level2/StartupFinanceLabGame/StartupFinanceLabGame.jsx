@@ -79,6 +79,8 @@ export default function StartupFinanceFunGame() {
         completed: true,
        
       });
+      setStartTime(Date.now());
+
     }
   }, [currentDilemma]);
 
@@ -563,6 +565,8 @@ export default function StartupFinanceFunGame() {
                 setDilemmaIndex(0);
                 setDecisionLog([]);
                 setShowLogic(false);
+                setStartTime(Date.now());
+
               }}
               className="mt-6 bg-yellow-400 text-black font-bold px-6 py-3 rounded-full hover:bg-yellow-500 shadow-lg"
             >

@@ -50,7 +50,7 @@ const BudgetActivity = () => {
 
   //for performance 
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const feedbackMap = {
     Sad: "💸 Save some! Don't be a Spendthrift",
@@ -179,9 +179,9 @@ Remark can have one of these values : "Excellent", "Great", "Smart", "Impressive
         avgResponseTimeSec: totalTime,
         studyTimeMinutes,
         completed: true,
-        
-      });
 
+      });
+      setStartTime(Date.now());
 
       if (/Excellent|Great|Smart/i.test(parsed.remark)) {
         setShowConfetti(true);

@@ -165,6 +165,8 @@ const MeasureCompareQuiz = () => {
     setIsCorrect(null);
     setShowCelebration(false);
     setCurrentPage("quiz");
+    setStartTime(Date.now());
+
   };
 
   const handleAnswerSelect = (answer) => {
@@ -273,6 +275,8 @@ const MeasureCompareQuiz = () => {
       completed: score >= 5,
       
     });
+    setStartTime(Date.now());
+
   }, [currentPage]);
 
 

@@ -48,6 +48,8 @@ const JusticeThroneGame = () => {
       completed: true,
  
     });
+    setStartTime(Date.now());
+
   }, [currentPage]);
 
 
@@ -197,6 +199,8 @@ const JusticeThroneGame = () => {
     setGameComplete(false);
     setScenarioResults([]);
     setCurrentPage("instructions");
+    setStartTime(Date.now());
+
   };
 
   const InstructionsPage = () => (

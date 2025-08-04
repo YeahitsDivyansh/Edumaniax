@@ -114,7 +114,7 @@ const MissionGoalTracker = () => {
   const [showCorrect, setShowCorrect] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (resultMessage && isCorrect()) {
       completeSELChallenge(2, 0); // ✅ Adjust the parameters as needed
@@ -135,8 +135,10 @@ const MissionGoalTracker = () => {
         avgResponseTimeSec: totalSeconds / 5,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: isCorrect(),
-      
+
       });
+      setStartTime(Date.now());
+
     }
   }, [resultMessage]);
 
@@ -216,6 +218,8 @@ const MissionGoalTracker = () => {
     setAttempts(0);
     setResultMessage("");
     setShowCorrect(false);
+    setStartTime(Date.now());
+
   };
 
   const handleGoalChange = (id) => {

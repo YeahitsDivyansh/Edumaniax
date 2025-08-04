@@ -79,6 +79,8 @@ const TeamArchitectMission = () => {
       completed,
        
     });
+    setStartTime(Date.now());
+
   }, [result]);
 
 
@@ -107,6 +109,8 @@ const TeamArchitectMission = () => {
   const handleReset = () => {
     setAssignments({});
     setResult(null);
+    setStartTime(Date.now());
+
   };
 
   if (step === "intro") {

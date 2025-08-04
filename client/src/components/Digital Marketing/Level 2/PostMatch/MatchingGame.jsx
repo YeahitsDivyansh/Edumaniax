@@ -97,7 +97,7 @@ export default function MatchingGame() {
   const navigate = useNavigate();
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleOptionSelect = (option) => {
     if (!selectedBrand) return;
@@ -156,9 +156,9 @@ export default function MatchingGame() {
         avgResponseTimeSec: timeTakenSec,
         studyTimeMinutes: Math.ceil(timeTakenSec / 60),
         completed: true,
-        
-      });
 
+      });
+      setStartTime(Date.now());
       navigate("/matching-game-result", {
         state: { score: scaledScore },
       });

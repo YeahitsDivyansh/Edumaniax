@@ -97,6 +97,7 @@ const CauseScanner = () => {
         completed: score >= 6,
          
       });
+      setStartTime(Date.now());
     }
   }, [showResult]);
 
@@ -133,6 +134,7 @@ const CauseScanner = () => {
     setShowResult(false);
     setTimeLeft(10);
     setQuestionKey(0);
+    setStartTime(Date.now());
   };
 
   const getResultGif = () => {

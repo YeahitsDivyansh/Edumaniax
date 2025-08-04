@@ -15,7 +15,7 @@ const LegalQuiz = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (!gameComplete) return;
 
@@ -35,8 +35,9 @@ const LegalQuiz = () => {
       avgResponseTimeSec,
       studyTimeMinutes,
       completed: true, // You can set your own pass criteria here
-       
+
     });
+    setStartTime(Date.now());
   }, [gameComplete]);
 
 
@@ -163,6 +164,7 @@ const LegalQuiz = () => {
     setScore(0);
     setGameComplete(false);
     setConfirmedAnswer(false);
+    setStartTime(Date.now());
   };
 
   useEffect(() => {

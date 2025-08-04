@@ -35,7 +35,7 @@ export default function MeetAITypeGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
 
   const handleDrop = (e, typeId) => {
@@ -76,9 +76,9 @@ export default function MeetAITypeGame() {
       avgResponseTimeSec,
       studyTimeMinutes,
       completed: correct === examples.length,
-       
-    });
 
+    });
+    setStartTime(Date.now());
     if (correct === examples.length) {
       completeComputersChallenge(0, 1); // Challenge 1, Task 2 complete
     }
@@ -91,6 +91,7 @@ export default function MeetAITypeGame() {
     setReflections({});
     setSubmitted(false);
     setScore(0);
+    setStartTime(Date.now());
   };
 
   return (

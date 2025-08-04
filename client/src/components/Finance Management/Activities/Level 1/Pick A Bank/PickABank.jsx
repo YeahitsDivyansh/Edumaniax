@@ -266,7 +266,7 @@ export default function PickABank() {
       completed: true,
      
     });
-
+setStartTime(Date.now());
     setTimeout(() => {
       setLoadingFeedback(false);
     }, 1500);

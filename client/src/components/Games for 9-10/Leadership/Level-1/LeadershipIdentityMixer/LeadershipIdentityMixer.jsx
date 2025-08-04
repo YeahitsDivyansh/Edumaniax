@@ -96,6 +96,8 @@ const LeadershipIdentityMixer = () => {
       completed: isAllCorrect,
        
     });
+    setStartTime(Date.now());
+
 
     if (isAllCorrect) {
       completeLeadershipChallenge(0, 0);
@@ -141,6 +143,8 @@ const LeadershipIdentityMixer = () => {
     setValues("");
     setSubmitted(false);
     setStep(-1);
+    setStartTime(Date.now());
+
   };
 
   return (

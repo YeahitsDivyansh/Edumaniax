@@ -89,7 +89,7 @@ export default function HelpHub() {
   const { width, height } = useWindowSize();
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const checkScore = () => {
     return answers.filter((ans, i) => ans === scenarios[i].correct).length;
   };
@@ -116,8 +116,9 @@ export default function HelpHub() {
         avgResponseTimeSec: totalSeconds / scenarios.length,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 5,
-        
+
       });
+      setStartTime(Date.now());
     }
   }, [showResult]);
 
@@ -153,6 +154,8 @@ export default function HelpHub() {
     setAnswers(Array(scenarios.length).fill(null));
     setShowResult(false);
     setCurrentIndex(0);
+    setStartTime(Date.now());
+
   };
 
   const result = getResultGIF(score);

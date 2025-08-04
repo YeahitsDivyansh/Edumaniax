@@ -70,7 +70,7 @@ const CoolTheConflict = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleGameFinish = () => {
     const endTime = Date.now();
@@ -85,8 +85,9 @@ const CoolTheConflict = () => {
       studyTimeMinutes: durationSec / 60,
       avgResponseTimeSec,
       completed: true,
-       
+
     });
+    setStartTime(Date.now());
   };
 
 
@@ -266,6 +267,7 @@ const CoolTheConflict = () => {
               setStep("dialogue");
               setSelectedEndings([]);
               setIsCorrectResolution(null);
+              setStartTime(Date.now());
             }}
           >
             🔁 Replay

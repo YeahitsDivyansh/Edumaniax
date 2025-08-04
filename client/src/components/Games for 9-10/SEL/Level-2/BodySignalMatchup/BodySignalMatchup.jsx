@@ -94,6 +94,8 @@ const BodySignalMatchup = () => {
         completed: true,
  
       });
+      setStartTime(Date.now());
+
     }
   }, [matches]);
 
@@ -150,6 +152,7 @@ const BodySignalMatchup = () => {
     setTimeLeft(90);
     setGameOver(false);
     setWin(false);
+    setStartTime(Date.now());
     setStep("intro"); // 👈 this line brings the player back to the intro screen
   };
 

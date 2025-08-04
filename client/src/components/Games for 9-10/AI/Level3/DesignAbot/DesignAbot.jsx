@@ -54,7 +54,7 @@ const DesignAbot = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   console.log("Hi");
 
@@ -152,8 +152,10 @@ const DesignAbot = () => {
         avgResponseTimeSec,
         studyTimeMinutes,
         completed: true,
-      
+
       });
+      setStartTime(Date.now());
+
     }
   };
 

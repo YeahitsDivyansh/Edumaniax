@@ -136,6 +136,8 @@ const InfluenceJournal = () => {
       completed: passed,
        
     });
+    setStartTime(Date.now());
+
 
     if (passed) {
       completeSELChallenge(2, 2);
@@ -158,6 +160,8 @@ const InfluenceJournal = () => {
     setVerifyMessage("");
     setSuggestionGif("");
     setFinalResult(null);
+    setStartTime(Date.now());
+
   };
 
   const finalGif =

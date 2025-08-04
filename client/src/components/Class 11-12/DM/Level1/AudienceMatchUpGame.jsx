@@ -177,8 +177,8 @@ const AudienceMatchUpGame = () => {
       avgResponseTimeSec: (Date.now() - startTime) / 1000,
       studyTimeMinutes: Math.round((Date.now() - startTime) / 60000),
       completed: true,
-      
     });
+    setStartTime(Date.now());
   };
 
   const resetGame = () => {
@@ -189,6 +189,7 @@ const AudienceMatchUpGame = () => {
     setGameComplete(false);
     setDraggedItem(null);
     setDragOverTarget(null);
+    setStartTime(Date.now());
   };
 
   const getUnmatchedBrands = () => {

@@ -42,7 +42,7 @@ export default function OverspendTrap() {
 
   //for Performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const problem =
     "Your friend just spent ₹1,200 on concert tickets and now can not pay for school trip fees. What would you do?";
@@ -107,10 +107,10 @@ Example format:
         avgResponseTimeSec: totalTime,
         studyTimeMinutes,
         completed: true,
-    
+
       });
 
-
+      setStartTime(Date.now());
       completeFinanceChallenge(0, 2); //MARK CHALLENGE COMPLETED
     } catch (e) {
       console.error("Error generating feedback", e);

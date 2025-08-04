@@ -23,7 +23,7 @@ const CaptionClinicGame = () => {
   const [celebrationMode, setCelebrationMode] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const originalCaption =
     "Buy our new energy drink now. It's very good for concentration.";
@@ -149,10 +149,9 @@ const CaptionClinicGame = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: Math.round(timeTakenSec / 60),
       completed: totalScore === 3,
-      
+
     });
-
-
+    setStartTime(Date.now());
     setFeedback(feedbackMessage);
     setStars(starCount);
     setShowResults(true);
@@ -165,6 +164,7 @@ const CaptionClinicGame = () => {
     setStars(0);
     setShowResults(false);
     setCurrentPage("game");
+    setStartTime(Date.now());
   };
 
   const canvasRef = useRef(null);

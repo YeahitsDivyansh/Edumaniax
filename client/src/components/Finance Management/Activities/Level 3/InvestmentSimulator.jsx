@@ -134,6 +134,7 @@ const InvestmentSimulator = () => {
       completed: true,
      
     });
+    setStartTime(Date.now());
   };
 
   return (

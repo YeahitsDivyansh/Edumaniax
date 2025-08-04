@@ -39,7 +39,7 @@ export default function TrainAIModelGame() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
     useEffect(() => {
         if (showResults) {
@@ -68,8 +68,10 @@ export default function TrainAIModelGame() {
                 avgResponseTimeSec,
                 studyTimeMinutes,
                 completed: true,
-                
+
             });
+            setStartTime(Date.now());
+
         }
     }, [showResults]);
 
@@ -347,6 +349,8 @@ export default function TrainAIModelGame() {
                                 setShowResults(false);
                                 setDragged(false);
                                 setStep(1); // ✅ critical line
+                                setStartTime(Date.now());
+
                             }}
                             className="mt-6 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold text-lg"
                         >

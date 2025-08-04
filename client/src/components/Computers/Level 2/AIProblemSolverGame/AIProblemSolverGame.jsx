@@ -49,7 +49,7 @@ export default function AIProblemSolverGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
 
   const handleAssign = (problemId) => {
@@ -97,8 +97,9 @@ export default function AIProblemSolverGame() {
         avgResponseTimeSec: totalSeconds / problems.length,
         studyTimeMinutes: totalSeconds / 60,
         completed: true,
-  
+
       });
+      setStartTime(Date.now());
     } else {
       alert("Please assign a tool AND fill how it helps for every problem.");
     }

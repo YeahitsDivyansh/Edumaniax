@@ -48,6 +48,8 @@ const CrimeCivilGame = () => {
       studyTimeMinutes: timeSpent,
       completed: true
     });
+    setStartTime(Date.now());
+
   }, [currentPage]);
 
 
@@ -262,6 +264,8 @@ const CrimeCivilGame = () => {
     setAnswers([]);
     setDraggedItem(null);
     setDropZoneHighlight("");
+    setStartTime(Date.now());
+
   };
 
   const canvasRef = useRef(null);

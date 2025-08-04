@@ -174,6 +174,7 @@ const MVPTest = () => {
     setImprovements("");
     setFeedback("");
     setBadgeEarned(false);
+     setStartTime(Date.now());
   };
 
   const handleSubmit = () => {
@@ -203,6 +204,7 @@ const MVPTest = () => {
       completed: true,
      
     });
+     setStartTime(Date.now());
   };
 
   useEffect(() => {

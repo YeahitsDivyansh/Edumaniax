@@ -47,7 +47,7 @@ const DecisionRoom = () => {
   const [gameOver, setGameOver] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (gameOver) {
       const totalTimeMs = Date.now() - startTime;
@@ -60,9 +60,9 @@ const DecisionRoom = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / 6000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: score === 6,
-        
-      }); 
 
+      });
+      setStartTime(Date.now());
       if (score === 6) {
         completeLeadershipChallenge(2, 0);
       }
@@ -225,6 +225,7 @@ const DecisionRoom = () => {
               setPuzzleSelected(null);
               setGameOver(false);
               setScreen("intro");
+              setStartTime(Date.now());
             }}
             className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
           >

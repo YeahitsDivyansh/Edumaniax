@@ -145,6 +145,7 @@ const Challenge3 = () => {
         completed: true,
        
       });
+      setStartTime(Date.now());
     }
 
     return (

@@ -54,7 +54,7 @@ export default function LeaderTypeMatch() {
   const [score, setScore] = useState(0);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     const totalTimeMs = Date.now() - startTime;
 
@@ -67,9 +67,9 @@ export default function LeaderTypeMatch() {
         avgResponseTimeSec: parseFloat((totalTimeMs / 6 / 1000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: score >= 5,
-        
-      }); 
 
+      });
+      setStartTime(Date.now());
       if (score >= 5) {
         completeLeadershipChallenge(0, 0); // Use your real IDs
       }
@@ -227,7 +227,11 @@ export default function LeaderTypeMatch() {
             </div>
           )}
           <button
-            onClick={() => setStage("intro")}
+            onClick={() => {
+              setStage("intro")
+              setStartTime(Date.now());
+            }
+            }
             className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-800"
           >
             Play Again

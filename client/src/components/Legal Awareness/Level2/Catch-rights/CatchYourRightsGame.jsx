@@ -110,7 +110,7 @@ const CatchYourRightsGame = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (gameState === "completed" || gameState === "gameOver") {
@@ -131,8 +131,10 @@ const CatchYourRightsGame = () => {
         avgResponseTimeSec: parseFloat(avgResponseTimeSec.toFixed(2)),
         studyTimeMinutes,
         completed: gameState === "completed",
-        
+
       });
+      setStartTime(Date.now());
+
     }
   }, [gameState]);
 
@@ -456,6 +458,8 @@ const CatchYourRightsGame = () => {
     setLevelStatements([]);
     setUsedStatements(new Set());
     setCorrectlySorted(0);
+    setStartTime(Date.now());
+
   };
 
   const getResponsiveItemSize = () => {

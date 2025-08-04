@@ -33,7 +33,7 @@ const MiniMarketMaster = () => {
 
   // for performance tracking
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const companies = [
     {
@@ -278,9 +278,8 @@ const MiniMarketMaster = () => {
           avgResponseTimeSec: totalTime,
           studyTimeMinutes,
           completed: true,
-         
         });
-
+        setStartTime(Date.now());
         setCurrentPage("results");
         return;
       }
@@ -875,7 +874,10 @@ const MiniMarketMaster = () => {
         {/* Back to Game Button */}
         <div className="text-center mt-8">
           <button
-            onClick={() => setCurrentPage("intro")}
+            onClick={() => {
+              setCurrentPage("intro")
+              setStartTime(Date.now());
+            }}
             className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-full text-xl transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Back to Game

@@ -78,7 +78,7 @@ export default function ThinkBeforeYouTechGame() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
     useEffect(() => {
         if (showFeedback && selectedOption && !challengeCompleted) {
@@ -101,8 +101,10 @@ export default function ThinkBeforeYouTechGame() {
                 avgResponseTimeSec,
                 studyTimeMinutes,
                 completed: true,
-                
+
             });
+            setStartTime(Date.now());
+
         }
     }, [showFeedback, selectedOption]);
 
@@ -147,6 +149,8 @@ export default function ThinkBeforeYouTechGame() {
         setSelectedOption(null);
         setShowFeedback(false);
         setIsAnswered(false);// Reset for a new game
+        setStartTime(Date.now());
+
     };
 
     const isReflectionCorrect =

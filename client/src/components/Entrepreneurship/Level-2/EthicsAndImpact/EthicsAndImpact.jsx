@@ -22,7 +22,7 @@ const EthicsAndImpact = () => {
   const [showFail, setShowFail] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (showSuccess) {
@@ -146,9 +146,9 @@ Check this reflection:
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: timeTakenMin,
       completed: true,
-      
-    });
 
+    });
+    setStartTime(Date.now());
     if (score >= 7) {
       setShowSuccess(true);
       setShowFail(false);
@@ -165,6 +165,7 @@ Check this reflection:
     setReflection("");
     setShowSuccess(false);
     setShowFail(false);
+     
   };
 
   const handlePlayAgain = () => {
@@ -176,6 +177,7 @@ Check this reflection:
     setReflectionFeedback("");
     setShowSuccess(false);
     setShowFail(false);
+    setStartTime(Date.now());
   };
 
   if (!started) {

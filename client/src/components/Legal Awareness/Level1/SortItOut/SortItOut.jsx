@@ -22,7 +22,7 @@ const SortItOut = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
 
   const allStatements = [
@@ -132,6 +132,8 @@ const SortItOut = () => {
     setCategories({ fundamental: [], cyber: [], consumer: [] });
     setFeedback("");
     setShowFeedback(false);
+    setStartTime(Date.now());
+
   };
 
   const shuffleStatements = () => {
@@ -160,6 +162,8 @@ const SortItOut = () => {
       beginnerLegalIntellectAvgScore: scaledScore,
       beginnerLegalIntellectAccuracy: accuracy,
     });
+    setStartTime(Date.now());
+
   }, [gameComplete]);
 
 

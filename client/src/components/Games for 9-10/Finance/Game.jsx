@@ -38,7 +38,7 @@ const WealthQuestGame = () => {
 
   // for performance tracking
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const totalBudget = 10000;
   const allocatedAmount = Object.values(portfolio).reduce(
@@ -162,9 +162,9 @@ const WealthQuestGame = () => {
           avgResponseTimeSec: totalTime,
           studyTimeMinutes,
           completed: true,
-         
-        });
 
+        });
+        setStartTime(Date.now());
         completeFinanceChallenge(0, 0); // ✅ Marks the challenge as complete
         setCurrentPage("results");
       }
@@ -544,6 +544,7 @@ const WealthQuestGame = () => {
                 });
                 setSimulationResults(null);
                 setCurrentYear(0);
+                setStartTime(Date.now());
               }}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105"
             >

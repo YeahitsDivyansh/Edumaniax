@@ -16,7 +16,7 @@ const VisionBuilderGame = () => {
   const [warning, setWarning] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const resetAll = () => {
     setScreen("intro");
     setVision("");
@@ -27,6 +27,7 @@ const VisionBuilderGame = () => {
     setSubmitted(false);
     setIsCorrect(false);
     setWarning("");
+    setStartTime(Date.now());
   };
 
   useEffect(() => {
@@ -51,9 +52,9 @@ const VisionBuilderGame = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / 1000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: isCorrect,
-      
-      });
 
+      });
+      setStartTime(Date.now());
       if (isCorrect) {
         completeLeadershipChallenge(0, 1); // correct challenge/task IDs
       }

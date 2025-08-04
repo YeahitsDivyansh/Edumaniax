@@ -21,7 +21,7 @@ export default function RateTheIntelligenceGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (submitted) {
@@ -46,8 +46,10 @@ export default function RateTheIntelligenceGame() {
         avgResponseTimeSec,
         studyTimeMinutes,
         completed: true,
-        
+
       });
+      setStartTime(Date.now());
+
     }
   }, [submitted]);
 
@@ -58,6 +60,8 @@ export default function RateTheIntelligenceGame() {
     setRatings([]);
     setReason("");
     setSubmitted(false);
+    setStartTime(Date.now());
+
   };
 
 

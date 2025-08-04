@@ -50,7 +50,7 @@ export default function FunDilemmaGame() {
     const [currentAnswer, setCurrentAnswer] = useState("");
     //for performance
     const { updatePerformance } = usePerformance();
-    const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
     useEffect(() => {
         if (step === 4 && score >= flashcards.length) {
             const totalTimeMs = Date.now() - startTime;
@@ -63,9 +63,8 @@ export default function FunDilemmaGame() {
                 avgResponseTimeSec: parseFloat((totalTimeMs / (flashcards.length * 1000)).toFixed(2)),
                 studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
                 completed: true,
-        
             });
-
+            setStartTime(Date.now());
             completeLeadershipChallenge(0, 1);
         }
     }, [step, score]);
@@ -81,6 +80,7 @@ export default function FunDilemmaGame() {
         setScore(0);
         setShowJustify(false);
         setCurrentAnswer("");
+        setStartTime(Date.now());
     };
 
     const handleDilemmaAnswer = (option) => {

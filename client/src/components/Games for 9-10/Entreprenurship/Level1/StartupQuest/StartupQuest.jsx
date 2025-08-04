@@ -85,7 +85,7 @@ export default function StartupQuest() {
   const [showSummary, setShowSummary] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const handleReset = () => {
     setSelectedTheme("");
     setDraggedPain([]);
@@ -93,6 +93,8 @@ export default function StartupQuest() {
     setIdeas({});
     setPitch("");
     setShowSummary(false);
+    setStartTime(Date.now());
+
   };
 
   const handleDrop = (e, pain) => {
@@ -138,9 +140,9 @@ export default function StartupQuest() {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes,
       completed: true,
-    
-    });
 
+    });
+    setStartTime(Date.now());
     setShowSummary(true);
   };
 

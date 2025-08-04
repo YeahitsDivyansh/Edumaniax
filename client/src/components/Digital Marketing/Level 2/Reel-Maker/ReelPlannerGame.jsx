@@ -137,6 +137,7 @@ export default function ReelPlannerGame() {
       completed: true,
       
     });
+     setStartTime(Date.now());
   }, [showPreview]);
 
 

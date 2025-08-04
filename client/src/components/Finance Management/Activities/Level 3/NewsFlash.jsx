@@ -120,6 +120,7 @@ export default function NewsFlash() {
           completed: true,
            
         });
+        setStartTime(Date.now());
       }
 
       return updatedSet; // ✅ this is essential
@@ -137,6 +138,7 @@ export default function NewsFlash() {
     setAppliedEffects(new Set()); // ✅ clear effect tracking
     setMessage("Portfolio reset.");
     setTimeout(() => setMessage(""), 1500);
+    setStartTime(Date.now());
   };
 
   const updateBase = () => {

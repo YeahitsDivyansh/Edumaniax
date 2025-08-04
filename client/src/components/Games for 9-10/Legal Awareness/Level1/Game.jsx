@@ -130,6 +130,8 @@ export default function MatchTermsGame() {
       completed: true,
      
     });
+    setStartTime(Date.now());
+
   }, [gameEnded]);
 
 

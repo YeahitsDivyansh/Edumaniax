@@ -34,7 +34,7 @@ export default function SDGStartupQuest() {
   const [submitted, setSubmitted] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const toggleSDG = (id) => {
     if (selectedSDGs.includes(id)) {
       setSelectedSDGs(selectedSDGs.filter((s) => s !== id));
@@ -246,9 +246,8 @@ export default function SDGStartupQuest() {
                   avgResponseTimeSec: timeSpent,
                   studyTimeMinutes: Math.ceil(timeSpent / 60),
                   completed,
-                   
                 });
-
+                setStartTime(Date.now());
                 setSubmitted(true);
               }}
               className="bg-green-600 text-white px-6 py-2 rounded-full text-lg font-extrabold shadow-lg animate-bounce"

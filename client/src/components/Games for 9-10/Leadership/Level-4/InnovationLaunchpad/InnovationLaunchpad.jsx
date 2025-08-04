@@ -12,7 +12,7 @@ const InnovationLaunchpad = () => {
   const [reviewing, setReviewing] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const startConfetti = () => {
     confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
   };
@@ -23,6 +23,8 @@ const InnovationLaunchpad = () => {
     setPitch("");
     setVerifyMessage("");
     setStep("game");
+    setStartTime(Date.now());
+
   };
 
   const extractScores = (text) => {
@@ -111,8 +113,9 @@ Keep it upbeat and encouraging, like you're hyping up your junior!`,
         avgResponseTimeSec,
         studyTimeMinutes,
         completed,
-      
+
       });
+      setStartTime(Date.now());
 
       if (completed) {
         completeLeadershipChallenge(3, 1); // ✅ Marks the challenge as completed

@@ -27,7 +27,7 @@ const WhichAIDoesWhat = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const professions = [
     {
@@ -140,8 +140,10 @@ const WhichAIDoesWhat = () => {
       avgResponseTimeSec,
       studyTimeMinutes,
       completed: true,
-      
+
     });
+    setStartTime(Date.now());
+
   };
 
 
@@ -166,6 +168,8 @@ const WhichAIDoesWhat = () => {
   const resetGame = () => {
     setMatches({});
     setShowResults(false);
+    setStartTime(Date.now());
+
   };
 
   const getUnusedTools = () => {

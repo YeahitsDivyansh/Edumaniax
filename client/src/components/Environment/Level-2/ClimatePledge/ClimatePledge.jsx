@@ -3,61 +3,62 @@ import Confetti from "react-confetti";
 import useWindowSize from "react-use/lib/useWindowSize";
 import ThinkingCloud from "../../../icon/ThinkingCloud";
 
-// Define the questions and placeholders for the game
+// Questions config
 const QUESTIONS = [
-  {
-    id: "school",
-    question: "1) One change at school",
-    placeholder: "Eg : Organising a tree planting event",
-    suggestion: "Organising a tree planting event is a great way to improve the school environment!",
-  },
-  {
-    id: "home",
-    question: "2) One change at home",
-    placeholder: "Eg : Start composting food waste",
-    suggestion: "Composting is a fantastic way to reduce waste and help your garden!",
-  },
-  {
-    id: "energy",
-    question: "3) One energy-saving habit",
-    placeholder: "Eg : Switch off lights when not in use",
-    suggestion: "Switching off lights is a simple but effective way to save energy.",
-  },
-  {
-    id: "waste",
-    question: "4) One waste-reducing habit",
-    placeholder: "Eg : Carry reusable bags for shopping",
-    suggestion: "Reusable bags are a great choice to reduce plastic waste.",
-  },
-  {
-    id: "awareness",
-    question: "5) One awareness action",
-    placeholder: "Eg : Share climate facts on school bulletin",
-    suggestion: "Sharing climate facts helps everyone learn and take action!",
-  },
+  {
+    id: "school",
+    question: "1) One change at school",
+    placeholder: "Eg : Organising a tree planting event",
+    suggestion:
+      "Organising a tree planting event is a great way to improve the school environment!",
+  },
+  {
+    id: "home",
+    question: "2) One change at home",
+    placeholder: "Eg : Start composting food waste",
+    suggestion:
+      "Composting is a fantastic way to reduce waste and help your garden!",
+  },
+  {
+    id: "energy",
+    question: "3) One energy-saving habit",
+    placeholder: "Eg : Switch off lights when not in use",
+    suggestion:
+      "Switching off lights is a simple but effective way to save energy.",
+  },
+  {
+    id: "waste",
+    question: "4) One waste-reducing habit",
+    placeholder: "Eg : Carry reusable bags for shopping",
+    suggestion: "Reusable bags are a great choice to reduce plastic waste.",
+  },
+  {
+    id: "awareness",
+    question: "5) One awareness action",
+    placeholder: "Eg : Share climate facts on school bulletin",
+    suggestion: "Sharing climate facts helps everyone learn and take action!",
+  },
 ];
 
 const INITIAL_TIME = 300; // 5 minutes in seconds
 
 // Mock API call to simulate Gemini verification
 const verifyPledgeWithGemini = async (text) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (text.length > 10) {
-        // Simple check for a "good" answer
-        resolve({
-          isGood: true,
-          message: "✅ Good choice! That's a clear and specific plan.",
-        });
-      } else {
-        // Simple check for a "bad" answer
-        resolve({
-          isGood: false,
-          message: "⚠️ Needs improvement. Can you be more specific?",
-        });
-      }
-    }, 1000);
-  });
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (text.length > 10) {
+        resolve({
+          isGood: true,
+          message: "✅ Good choice! That's a clear and specific plan.",
+        });
+      } else {
+        resolve({
+          isGood: false,
+          message: "⚠️ Needs improvement. Can you be more specific?",
+        });
+      }
+    }, 1000);
+  });
 };
 
 const initialState = {
@@ -72,6 +73,7 @@ const initialState = {
 };
 
 const reducer = (state, action) => {
+
   switch (action.type) {
     case "START_GAME":
       return { ...initialState, view: "game" };
@@ -174,6 +176,7 @@ const ClimatePledgeGame = () => {
   const timerDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
   const progressBarWidth = ((INITIAL_TIME - timeLeft) / INITIAL_TIME) * 100;
 
+
   const verifyDisabled = state.isInputEmpty;
   const arrowDisabled = !state.isVerified;
 
@@ -260,7 +263,6 @@ const ClimatePledgeGame = () => {
             </div>
           </div>
 
-
             {/* Title */}
             <div className="flex w-[33.75vw] flex-col justify-end items-center flex-nowrap relative z-[1] mt-[7vh] mr-0 mb-0 ml-[32.68vw]">
               <span className="flex w-[77vw] md:w-[44.06vw] h-[7vh] md:h-[5.33vh] justify-center items-center shrink-0 font-['Comic_Neue'] text-[3.1vh] leading-[4vh] lg:text-[5vh] font-bold leading-[2.66vh] text-[rgba(75,75,75,0.8)] relative text-center z-[2]">
@@ -318,15 +320,18 @@ const ClimatePledgeGame = () => {
                     </div>
                 </button>
                 <button
+
                     onClick={() => dispatch({ type: "NEXT_QUESTION" })}
                     disabled={arrowDisabled}
                     className={`flex w-[12vw] md:w-[4.0625vw] h-[6.5vh] md:h-[8vh] gap-[23.43vw] justify-center items-center shrink-0 flex-nowrap bg-contain bg-no-repeat rounded-[1.11vh] relative z-[22] transition-all duration-300 text-2xl text-white
                         ${arrowDisabled ? 'bg-[#cccccc] shadow-[0_2px_10px_0_rgba(204,204,204,0.90)] cursor-not-allowed' : 'bg-[#09be43] shadow-[0_2px_10px_0_rgba(9,190,67,0.90)] hover:bg-green-600'}`}
                     style={{ backgroundPosition: 'center', backgroundSize: 'contain', backgroundRepeat: 'no-repeat'}}
                 >→</button>
+
             </div>
         </div>
         );
+
 
       case "finish":
         return (
@@ -428,6 +433,7 @@ const ClimatePledgeGame = () => {
         return null;
     }
   };
+
 
   return <>{renderGameContent()}</>;
 };

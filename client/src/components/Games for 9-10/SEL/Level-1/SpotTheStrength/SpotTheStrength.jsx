@@ -52,7 +52,7 @@ const SpotTheStrength = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleDrop = (strength, index) => {
     setMatches((prev) => ({ ...prev, [index]: strength }));
@@ -78,8 +78,9 @@ const SpotTheStrength = () => {
       avgResponseTimeSec: durationSec / scenarios.length,
       studyTimeMinutes: Math.ceil(durationSec / 60),
       completed: correct >= 5,
-       
+
     });
+    setStartTime(Date.now());
 
     if (correct >= 5) {
       setShowConfetti(true);
@@ -96,6 +97,8 @@ const SpotTheStrength = () => {
     setScore(0);
     setShowConfetti(false);
     setShowIntro(true);
+    setStartTime(Date.now());
+
   };
 
   if (showIntro) {

@@ -51,7 +51,7 @@ const BuildABotChallenge = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleDesignSelect = (design) => {
     setFormData(prev => ({ ...prev, design }));
@@ -97,6 +97,7 @@ const BuildABotChallenge = () => {
       design: null,
     });
     setStep(1);
+    setStartTime(Date.now());
   };
 
   useEffect(() => {
@@ -115,8 +116,8 @@ const BuildABotChallenge = () => {
         avgResponseTimeSec: totalSeconds / 6, // 6 fields filled
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: true,
-     
       });
+      setStartTime(Date.now());
     }
   }, [step]);
 

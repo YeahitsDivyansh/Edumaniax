@@ -65,7 +65,7 @@ const CampaignBuilderGame = () => {
   const [result, setResult] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   // Game data
   const gameOptions = {
@@ -170,9 +170,8 @@ const CampaignBuilderGame = () => {
                 avgResponseTimeSec: responseTimeSec,
                 studyTimeMinutes,
                 completed: true,
-                
               });
-
+              setStartTime(Date.now());
               setCurrentPage("result");
             }, 500);
             return 100;
@@ -222,6 +221,7 @@ const CampaignBuilderGame = () => {
     });
     setLoadingProgress(0);
     setCompletedFields(0);
+    setStartTime(Date.now());
   };
 
   const downloadCertificate = () => {

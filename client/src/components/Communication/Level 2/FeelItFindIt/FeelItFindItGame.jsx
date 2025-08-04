@@ -215,6 +215,8 @@ export default function FeelItFindItGame() {
       accuracy,
       
     });
+    setStartTime(Date.now());
+
   };
 
 
@@ -230,6 +232,8 @@ export default function FeelItFindItGame() {
     setReflectionAnswers({});
     setGameComplete(false);
     setScore(0);
+    setStartTime(Date.now());
+
   };
 
   if (gameComplete) {

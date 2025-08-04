@@ -27,7 +27,7 @@ const CampaignPuzzleGame = () => {
   const [celebrationMode, setCelebrationMode] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const campaignTiles = [
     {
@@ -189,9 +189,9 @@ const CampaignPuzzleGame = () => {
       avgResponseTimeSec: timeSpentSec / 3,
       studyTimeMinutes: Math.ceil(timeSpentSec / 60),
       completed: true,
-   
-    });
 
+    });
+    setStartTime(Date.now());
     setFeedback(feedbackMessage);
     setStars(starCount);
     setIsLoading(false);
@@ -208,6 +208,7 @@ const CampaignPuzzleGame = () => {
     setIsLoading(false);
     setLoadingProgress(0);
     setCurrentPage("game");
+    setStartTime(Date.now());
   };
 
   const canvasRef = useRef(null);

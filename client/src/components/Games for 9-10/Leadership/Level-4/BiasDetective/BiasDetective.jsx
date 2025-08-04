@@ -37,7 +37,7 @@ const BiasDetective = () => {
   const [currentBiasIndex, setCurrentBiasIndex] = useState(0);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const verifyRewritesWithGemini = async () => {
     const apiKey = import.meta.env.VITE_API_KEY;
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -198,8 +198,9 @@ Be positive, honest, and use language that clicks with teens.`,
         avgResponseTimeSec,
         studyTimeMinutes,
         completed,
-        
+
       });
+      setStartTime(Date.now());
 
       if (completed) {
         confetti();
@@ -225,6 +226,8 @@ Be positive, honest, and use language that clicks with teens.`,
     setVerifyMessage("");
     setReviewFeedbacks([]);
     setCurrentBiasIndex(0);
+    setStartTime(Date.now());
+
   };
 
   const resetRewriteInputs = () => {

@@ -22,7 +22,7 @@ const InfluenceExplorer = () => {
   const [finished, setFinished] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (finished) {
       const endTime = Date.now();
@@ -36,8 +36,9 @@ const InfluenceExplorer = () => {
         avgResponseTimeSec: totalSeconds / 10,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 8,
- 
+
       });
+      setStartTime(Date.now());
 
       if (score >= 8) {
         completeSELChallenge(1, 3);
@@ -73,6 +74,8 @@ const InfluenceExplorer = () => {
     setScore(0);
     setFeedback(null);
     setFinished(false);
+    setStartTime(Date.now());
+
   };
 
   return (

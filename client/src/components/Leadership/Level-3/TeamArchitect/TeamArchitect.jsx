@@ -76,7 +76,7 @@ const TeamArchitect = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (screen === "result") {
@@ -90,8 +90,9 @@ const TeamArchitect = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / 6000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: score >= 5,
-        
+
       });
+      setStartTime(Date.now());
 
       if (score >= 5) {
         completeLeadershipChallenge(2, 1); // Update as needed
@@ -270,6 +271,7 @@ const TeamArchitect = () => {
               setMcqIndex(0);
               setScreen("intro");
               setSelectedOption(null);
+              setStartTime(Date.now());
             }}
             className="px-6 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
           >

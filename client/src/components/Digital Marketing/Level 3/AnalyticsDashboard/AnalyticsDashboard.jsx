@@ -98,6 +98,7 @@ export default function AnalyticsDashboard() {
       completed: true,
       
     });
+     setStartTime(Date.now());
   }, [challengeCompleted]);
 
 

@@ -87,7 +87,7 @@ const KindnessClicks = () => {
   const [feedbackCorrect, setFeedbackCorrect] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const yay = new Audio(
     "/children-saying-yay-praise-and-worship-jesus-299607.mp3"
   );
@@ -133,6 +133,8 @@ const KindnessClicks = () => {
     setAnswers([]);
     setShowResult(false);
     setShowFeedback(false);
+    setStartTime(Date.now());
+
   };
 
   const result = results.find((r) => score >= r.min);
@@ -152,8 +154,9 @@ const KindnessClicks = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 8,
-         
+
       });
+      setStartTime(Date.now());
 
       if (score >= 8) {
         completeSELChallenge(0, 2);

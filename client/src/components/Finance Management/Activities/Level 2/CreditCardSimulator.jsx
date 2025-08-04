@@ -159,6 +159,7 @@ export default function CreditCardSimulator() {
         completed: true,
         
       });
+      setStartTime(Date.now());
     }
   }, [hasTriedEmi, hasTriedMin]);
 
@@ -309,6 +310,7 @@ export default function CreditCardSimulator() {
                     setMinDone(false);
                     setPaymentMethod(null);
                     setRemainingPrincipal(0);
+                    setStartTime(Date.now());
                   }}
                   className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
                 >

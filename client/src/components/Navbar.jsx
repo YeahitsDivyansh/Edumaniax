@@ -107,12 +107,12 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link
+              {/* <Link
                 to="/register"
                 className="border border-green-600 text-green-600 font-medium px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300"
               >
                 Register
-              </Link>
+              </Link> */}
               <Link
                 to="/login"
                 className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
@@ -233,13 +233,13 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                <Link
+                {/* <Link
                   to="/register"
                   onClick={handleItemClick}
                   className="block border border-green-600 text-green-600 text-center hover:bg-green-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
                   Register
-                </Link>
+                </Link> */}
                 <Link
                   to="/login"
                   onClick={handleItemClick}

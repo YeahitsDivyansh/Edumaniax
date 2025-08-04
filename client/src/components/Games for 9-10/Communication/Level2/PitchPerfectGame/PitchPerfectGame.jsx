@@ -77,6 +77,8 @@ const PitchPerfectGame = () => {
                 completed: finalScore >= 15,
                 
             });
+            setStartTime(Date.now());
+
 
             if (finalScore >= 15 && !challengeCompleted) {
                 completeCommunicationChallenge(1, 0);
@@ -100,6 +102,8 @@ const PitchPerfectGame = () => {
         setCustom(["", "", ""]);
         setScore(null);
         setFeedback(null);
+        setStartTime(Date.now());
+
     };
 
     const calculateScore = () => {

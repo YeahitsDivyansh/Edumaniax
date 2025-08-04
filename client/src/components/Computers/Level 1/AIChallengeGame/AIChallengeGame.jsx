@@ -43,7 +43,7 @@ export default function AIChallengeGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleDrop = (deviceId) => {
     const device = allDevices.find(d => d.id === parseInt(deviceId));
@@ -82,9 +82,9 @@ export default function AIChallengeGame() {
         avgResponseTimeSec: totalSeconds / 5,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: true,
-        
-      });
 
+      });
+      setStartTime(Date.now());
       setTimeout(() => setShowBadge(false), 4000);
     }
   }, [chartItems]);

@@ -170,6 +170,7 @@ Example format:
         completed: true,
          
       });
+       setStartTime(Date.now());
     } catch (err) {
       setError("Error fetching AI response");
       console.log(err);

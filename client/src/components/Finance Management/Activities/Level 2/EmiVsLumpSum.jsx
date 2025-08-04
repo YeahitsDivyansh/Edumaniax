@@ -116,6 +116,7 @@ feedback : "Your feedback"
           studyTimeMinutes: Math.ceil(totalTimeSec / 60),
          
         });
+        setStartTime(Date.now());
       }
 
     } catch (err) {
@@ -132,6 +133,7 @@ feedback : "Your feedback"
     setShowResult(false);
     setFeedback("");
     setLoading(false);
+    setStartTime(Date.now());
   };
 
   const notAllowed = () => {

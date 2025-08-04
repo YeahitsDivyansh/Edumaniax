@@ -14,7 +14,7 @@ const InnovationSprint = () => {
   const [loading, setLoading] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const startGame = () => setStep(0);
 
@@ -35,6 +35,7 @@ const InnovationSprint = () => {
     setIsApproved(false);
     setLoading(false);
     setStep(-1);
+    setStartTime(Date.now());
   };
 
   const verifyWithGemini = async () => {
@@ -118,8 +119,9 @@ const InnovationSprint = () => {
           avgResponseTimeSec: parseFloat((totalTimeMs / 1000).toFixed(2)),
           studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
           completed: true,
-          
+
         });
+        setStartTime(Date.now());
 
         completeLeadershipChallenge(3, 0); // Replace with your actual challenge and task ID
         // ✅ Trigger confetti immediately:

@@ -250,6 +250,8 @@ const CarouselCampaign = () => {
     setSlideContent({ coverHook: "", tip1: "", tip2: "", cta: "" });
     setScores({ carouselBuild: 0, toneMatch: 0, headings: 0 });
     setShowResults(false);
+    setStartTime(Date.now());
+
   };
 
   const totalScore = scores.carouselBuild + scores.toneMatch + scores.headings;
@@ -301,6 +303,8 @@ const CarouselCampaign = () => {
       };
 
       updatePerformance(payload);
+      setStartTime(Date.now());
+
     }
   }, [showResults, isPassed]);
 

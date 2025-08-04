@@ -211,11 +211,15 @@ const SustainabilityGames2 = () => {
     setShowResult(false);
     setSelectedAnswer(null);
     setGameCompleted(false);
+    setStartTime(Date.now());
+
   };
 
   const startQuestions = () => {
     setShowInstructions(false);
     setCurrentPage("game");
+    setStartTime(Date.now());
+
   };
 
   const clickSoundRefPop = useRef(new Audio(clickSoundFile));
@@ -271,6 +275,8 @@ const SustainabilityGames2 = () => {
     setSelectedAnswer(null);
     setGameCompleted(false);
     setShowInstructions(false);
+    setStartTime(Date.now());
+
   };
 
   const canvasRef = useRef(null);

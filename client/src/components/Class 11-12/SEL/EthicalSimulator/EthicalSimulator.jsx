@@ -294,6 +294,8 @@ export default function EthicalSimulator() {
         completed: true,
          
       });
+      setStartTime(Date.now());
+
     }
 
     setStep(step + 1);
@@ -394,6 +396,7 @@ export default function EthicalSimulator() {
                 setStep(0);
                 setSelected(null);
                 setScore(0);
+                setStartTime(Date.now());
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className="bg-gradient-to-r from-pink-500 to-yellow-400 hover:from-pink-600 hover:to-yellow-500 text-white py-3 px-10 rounded-full shadow-xl text-xl font-extrabold transform hover:scale-105 transition duration-300"

@@ -8,7 +8,7 @@ const FinanceContext = createContext();
 export const FinanceProvider = ({ children }) => {
     const { token, user } = useAuth();
     const userClass = user?.userClass;
-    const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
+    const server = import.meta.env.VITE_API_URL;
 
     const [progress, setProgress] = useState([]);
 

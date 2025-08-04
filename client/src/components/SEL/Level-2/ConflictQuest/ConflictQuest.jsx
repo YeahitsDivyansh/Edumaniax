@@ -59,7 +59,7 @@ const ConflictQuest = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (completed) {
       const endTime = Date.now();
@@ -74,8 +74,9 @@ const ConflictQuest = () => {
         avgResponseTimeSec: totalSeconds / 3,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 3,
- 
+
       });
+      setStartTime(Date.now());
 
       if (score >= 3) {
         completeSELChallenge(1, 1);
@@ -104,6 +105,8 @@ const ConflictQuest = () => {
     setCompleted(false);
     setSelected(null);
     setShowFeedback(false);
+    setStartTime(Date.now());
+
   };
 
   const getFinalGif = () => {

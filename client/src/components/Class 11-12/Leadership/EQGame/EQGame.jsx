@@ -55,6 +55,8 @@ const EQGame = () => {
           completed: true,
            
         });
+        setStartTime(Date.now());
+
       }
     }
   }, [stage, aiFeedback]);
@@ -127,6 +129,8 @@ Example format:
     setStage(0);
     setStarted(false);
     setAiFeedback(null);
+    setStartTime(Date.now());
+
   };
 
   return (

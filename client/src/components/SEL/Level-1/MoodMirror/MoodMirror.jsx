@@ -46,7 +46,7 @@ const MoodMirror = () => {
   const [feedbackGif, setFeedbackGif] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (showResult) {
       const endTime = Date.now();
@@ -63,8 +63,9 @@ const MoodMirror = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 4,
- 
+
       });
+      setStartTime(Date.now());
 
       if (score >= 4) {
         completeSELChallenge(0, 0);
@@ -105,6 +106,7 @@ const MoodMirror = () => {
     setSelected(null);
     setShowResult(false);
     setFeedbackGif(null);
+    setStartTime(Date.now());
   };
 
   return (

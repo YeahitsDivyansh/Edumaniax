@@ -163,8 +163,8 @@ const PlatformPickerGame = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: Math.round(timeTakenSec / 60),
       completed: correctCount === 3,
-      
     });
+    setStartTime(Date.now());
   };
 
 
@@ -174,6 +174,7 @@ const PlatformPickerGame = () => {
     setStars(0);
     setShowResults(false);
     setCurrentPage("game");
+    setStartTime(Date.now());
   };
 
   const canvasRef = useRef(null);

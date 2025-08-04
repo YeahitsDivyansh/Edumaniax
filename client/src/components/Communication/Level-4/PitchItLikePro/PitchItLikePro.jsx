@@ -49,7 +49,7 @@ const PitchItGame = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleGameFinish = () => {
     const endTime = Date.now();
@@ -64,8 +64,9 @@ const PitchItGame = () => {
       studyTimeMinutes: durationSec / 60,
       avgResponseTimeSec, // ✅ Include this
       completed: true,
- 
+
     });
+    setStartTime(Date.now());
   };
 
 
@@ -132,6 +133,7 @@ const PitchItGame = () => {
     setSelected([]);
     setFeedback(null);
     setFinalWin(false);
+    setStartTime(Date.now());
   };
 
   return (

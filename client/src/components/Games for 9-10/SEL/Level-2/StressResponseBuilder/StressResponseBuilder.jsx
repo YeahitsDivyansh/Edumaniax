@@ -65,6 +65,8 @@ const StressResponseBuilder = () => {
       completed: correctCount === 4,
      
     });
+    setStartTime(Date.now());
+
   };
 
 
@@ -72,10 +74,14 @@ const StressResponseBuilder = () => {
   const handleReset = () => {
     setSelected([]);
     setSubmitted(false);
+    setStartTime(Date.now());
+
   };
 
   const handleStart = () => {
     setStage("game");
+    setStartTime(Date.now());
+
   };
 
   const getStatus = (option) => {

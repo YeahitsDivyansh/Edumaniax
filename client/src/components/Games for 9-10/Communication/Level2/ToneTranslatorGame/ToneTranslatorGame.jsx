@@ -49,6 +49,8 @@ export default function ToneTranslatorGame() {
         completed: 1,
        
       });
+      setStartTime(Date.now());
+
     }
   }, [score]);
 
@@ -176,6 +178,8 @@ export default function ToneTranslatorGame() {
     setScore(null);
     setRecordings({});
     setFeedback({});
+    setStartTime(Date.now());
+
   };
 
   return (

@@ -87,8 +87,8 @@ export default function BrandYouSimulator() {
                 avgResponseTimeSec: parseFloat((totalTimeMs / (questions.length * 1000)).toFixed(2)),
                 studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
                 completed: true,
-               
             });
+            setStartTime(Date.now());
         }
     }, [completed]);
 
@@ -134,6 +134,7 @@ export default function BrandYouSimulator() {
         setFeedback({ mission: "", bio: "" });
         setCompleted(false);
         setLoading(false);
+        setStartTime(Date.now());
     };
 
     const getGeminiFeedback = async (mission, bio) => {

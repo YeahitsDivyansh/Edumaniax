@@ -40,6 +40,8 @@ const EthicalLogicMaze = () => {
       completed: showBadge,
       
     });
+    setStartTime(Date.now());
+
   }, [step]);
 
 
@@ -76,6 +78,8 @@ const EthicalLogicMaze = () => {
     setReflection("");
     setShowBadge(false);
     setCurrentQuestion(null);
+    setStartTime(Date.now());
+
   };
 
   return (

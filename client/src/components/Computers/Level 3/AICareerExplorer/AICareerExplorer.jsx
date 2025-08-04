@@ -20,7 +20,7 @@ export default function AICareerExplorerGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const [careerData, setCareerData] = useState(
     careers.map((c) => ({ ...c, skills: "", aiHelps: "", interest: "" }))
@@ -80,8 +80,9 @@ export default function AICareerExplorerGame() {
       avgResponseTimeSec,
       studyTimeMinutes,
       completed: true,
-   
+
     });
+    setStartTime(Date.now());
     setStep(2);
   };
 
@@ -260,6 +261,7 @@ export default function AICareerExplorerGame() {
                 preparation: "",
               });
               setStep(1);
+              setStartTime(Date.now());
             }}
             className="mt-4 px-6 py-3 bg-white text-green-700 font-bold rounded-full shadow-md hover:scale-105 transition-transform"
             whileHover={{ scale: 1.1 }}

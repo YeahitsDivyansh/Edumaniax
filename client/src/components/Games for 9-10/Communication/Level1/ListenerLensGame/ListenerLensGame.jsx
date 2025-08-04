@@ -74,6 +74,7 @@ const ListenerLensGame = () => {
         completed: true,
          
       });
+      setStartTime(Date.now());
     }
   };
 
@@ -84,6 +85,8 @@ const ListenerLensGame = () => {
     setFeedback('');
     setSelectedIndex(null);
     setSubmitted(false);
+    setStartTime(Date.now());
+
   };
 
   return (

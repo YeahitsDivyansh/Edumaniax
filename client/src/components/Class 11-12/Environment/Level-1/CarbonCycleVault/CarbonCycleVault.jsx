@@ -104,6 +104,8 @@ const CarbonCycleVault = () => {
       };
 
       updatePerformance(payload);
+      setStartTime(Date.now());
+
     }
   };
 
@@ -124,6 +126,8 @@ const CarbonCycleVault = () => {
     });
     setResult(null);
     setPage("intro");
+    setStartTime(Date.now());
+
   };
 
   return (

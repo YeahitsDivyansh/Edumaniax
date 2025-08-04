@@ -108,7 +108,7 @@ export default function LeanMachineGame() {
   const currentCard = challengeCards[currentIndex];
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleMouseDown = (e, index) => {
     setDragIndex(index);
@@ -177,6 +177,8 @@ export default function LeanMachineGame() {
     setCurrentIndex(0);
     setQuizComplete(false);
     setGameFinished(false);
+    setStartTime(Date.now());
+
   };
 
   const handleFinish = () => {
@@ -213,9 +215,9 @@ export default function LeanMachineGame() {
         avgResponseTimeSec: timeTakenSec,
         studyTimeMinutes: timeTakenMin,
         completed: true,
-      
-      });
 
+      });
+      setStartTime(Date.now());
       setGameFinished(true);
     }
   };

@@ -99,6 +99,8 @@ export default function LegalConceptsGame() {
       studyTimeMinutes,
       completed: true,
     });
+    setStartTime(Date.now());
+
   }, [gameEnded]);
 
 

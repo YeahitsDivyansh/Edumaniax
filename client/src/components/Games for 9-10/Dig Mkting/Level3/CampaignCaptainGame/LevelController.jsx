@@ -35,6 +35,7 @@ const LevelController = () => {
                 completed: true,
                 
             });
+            setStartTime(Date.now());
         }
     }, [stage]);
 
@@ -45,6 +46,8 @@ const LevelController = () => {
     const restartGame = () => {
         setStage(1);
         setScore(0);
+        setStartTime(Date.now());
+
     };
 
     return (

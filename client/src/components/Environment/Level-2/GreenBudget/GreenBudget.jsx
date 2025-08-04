@@ -5,7 +5,9 @@ import useWindowSize from "react-use/lib/useWindowSize";
 // Placeholder for context functions if you're not setting up actual contexts
 const useEnvirnoment = () => ({
   completeEnvirnomentChallenge: (challengeId, taskId) => {
-    console.log(`(Mock) Environment Challenge ${challengeId}, Task ${taskId} completed!`);
+    console.log(
+      `(Mock) Environment Challenge ${challengeId}, Task ${taskId} completed!`
+    );
   },
 });
 
@@ -17,7 +19,7 @@ const usePerformance = () => ({
 
 // Mock useNavigate for demonstration purposes
 const useNavigate = () => {
-  return (path) => console.log(`Navigating to: ${path || 'previous page'}`);
+  return (path) => console.log(`Navigating to: ${path || "previous page"}`);
 };
 
 // =============================================================================
@@ -26,36 +28,131 @@ const useNavigate = () => {
 const questions = [
   {
     id: 1,
-    scenario: "Your school wants to reduce its environmental footprint. Pick 3 items.",
+    scenario:
+      "Your school wants to reduce its environmental footprint. Pick 3 items.",
     items: [
-      { name: "Solar Lights", cost: 250, imageUrl: "http://googleusercontent.com/file_content/0", sustainable: true },
-      { name: "Compost Bin", cost: 150, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png", sustainable: true },
-      { name: "Poster Printout", cost: 100, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AOWFSJn2sB.png", sustainable: false },
-      { name: "Packaged water", cost: 100, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/WpoO0ju8bf.png", sustainable: false },
-      { name: "Plastic Dustbin", cost: 100, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/acqPZ0ZkQr.png", sustainable: false },
-      { name: "Cloth Banner", cost: 150, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png", sustainable: true },
+      {
+        name: "Solar Lights",
+        cost: 250,
+        imageUrl: "http://googleusercontent.com/file_content/0",
+        sustainable: true,
+      },
+      {
+        name: "Compost Bin",
+        cost: 150,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png",
+        sustainable: true,
+      },
+      {
+        name: "Poster Printout",
+        cost: 100,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AOWFSJn2sB.png",
+        sustainable: false,
+      },
+      {
+        name: "Packaged water",
+        cost: 100,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/WpoO0ju8bf.png",
+        sustainable: false,
+      },
+      {
+        name: "Plastic Dustbin",
+        cost: 100,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/acqPZ0ZkQr.png",
+        sustainable: false,
+      },
+      {
+        name: "Cloth Banner",
+        cost: 150,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png",
+        sustainable: true,
+      },
     ],
   },
   {
     id: 2,
     scenario: "Design a 'green corner' for your classroom.",
     items: [
-      { name: "Indoor plant set", cost: 150, imageUrl: "https://img.freepik.com/free-photo/arrangement-plants-pots-indoors_23-2149021200.jpg", sustainable: true },
-      { name: "Educational eco-posters", cost: 100, imageUrl: "https://img.freepik.com/free-vector/save-world-ecology-poster_1308-41221.jpg", sustainable: true },
-      { name: "Plastic plant holders", cost: 100, imageUrl: "https://img.freepik.com/free-photo/plant-pot_1203-8107.jpg", sustainable: false },
-      { name: "LED study lamp", cost: 250, imageUrl: "https://img.freepik.com/free-photo/desk-lamp-still-life_23-2150993540.jpg", sustainable: true },
-      { name: "Disposable cups", cost: 100, imageUrl: "https://img.freepik.com/free-photo/pile-plastic-cups_23-2148564070.jpg", sustainable: false },
+      {
+        name: "Indoor plant set",
+        cost: 150,
+        imageUrl:
+          "https://img.freepik.com/free-photo/arrangement-plants-pots-indoors_23-2149021200.jpg",
+        sustainable: true,
+      },
+      {
+        name: "Educational eco-posters",
+        cost: 100,
+        imageUrl:
+          "https://img.freepik.com/free-vector/save-world-ecology-poster_1308-41221.jpg",
+        sustainable: true,
+      },
+      {
+        name: "Plastic plant holders",
+        cost: 100,
+        imageUrl: "https://img.freepik.com/free-photo/plant-pot_1203-8107.jpg",
+        sustainable: false,
+      },
+      {
+        name: "LED study lamp",
+        cost: 250,
+        imageUrl:
+          "https://img.freepik.com/free-photo/desk-lamp-still-life_23-2150993540.jpg",
+        sustainable: true,
+      },
+      {
+        name: "Disposable cups",
+        cost: 100,
+        imageUrl:
+          "https://img.freepik.com/free-photo/pile-plastic-cups_23-2148564070.jpg",
+        sustainable: false,
+      },
     ],
   },
   {
     id: 3,
     scenario: "Reduce waste at your school canteen.",
     items: [
-      { name: "Steel utensils", cost: 200, imageUrl: "https://img.freepik.com/free-photo/cutlery-set_144627-24847.jpg", sustainable: true },
-      { name: "Paper straws", cost: 100, imageUrl: "https://img.freepik.com/free-photo/pile-paper-straws_23-2148762589.jpg", sustainable: true },
-      { name: "Plastic cutlery", cost: 100, imageUrl: "https://img.freepik.com/free-photo/plastic-cutlery-box_23-2148564071.jpg", sustainable: false },
-      { name: "Compost bin", cost: 150, imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png", sustainable: true },
-      { name: "Promotional balloons", cost: 100, imageUrl: "https://img.freepik.com/free-photo/colorful-balloons-wall_23-2147775537.jpg", sustainable: false },
+      {
+        name: "Steel utensils",
+        cost: 200,
+        imageUrl:
+          "https://img.freepik.com/free-photo/cutlery-set_144627-24847.jpg",
+        sustainable: true,
+      },
+      {
+        name: "Paper straws",
+        cost: 100,
+        imageUrl:
+          "https://img.freepik.com/free-photo/pile-paper-straws_23-2148762589.jpg",
+        sustainable: true,
+      },
+      {
+        name: "Plastic cutlery",
+        cost: 100,
+        imageUrl:
+          "https://img.freepik.com/free-photo/plastic-cutlery-box_23-2148564071.jpg",
+        sustainable: false,
+      },
+      {
+        name: "Compost bin",
+        cost: 150,
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png",
+        sustainable: true,
+      },
+      {
+        name: "Promotional balloons",
+        cost: 100,
+        imageUrl:
+          "https://img.freepik.com/free-photo/colorful-balloons-wall_23-2147775537.jpg",
+        sustainable: false,
+      },
     ],
   },
 ];
@@ -75,7 +172,11 @@ function Header({ scenario, timeRemaining, progressBarWidth }) {
       </span>
       <div className="flex items-center justify-center gap-[4vw] md:gap-[36px] w-full max-w-[65vw] mx-auto">
         <div className="flex items-center justify-center shrink-0 w-[70px] md:w-[90px]">
-          <img src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AWHLELzyH6.png" alt="timer icon" className="w-[28px] h-[24px] md:w-[32px] md:h-[28px] mr-2" />
+          <img
+            src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AWHLELzyH6.png"
+            alt="timer icon"
+            className="w-[28px] h-[24px] md:w-[32px] md:h-[28px] mr-2"
+          />
           <span className="font-['Comic_Sans_MS'] text-[18px] md:text-[22px] font-bold leading-[20px] text-[rgba(75,75,75,0.8)]">
             {timeRemaining}
           </span>
@@ -109,9 +210,13 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
     flex flex-col items-center p-[8px] sm:p-[10px] md:p-[12px] bg-white rounded-[12px] border border-[rgba(75,75,75,0.8)] shadow-[0_3px_3px_0_rgba(0,0,0,0.25)] cursor-pointer
     transition-all duration-200 ease-in-out
     w-[110px] h-[145px] sm:w-[130px] sm:h-[165px] md:w-[150px] md:h-[195px] shrink-0
-    ${isSelected ? 'border-blue-500 ring-2 ring-blue-500 shadow-lg' : ''}
-    ${isDisabled && !isSelected ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
-    ${!isDisabled && !isSelected ? 'hover:scale-105 hover:shadow-xl' : ''}
+    ${isSelected ? "border-blue-500 ring-2 ring-blue-500 shadow-lg" : ""}
+    ${
+      isDisabled && !isSelected
+        ? "opacity-50 cursor-not-allowed pointer-events-none"
+        : ""
+    }
+    ${!isDisabled && !isSelected ? "hover:scale-105 hover:shadow-xl" : ""}
   `;
 
   const imageClasses = `
@@ -128,18 +233,10 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
 
   return (
     <div className={cardClasses} onClick={onClick}>
-      <img
-        src={item.imageUrl}
-        alt={item.name}
-        className={imageClasses}
-      />
+      <img src={item.imageUrl} alt={item.name} className={imageClasses} />
       <div className="text-center w-full px-1">
-        <span className={nameClasses}>
-          {item.name}
-        </span>
-        <span className={costClasses}>
-          Rs {item.cost}
-        </span>
+        <span className={nameClasses}>{item.name}</span>
+        <span className={costClasses}>Rs {item.cost}</span>
       </div>
     </div>
   );
@@ -151,7 +248,11 @@ function ContinueButton({ onClick, isEnabled, isLastQuestion }) {
     flex justify-center items-center
     font-['Comic_Sans_MS'] text-[15px] md:text-[17px] font-bold leading-[20px] text-[#fff]
     transition-all duration-200 ease-in-out
-    ${isEnabled ? 'hover:bg-green-700 hover:shadow-xl cursor-pointer' : 'opacity-60 cursor-not-allowed'}
+    ${
+      isEnabled
+        ? "hover:bg-green-700 hover:shadow-xl cursor-pointer"
+        : "opacity-60 cursor-not-allowed"
+    }
   `;
 
   return (
@@ -175,13 +276,26 @@ function IntroScreen({ onStartGame }) {
         <p className="mb-2">
           Select <b>3 items</b> that best support sustainability in school.
         </p>
-        <p className="mb-2">🎯 <b>Scoring:</b></p>
+        <p className="mb-2">
+          🎯 <b>Scoring:</b>
+        </p>
         <ul className="mb-2 text-left list-disc pl-5">
-          <li><span className="font-bold text-green-600">+5</span> = All 3 eco-wise</li>
-          <li><span className="font-bold text-yellow-600">+2</span> = 2 sustainable</li>
-          <li><span className="font-bold text-red-600">0</span> = Mostly unsustainable</li>
+          <li>
+            <span className="font-bold text-green-600">+5</span> = All 3
+            eco-wise
+          </li>
+          <li>
+            <span className="font-bold text-yellow-600">+2</span> = 2
+            sustainable
+          </li>
+          <li>
+            <span className="font-bold text-red-600">0</span> = Mostly
+            unsustainable
+          </li>
         </ul>
-        <p className="mb-2">🕐 <b>Time Limit:</b> 3 minutes per scenario</p>
+        <p className="mb-2">
+          🕐 <b>Time Limit:</b> 3 minutes per scenario
+        </p>
       </div>
       <button
         onClick={onStartGame}
@@ -193,7 +307,13 @@ function IntroScreen({ onStartGame }) {
   );
 }
 
-function EndScreen({ totalScore, totalPossibleScore, onPlayAgain, onReviewAnswers, onContinue }) {
+function EndScreen({
+  totalScore,
+  totalPossibleScore,
+  onPlayAgain,
+  onReviewAnswers,
+  onContinue,
+}) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] p-4 text-center font-['Comic_Neue']">
       <h1 className="text-4xl font-bold mb-2 mt-16 text-center">Game Over!</h1>
@@ -212,13 +332,25 @@ function EndScreen({ totalScore, totalPossibleScore, onPlayAgain, onReviewAnswer
           </div>
         </div>
         <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-4 w-full">
-          <button onClick={onPlayAgain} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
+          <button
+            onClick={onPlayAgain}
+            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] "
+            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
+          >
             Play Again
           </button>
-          <button onClick={onContinue} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
+          <button
+            onClick={onContinue}
+            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 "
+            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
+          >
             Continue
           </button>
-          <button onClick={onReviewAnswers} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a]" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
+          <button
+            onClick={onReviewAnswers}
+            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a]"
+            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
+          >
             Review Answers
           </button>
         </div>
@@ -231,15 +363,32 @@ function ReviewScreen({ answers, onBackToResults }) {
   return (
     <div className="min-h-[89vh] bg-[#e6ffe6] flex flex-col items-center justify-center min-w-screen">
       <div className="w-full max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-6xl bg-white rounded-3xl shadow-lg flex flex-col items-center p-6 sm:p-8 lg:p-10 relative">
-        <button onClick={onBackToResults} className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition">
-          <span className="font-['Comfortaa'] text-[36px] sm:text-[40px]  text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">+</span>
+        <button
+          onClick={onBackToResults}
+          className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition"
+        >
+          <span className="font-['Comfortaa'] text-[36px] sm:text-[40px]  text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">
+            +
+          </span>
         </button>
-        <h2 className="text-3xl sm:text-4xl font-bold text-center w-full" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>Check your answers</h2>
-        <p className="mb-6 sm:mb-8 text-base sm:text-xl text-gray-700 text-center w-full" style={{ fontFamily: 'Commissioner, Arial, sans-serif' }}>See how you did in each scenario!</p>
+        <h2
+          className="text-3xl sm:text-4xl font-bold text-center w-full"
+          style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
+        >
+          Check your answers
+        </h2>
+        <p
+          className="mb-6 sm:mb-8 text-base sm:text-xl text-gray-700 text-center w-full"
+          style={{ fontFamily: "Commissioner, Arial, sans-serif" }}
+        >
+          See how you did in each scenario!
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full justify-evenly justify-items-center ">
           {answers.map((ans, idx) => {
             const isPassingScore = ans.scoreAwarded > 0;
-            const cardBgColor = isPassingScore ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]";
+            const cardBgColor = isPassingScore
+              ? "bg-[#c8ff9e]"
+              : "bg-[#ffdfe0]";
 
             return (
               <div
@@ -248,19 +397,39 @@ function ReviewScreen({ answers, onBackToResults }) {
               >
                 <div className="flex w-full justify-between items-start relative h-full">
                   <div className="flex flex-col gap-[5px] items-start flex-1 overflow-hidden">
-                    <span className={`font-['Comic_Neue'] text-lg sm:text-[18px] font-bold leading-[1.2] relative text-left z-[2] ${isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"} whitespace-normal mb-1`}>
+                    <span
+                      className={`font-['Comic_Neue'] text-lg sm:text-[18px] font-bold leading-[1.2] relative text-left z-[2] ${
+                        isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"
+                      } whitespace-normal mb-1`}
+                    >
                       {ans.scenario}
                     </span>
                     <div className="flex flex-col gap-[2px] items-start w-full mb-2">
-                      <span className={`font-['Commissioner'] text-sm sm:text-[14px] font-light leading-[1.2] relative text-left whitespace-normal z-[4] ${isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>
-                        Your Selection: {ans.selectedItems.map(item => item.name).join(', ')}
+                      <span
+                        className={`font-['Commissioner'] text-sm sm:text-[14px] font-light leading-[1.2] relative text-left whitespace-normal z-[4] ${
+                          isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"
+                        }`}
+                      >
+                        Your Selection:{" "}
+                        {ans.selectedItems.map((item) => item.name).join(", ")}
                       </span>
                     </div>
-                    <span className={`font-['Commissioner'] text-sm sm:text-[14px] font-light leading-[1.2] relative text-left whitespace-normal z-[5] ${isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>
+                    <span
+                      className={`font-['Commissioner'] text-sm sm:text-[14px] font-light leading-[1.2] relative text-left whitespace-normal z-[5] ${
+                        isPassingScore ? "text-[#09be43]" : "text-[#ea2b2b]"
+                      }`}
+                    >
                       Feedback: {ans.feedbackMessage}
                     </span>
                   </div>
-                  <div className="w-[25px] h-[25px] sm:w-[30px] sm:h-[30px] shrink-0 bg-contain bg-no-repeat ml-2" style={{ backgroundImage: isPassingScore ? "url(/check.png)" : "url(/cancel.png)" }} />
+                  <div
+                    className="w-[25px] h-[25px] sm:w-[30px] sm:h-[30px] shrink-0 bg-contain bg-no-repeat ml-2"
+                    style={{
+                      backgroundImage: isPassingScore
+                        ? "url(/check.png)"
+                        : "url(/cancel.png)",
+                    }}
+                  />
                 </div>
               </div>
             );
@@ -299,11 +468,14 @@ export default function GreenBudgetGame() {
   const [scenarioResults, setScenarioResults] = useState([]);
 
   // Memoize current question for easier access
-  const currentQuestion = useMemo(() => questions[currentQuestionIndex], [currentQuestionIndex]);
+  const currentQuestion = useMemo(
+    () => questions[currentQuestionIndex],
+    [currentQuestionIndex]
+  );
 
   const handleNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       setSelectedItems([]);
       setRemainingBalance(initialBudget);
       setTimeRemaining(timeLimit); // Reset timer for new question
@@ -311,6 +483,8 @@ export default function GreenBudgetGame() {
       setStep("end"); // Game ends
     }
   }, [currentQuestionIndex, questions.length]);
+  //for performance
+  const { updatePerformance } = usePerformance();
 
   // handleSubmit is defined BEFORE the useEffect that calls it.
   const handleSubmit = useCallback(() => {
@@ -321,7 +495,7 @@ export default function GreenBudgetGame() {
     }
 
     let sustainableCount = 0;
-    selectedItems.forEach(item => {
+    selectedItems.forEach((item) => {
       if (item.sustainable) {
         sustainableCount++;
       }
@@ -341,17 +515,17 @@ export default function GreenBudgetGame() {
       feedbackMessage = "Oops! Try to pick more sustainable items next time.";
     }
 
-    setTotalScore(prevScore => prevScore + scoreAwarded);
+    setTotalScore((prevScore) => prevScore + scoreAwarded);
 
     // Store the result for the review screen
-    setScenarioResults(prevResults => [
+    setScenarioResults((prevResults) => [
       ...prevResults,
       {
         scenario: currentQuestion.scenario,
         selectedItems: selectedItems,
         scoreAwarded: scoreAwarded,
         feedbackMessage: feedbackMessage,
-      }
+      },
     ]);
 
     handleNextQuestion();
@@ -363,7 +537,9 @@ export default function GreenBudgetGame() {
       const endTime = Date.now();
       const totalTimeSec = Math.floor((endTime - startTime) / 1000);
       const avgResponseTimeSec = totalTimeSec / questions.length;
-      const scaledScore = Number(((totalScore / (questions.length * 5)) * 10).toFixed(2));
+      const scaledScore = Number(
+        ((totalScore / (questions.length * 5)) * 10).toFixed(2)
+      );
 
       updateEnvirnomentPerformance({
         moduleName: "Environment",
@@ -372,21 +548,29 @@ export default function GreenBudgetGame() {
         accuracy: (totalScore / (questions.length * 5)) * 100,
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(totalTimeSec / 60),
-        completed: totalScore >= (questions.length * 5 * 0.8),
+        completed: totalScore >= questions.length * 5 * 0.8,
       });
+      setStartTime(Date.now());
 
       if (totalScore >= 12) {
         completeEnvirnomentChallenge(1, 0);
       }
     }
-  }, [step, totalScore, questions.length, startTime, completeEnvirnomentChallenge, updateEnvirnomentPerformance]);
+  }, [
+    step,
+    totalScore,
+    questions.length,
+    startTime,
+    completeEnvirnomentChallenge,
+    updateEnvirnomentPerformance,
+  ]);
 
   // Timer effect
   useEffect(() => {
     let timer;
     if (step === "playing" && timeRemaining > 0) {
       timer = setTimeout(() => {
-        setTimeRemaining(prevTime => prevTime - 1);
+        setTimeRemaining((prevTime) => prevTime - 1);
       }, 1000);
     } else if (step === "playing" && timeRemaining === 0) {
       handleSubmit();
@@ -407,12 +591,16 @@ export default function GreenBudgetGame() {
   };
 
   const toggleItem = (item) => {
-    const isSelected = selectedItems.some(selected => selected.name === item.name);
+    const isSelected = selectedItems.some(
+      (selected) => selected.name === item.name
+    );
     let newSelectedItems;
 
     if (isSelected) {
-      newSelectedItems = selectedItems.filter(selected => selected.name !== item.name);
-      setRemainingBalance(prevBalance => prevBalance + item.cost);
+      newSelectedItems = selectedItems.filter(
+        (selected) => selected.name !== item.name
+      );
+      setRemainingBalance((prevBalance) => prevBalance + item.cost);
     } else {
       if (selectedItems.length >= 3) {
         showWarning("You can only select 3 items!");
@@ -423,7 +611,7 @@ export default function GreenBudgetGame() {
         return;
       }
       newSelectedItems = [...selectedItems, item];
-      setRemainingBalance(prevBalance => prevBalance - item.cost);
+      setRemainingBalance((prevBalance) => prevBalance - item.cost);
     }
     setSelectedItems(newSelectedItems);
     setWarning("");
@@ -437,10 +625,10 @@ export default function GreenBudgetGame() {
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  const progressBarWidth = (timeLimit - timeRemaining) / timeLimit * 100;
+  const progressBarWidth = ((timeLimit - timeRemaining) / timeLimit) * 100;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   // Handlers for EndScreen buttons
@@ -471,14 +659,29 @@ export default function GreenBudgetGame() {
               <ItemCard
                 key={item.name}
                 item={item}
-                isSelected={selectedItems.some(selected => selected.name === item.name)}
+                isSelected={selectedItems.some(
+                  (selected) => selected.name === item.name
+                )}
                 onClick={() => toggleItem(item)}
-                isDisabled={selectedItems.length >= 3 && !selectedItems.some(selected => selected.name === item.name) || remainingBalance < item.cost && !selectedItems.some(selected => selected.name === item.name)}
+                isDisabled={
+                  (selectedItems.length >= 3 &&
+                    !selectedItems.some(
+                      (selected) => selected.name === item.name
+                    )) ||
+                  (remainingBalance < item.cost &&
+                    !selectedItems.some(
+                      (selected) => selected.name === item.name
+                    ))
+                }
               />
             ))}
           </div>
           <div className="mt-[30px] md:mt-[5vh] mx-auto w-full max-w-[200px] flex justify-center">
-            <ContinueButton onClick={handleSubmit} isEnabled={selectedItems.length === 3} isLastQuestion={isLastQuestion} />
+            <ContinueButton
+              onClick={handleSubmit}
+              isEnabled={selectedItems.length === 3}
+              isLastQuestion={isLastQuestion}
+            />
           </div>
         </>
       )}
@@ -496,7 +699,21 @@ export default function GreenBudgetGame() {
       )}
 
       {step === "review" && (
-        <ReviewScreen answers={scenarioResults} onBackToResults={handleBackToResults} />
+        <>
+          <ReviewScreen
+            answers={scenarioResults}
+            onBackToResults={handleBackToResults}
+          />
+          <button
+            onClick={() => {
+              setStep("intro");
+              setStartTime(Date.now());
+            }}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Play Again
+          </button>
+        </>
       )}
     </div>
   );

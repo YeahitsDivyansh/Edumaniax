@@ -90,7 +90,7 @@ const JusticeForAll = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
 
   useEffect(() => {
@@ -129,8 +129,10 @@ const JusticeForAll = () => {
         avgResponseTimeSec,
         studyTimeMinutes,
         completed: true,
-       
+
       });
+      setStartTime(Date.now());
+
     }
   };
 

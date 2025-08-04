@@ -60,6 +60,8 @@ const SustainabilityGames1 = () => {
       completed: gameCompleted,
       
     });
+    setStartTime(Date.now());
+
 
   }, [gameCompleted]);
 
@@ -234,6 +236,8 @@ const SustainabilityGames1 = () => {
     setShowResult(false);
     setSelectedAnswer(null);
     setGameCompleted(false);
+    setStartTime(Date.now());
+
   };
 
   const startQuestions = () => {
@@ -289,6 +293,8 @@ const SustainabilityGames1 = () => {
     setSelectedAnswer(null);
     setGameCompleted(false);
     setShowInstructions(false);
+    setStartTime(Date.now());
+
   };
 
   const canvasRef = useRef(null);

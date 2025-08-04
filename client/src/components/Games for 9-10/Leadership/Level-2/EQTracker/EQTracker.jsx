@@ -47,6 +47,8 @@ const EQTracker = () => {
       completed: isSuccess, // only true if correct answer was chosen
      
     });
+    setStartTime(Date.now());
+
   }, [step]);
 
 
@@ -82,6 +84,8 @@ const EQTracker = () => {
     setQuizAnswer("");
     setShowConfetti(false);
     setIsSuccess(false);
+    setStartTime(Date.now());
+
   };
 
   return (

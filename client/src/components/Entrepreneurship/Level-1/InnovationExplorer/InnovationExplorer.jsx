@@ -63,6 +63,7 @@ const InnovationExplorer = () => {
     setBadgeEarned(false);
     setAllPerfect(false);
     setStep("intro");
+     setStartTime(Date.now());
   };
 
   const getReview = async () => {
@@ -134,6 +135,7 @@ const InnovationExplorer = () => {
       completed: true,
       
     });
+     setStartTime(Date.now());
   };
 
   return (

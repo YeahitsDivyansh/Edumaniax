@@ -8,30 +8,28 @@ datasource db {
 }
 
 model User {
-  id                String              @id @default(cuid())
-  phonenumber       String              @unique
-  name              String
-  age               Int
-  userClass         String
-  characterGender   String
-  characterName     String
-  characterStyle    String
-  characterTraits   String[]            // Array of traits
-  createdAt         DateTime            @default(now())
-
-   // Reverse relations
-  financeChallenges         FinanceChallenge[]
-  dmChallenges              DMChallenge[]
-  communicationChallenges   CommunicationChallenge[]
-  computersChallenges       ComputersChallenge[]
+  id                         String                      @id @default(cuid())
+  phonenumber                String                      @unique
+  email                      String?                     
+  name                       String
+  age                        Int
+  userClass                  String
+  characterGender            String
+  characterName              String
+  characterStyle             String
+  characterTraits            String[]
+  createdAt                  DateTime                    @default(now())
+  communicationChallenges    CommunicationChallenge[]
+  computersChallenges        ComputersChallenge[]
+  dmChallenges               DMChallenge[]
   entrepreneurshipChallenges EntrepreneurshipChallenge[]
-  environmentChallenges     EnvironmentChallenge[]
-  lawChallenges             LawChallenge[]
-  leadershipChallenges      LeadershipChallenge[]
-  selChallenges             SELChallenge[]  
-
-  modulePerformances    ModulePerformance[]
-  topicPerformances     TopicPerformance[]  
+  environmentChallenges      EnvironmentChallenge[]
+  financeChallenges          FinanceChallenge[]
+  lawChallenges              LawChallenge[]
+  leadershipChallenges       LeadershipChallenge[]
+  modulePerformances         ModulePerformance[]
+  selChallenges              SELChallenge[]
+  topicPerformances          TopicPerformance[]
 }
 
 model OtpVerification {
@@ -42,189 +40,176 @@ model OtpVerification {
 }
 
 model FinanceChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])  // Forward relation
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model DMChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])  // Forward relation
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model CommunicationChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model ComputersChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model EntrepreneurshipChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model EnvironmentChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model LawChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model LeadershipChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
 model SELChallenge {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   userClass      String
   moduleIndex    Int
   challengeIndex Int
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
-
-  user           User     @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, userClass, moduleIndex, challengeIndex])
 }
 
-
 model ModulePerformance {
-  id                    String     @id @default(cuid())
-  userId                String
-  moduleName            String
-  totalGamesPlayed      Int
-  completedGamesCount   Int
-  averageScorePerGame   Float
-  accuracy              Float
-  avgResponseTimeSec    Float
-  studyTimeMinutes      Int
-  daysActiveCount       Int
-  lastActiveDate        DateTime?
-  lastGamePlayedAt      DateTime
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  id                  String    @id @default(cuid())
+  userId              String
+  moduleName          String
+  totalGamesPlayed    Int
+  completedGamesCount Int
+  averageScorePerGame Float
+  accuracy            Float
+  avgResponseTimeSec  Float
+  studyTimeMinutes    Int
+  daysActiveCount     Int
+  lastActiveDate      DateTime?
+  lastGamePlayedAt    DateTime
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id])
 
-  user                  User       @relation(fields: [userId], references: [id])
-
-  @@unique([userId, moduleName]) // ✅ add this line
+  @@unique([userId, moduleName])
 }
 
 model TopicPerformance {
-  id                    String     @id @default(cuid())
-  userId                String
-  moduleName            String
-  topicName             String
-  completedGamesCount   Int
-  averageScorePerGame   Float
-  accuracy              Float
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  id                  String   @id @default(cuid())
+  userId              String
+  moduleName          String
+  topicName           String
+  averageScorePerGame Float
+  accuracy            Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  completedGamesCount Int
+  user                User     @relation(fields: [userId], references: [id])
 
-  user                  User       @relation(fields: [userId], references: [id])
-
-  @@unique([userId, moduleName, topicName]) // ✅ add this line
+  @@unique([userId, moduleName, topicName])
 }
 
-
 model Blog {
-  id               String   @id @default(cuid())
-  title            String
-  module           String
-  introduction     String     
-  metaDescription  String
-  tableOfContents  Json      
-  imageUrl         String
-  imageId          String
-  createdAt        DateTime @default(now())
-  readTime         String?
-  comments         Comment[]
-} 
+  id              String    @id @default(cuid())
+  title           String
+  module          String
+  introduction    String
+  metaDescription String
+  imageUrl        String
+  imageId         String
+  createdAt       DateTime  @default(now())
+  readTime        String?
+  tableOfContents Json
+  comments        Comment[]
+}
 
 model Comment {
   id      String   @id @default(cuid())
   blogId  String
-  blog    Blog     @relation(fields: [blogId], references: [id])
   name    String
   content String
   date    DateTime @default(now())
+  blog    Blog     @relation(fields: [blogId], references: [id])
 }

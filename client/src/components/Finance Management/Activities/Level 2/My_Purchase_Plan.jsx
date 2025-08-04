@@ -118,6 +118,7 @@ Format:
         completed: true,
        
       });
+      setStartTime(Date.now());
     } catch (err) {
       console.error(err);
       setError("Error generating plan. Try again.");

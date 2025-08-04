@@ -45,7 +45,7 @@ export default function CaptionCraze() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleSubmit = () => {
     if (userCaption.trim() !== "") {
@@ -64,8 +64,9 @@ export default function CaptionCraze() {
           avgResponseTimeSec: timeTakenSec,
           studyTimeMinutes: Math.ceil(timeTakenSec / 60),
           completed: true,
-           
+
         });
+        setStartTime(Date.now());
       }
     }
   };
@@ -192,6 +193,7 @@ export default function CaptionCraze() {
               onClick={() => {
                 setSubmitted(false);
                 setUserCaption("");
+                setStartTime(Date.now());
               }}
               className="mt-8 px-6 py-2 bg-blue-400 text-white rounded-full hover:bg-blue-600 transition-all duration-300"
             >

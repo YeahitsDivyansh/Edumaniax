@@ -152,8 +152,8 @@ const MetricMatchUpGame = () => {
       avgResponseTimeSec: Math.round(responseTimeSec),
       studyTimeMinutes,
       completed: true,
-      
     });
+    setStartTime(Date.now());
   };
 
 
@@ -186,6 +186,7 @@ const MetricMatchUpGame = () => {
     setStars(0);
     setLoadingProgress(0);
     setCanProceed(false);
+    setStartTime(Date.now());
   };
 
   const renderStars = (count) => {

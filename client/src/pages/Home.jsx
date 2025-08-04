@@ -6,7 +6,7 @@ import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { FaArrowUp } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
-import emailjs from '@emailjs/browser';
+import emailjs from "@emailjs/browser";
 
 // Custom hook for mobile detection
 const useIsMobile = () => {
@@ -18,8 +18,8 @@ const useIsMobile = () => {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   return isMobile;
@@ -28,25 +28,25 @@ const useIsMobile = () => {
 // Trial Booking Modal Component
 const TrialBookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    class: ''
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    class: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -54,38 +54,38 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        fullName: '',
-        email: '',
-        phoneNumber: '',
-        class: ''
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        class: "",
       });
       setShowSuccess(false);
-      setError('');
+      setError("");
     }
   }, [isOpen]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       // EmailJS configuration - You need to set these up in your EmailJS account
-      const serviceId = 'service_52co609'; // Replace with your EmailJS service ID
-      const templateId = 'template_50ibn0n'; // Replace with your EmailJS template ID
-      const publicKey = 'zgnJuM3MRywVUxjcR'; // Replace with your EmailJS public key
+      const serviceId = "service_52co609"; // Replace with your EmailJS service ID
+      const templateId = "template_50ibn0n"; // Replace with your EmailJS template ID
+      const publicKey = "zgnJuM3MRywVUxjcR"; // Replace with your EmailJS public key
 
       const templateParams = {
-        to_email: 'anujyelve3074@gmail.com',
-        subject: 'New Free Trial Request',
+        to_email: "anujyelve3074@gmail.com",
+        subject: "New Free Trial Request",
         name: formData.fullName,
         email: formData.email,
         phone: formData.phoneNumber,
@@ -94,7 +94,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
         Name: ${formData.fullName}
         Email: ${formData.email}
         Phone Number: ${formData.phoneNumber}
-        Class: ${formData.class}`
+        Class: ${formData.class}`,
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
@@ -105,10 +105,9 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
       setTimeout(() => {
         onClose();
       }, 2000);
-
     } catch (error) {
-      console.error('Error sending email:', error);
-      setError('Failed to send request. Please try again.');
+      console.error("Error sending email:", error);
+      setError("Failed to send request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +159,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Full Name */}
                   <div>
-                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="fullName"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Full Name *
                     </label>
                     <input
@@ -177,7 +179,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Email */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Email Address *
                     </label>
                     <input
@@ -194,7 +199,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Phone Number */}
                   <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="phoneNumber"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Phone Number *
                     </label>
                     <input
@@ -211,7 +219,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Class */}
                   <div>
-                    <label htmlFor="class" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="class"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Class/Grade *
                     </label>
                     <select
@@ -247,7 +258,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                     disabled={isSubmitting}
                     className="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
-                    {isSubmitting ? 'Sending Request...' : 'Book Free Trial'}
+                    {isSubmitting ? "Sending Request..." : "Book Free Trial"}
                   </button>
                 </form>
               </>
@@ -255,8 +266,18 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
               /* Success message */
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -671,54 +692,62 @@ const StudentFeedbackCarousel = () => {
 
   const feedbackCards = [
     {
-      text: "I like this type of quiz because it Shows us \"the answer\" when we get wrong and we don't understand the answer at the end it give feedback, where can understand it more so on the test we can get a A or B because we learned by wayground.",
+      text: 'I like this type of quiz because it Shows us "the answer" when we get wrong and we don\'t understand the answer at the end it give feedback, where can understand it more so on the test we can get a A or B because we learned by wayground.',
       author: "",
       bgColor: "bg-purple-300",
-      rotation: "rotate-1"
+      rotation: "rotate-1",
     },
 
     {
       text: "This platform made learning so much fun! The games are engaging and help me remember concepts better than traditional studying methods.",
       author: "Alex",
       bgColor: "bg-pink-200",
-      rotation: "-rotate-1"
+      rotation: "-rotate-1",
     },
     {
       text: "The interactive notes and quizzes helped me improve my grades significantly. I love how it explains concepts in simple terms.",
       author: "Emma",
       bgColor: "bg-green-100",
-      rotation: "rotate-1"
+      rotation: "rotate-1",
     },
     {
       text: "Amazing way to learn! The combination of games and structured content makes studying enjoyable rather than a chore.",
       author: "Ryan",
       bgColor: "bg-purple-200",
-      rotation: "-rotate-1"
-    }
+      rotation: "-rotate-1",
+    },
   ];
 
   return (
     <div className="relative p-5 max-w-6xl mx-auto">
       <div ref={sliderRef} className="keen-slider">
         {feedbackCards.map((card, index) => (
-          <div key={index} className={`keen-slider__slide transform ${card.rotation}`}>
-            <div className={`${card.bgColor} p-8 sm:p-6 rounded-lg shadow-lg relative h-40 sm:h-48 `}>
+          <div
+            key={index}
+            className={`keen-slider__slide transform ${card.rotation}`}
+          >
+            <div
+              className={`${card.bgColor} p-8 sm:p-6 rounded-lg shadow-lg relative h-40 sm:h-48 `}
+            >
               <div className="h-full overflow-hidden flex flex-col justify-between">
                 <p
                   className="text-black text-left text-xs sm:text-sm leading-relaxed flex-1"
                   style={{ fontFamily: '"Patrick Hand", cursive' }}
-
                 >
                   {card.text}
                 </p>
                 {card.author && (
-                  <p className="text-right mt-2 font-bold text-black text-xs sm:text-sm">
-
-                  </p>
+                  <p className="text-right mt-2 font-bold text-black text-xs sm:text-sm"></p>
                 )}
               </div>
               {/* Tape effect */}
-              <div className={`absolute -top-2 ${index % 2 === 0 ? 'left-4 sm:left-8' : 'right-4 sm:right-8'} w-8 sm:w-12 h-4 sm:h-6 bg-yellow-100 opacity-80 rounded transform ${index % 2 === 0 ? '-rotate-12' : 'rotate-12'}`}></div>
+              <div
+                className={`absolute -top-2 ${
+                  index % 2 === 0 ? "left-4 sm:left-8" : "right-4 sm:right-8"
+                } w-8 sm:w-12 h-4 sm:h-6 bg-yellow-100 opacity-80 rounded transform ${
+                  index % 2 === 0 ? "-rotate-12" : "rotate-12"
+                }`}
+              ></div>
             </div>
           </div>
         ))}
@@ -748,8 +777,9 @@ const StudentFeedbackCarousel = () => {
           {Array.from({ length: feedbackCards.length - 2 }).map((_, idx) => (
             <button
               key={idx}
-              className={`w-2 h-2 rounded-full transition duration-300 ${currentSlide === idx ? 'bg-green-600' : 'bg-gray-300'
-                }`}
+              className={`w-2 h-2 rounded-full transition duration-300 ${
+                currentSlide === idx ? "bg-green-600" : "bg-gray-300"
+              }`}
               onClick={() => instanceRef.current?.moveToIdx(idx)}
             />
           ))}
@@ -873,7 +903,8 @@ const Home = () => {
   const courses = [
     {
       title: "Fundamentals of Finance",
-      description: "Learn the basics of budgeting, saving, and financial planning for a secure future.",
+      description:
+        "Learn the basics of budgeting, saving, and financial planning for a secure future.",
       rating: 4.7,
       notesLink: "/finance/notes",
       gamesLink: "/finance/games",
@@ -881,11 +912,13 @@ const Home = () => {
       duration: "6 weeks",
       students: "2,847",
       category: "Finance",
-      image: "https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=800&q=80",
     },
     {
       title: "Computers",
-      description: "Understand computer fundamentals, hardware, software, and digital literacy essentials.",
+      description:
+        "Understand computer fundamentals, hardware, software, and digital literacy essentials.",
       rating: 4.6,
       notesLink: "/computer/notes",
       gamesLink: "/computer/games",
@@ -893,11 +926,13 @@ const Home = () => {
       duration: "5 weeks",
       students: "3,215",
       category: "Technology",
-      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
     },
     {
       title: "Fundamentals of Law",
-      description: "Gain a foundational understanding of legal principles, rights, and responsibilities.",
+      description:
+        "Gain a foundational understanding of legal principles, rights, and responsibilities.",
       rating: 4.8,
       notesLink: "/law/notes",
       gamesLink: "/law/games",
@@ -905,11 +940,13 @@ const Home = () => {
       duration: "7 weeks",
       students: "1,932",
       category: "Legal",
-      image: "https://images.unsplash.com/photo-1593115057322-e94b77572f20?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0",
+      image:
+        "https://images.unsplash.com/photo-1593115057322-e94b77572f20?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0",
     },
     {
       title: "Communication Skills",
-      description: "Enhance your verbal, non-verbal, and written communication for personal and professional success.",
+      description:
+        "Enhance your verbal, non-verbal, and written communication for personal and professional success.",
       rating: 4.9,
       notesLink: "/communications/notes",
       gamesLink: "/communications/games",
@@ -917,11 +954,13 @@ const Home = () => {
       duration: "4 weeks",
       students: "4,102",
       category: "Soft Skills",
-      image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=600&auto=format&fit=crop&q=60",
+      image:
+        "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=600&auto=format&fit=crop&q=60",
     },
     {
       title: "Entrepreneurship",
-      description: "Learn how to start, manage, and grow a successful business from scratch.",
+      description:
+        "Learn how to start, manage, and grow a successful business from scratch.",
       rating: 4.7,
       notesLink: "/entrepreneurship/notes",
       gamesLink: "/entrepreneurship/games",
@@ -929,11 +968,13 @@ const Home = () => {
       duration: "6 weeks",
       students: "2,658",
       category: "Business",
-      image: "https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?w=600&auto=format&fit=crop&q=60",
+      image:
+        "https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?w=600&auto=format&fit=crop&q=60",
     },
     {
       title: "Digital Marketing",
-      description: "Explore SEO, social media, and online advertising to grow brands digitally.",
+      description:
+        "Explore SEO, social media, and online advertising to grow brands digitally.",
       rating: 4.6,
       notesLink: "/digital-marketing/notes",
       gamesLink: "/digital-marketing/games",
@@ -941,11 +982,13 @@ const Home = () => {
       duration: "5 weeks",
       students: "3,876",
       category: "Marketing",
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
     },
     {
       title: "Leadership & Adaptability",
-      description: "Develop leadership skills and learn to thrive in changing environments.",
+      description:
+        "Develop leadership skills and learn to thrive in changing environments.",
       rating: 4.8,
       notesLink: "/leadership/notes",
       gamesLink: "/leadership/games",
@@ -953,11 +996,13 @@ const Home = () => {
       duration: "6 weeks",
       students: "2,491",
       category: "Leadership",
-      image: "https://images.unsplash.com/photo-1709715357520-5e1047a2b691?w=600&auto=format&fit=crop&q=60",
+      image:
+        "https://images.unsplash.com/photo-1709715357520-5e1047a2b691?w=600&auto=format&fit=crop&q=60",
     },
     {
       title: "Environmental",
-      description: "Understand environmental issues and sustainable practices for a better future.",
+      description:
+        "Understand environmental issues and sustainable practices for a better future.",
       rating: 4.7,
       notesLink: "/environmental/notes",
       gamesLink: "/environmental/games",
@@ -965,9 +1010,9 @@ const Home = () => {
       duration: "6 weeks",
       students: "1,743",
       category: "Environment",
-      image: "https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=800&q=80",
+      image:
+        "https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=800&q=80",
     },
-
   ];
 
   const categories = [
@@ -986,10 +1031,11 @@ const Home = () => {
   const faqs = [
     {
       question: "What makes EduManiax courses truly unique?",
-      answer: "Our courses blend cutting-edge interactive learning with real-world applications through gamification, AI-powered personalized learning paths, and adaptive assessments. Every piece of content is crafted by industry veterans and continuously updated to reflect the latest trends and best practices in your field.",
+      answer:
+        "Our courses blend cutting-edge interactive learning with real-world applications through gamification, AI-powered personalized learning paths, and adaptive assessments. Every piece of content is crafted by industry veterans and continuously updated to reflect the latest trends and best practices in your field.",
 
       QbgColor: "bg-green-400",
-      AbgColor: "bg-green-100"
+      AbgColor: "bg-green-100",
     },
     {
       question: "How do I get instant help when I'm stuck?",
@@ -1116,7 +1162,6 @@ const Home = () => {
     },
   ];
 
-
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -1192,9 +1237,10 @@ const Home = () => {
     );
   }
 
-  const filteredCourses = activeCategory === "All"
-    ? courses
-    : courses.filter(course => course.category === activeCategory);
+  const filteredCourses =
+    activeCategory === "All"
+      ? courses
+      : courses.filter((course) => course.category === activeCategory);
 
   // Helper function to get level icon
   const getLevelIcon = (level) => {
@@ -1219,7 +1265,7 @@ const Home = () => {
       />
 
       {/* Hero Section */}
-      <section className="relative h-[100vh] sm:h-[100vh] lg:h-[95vh] w-full p-0 -mt-8">
+      <section className="relative h-[90vh] sm:h-[100vh] lg:h-[95vh] w-full p-0 -mt-8">
         <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
           <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-9  flex-col items-center text-center px-4 sm:px-6">
             {/* Trust Badge */}
@@ -1233,18 +1279,29 @@ const Home = () => {
 
             {/* Main Heading */}
             <div className="mb-2 sm:mb- md:-mb-2">
-              <h1 className="text-white text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
-                style={{ fontFamily: '"Sigmar", sans-serif' }}>
+              <h1
+                className="text-white text-2xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                style={{ fontFamily: '"Sigmar", sans-serif' }}
+              >
                 Master AI, Finance, Law
               </h1>
-              <h1 className="text-white flex text-xl ml-8 sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
-                style={{ fontFamily: '"Sigmar", sans-serif' }} >
-                With a Twist of Fun <div className=" sm:h-15 sm:w-15 "><img className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-15 lg:w-15" src="/Fire.gif" alt="fire" /></div>
+              <h1
+                className="text-white flex text-2xl ml-8 sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                style={{ fontFamily: '"Sigmar", sans-serif' }}
+              >
+                With a Twist of Fun{" "}
+                <div className=" sm:h-15 sm:w-15 ">
+                  <img
+                    className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-15 lg:w-15"
+                    src="/Fire.gif"
+                    alt="fire"
+                  />
+                </div>
               </h1>
             </div>
 
             {/* Subtitle */}
-            <p className="text-white/90 text-sm sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt-3 lg:mx-60 mb-4 sm:mb-8 leading-tight">
+            <p className="text-white/90 text-md sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt-3 lg:mx-60 mb-4 sm:mb-8 leading-tight">
               Explore Artificial Intelligence, Machine Learning, Communication,
               Coding, and more through interactive games, real-world challenges,
               and bite-sized notes
@@ -1253,10 +1310,10 @@ const Home = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
               <button
-                onClick={() => navigate(user ? '/pricing' : '/courses')}
+                onClick={() => navigate(user ? "/pricing" : "/courses")}
                 className="bg-white text-black font-semibold px-4 sm:px-8 py-3 sm:py-4 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
               >
-                {user ? 'Purchase Plan' : 'Get Started Free'}
+                {user ? "Purchase Plan" : "Get Started Free"}
               </button>
               <button
                 onClick={() => setIsTrialModalOpen(true)}
@@ -1288,7 +1345,6 @@ const Home = () => {
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-4 lg:mb-0">
               Why you'll love it
             </h2>
-
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -1333,21 +1389,29 @@ const Home = () => {
                   {/* OUTER circle (on hover of this) */}
                   <div
                     className="outer w-50 h-50 border-1 border-green-300 rounded-[80px] flex items-center justify-center group"
-                    onMouseEnter={isMobile ? undefined : () => setFeature2AutoHover(true)}
-                    onMouseLeave={isMobile ? undefined : () => setFeature2AutoHover(false)}
+                    onMouseEnter={
+                      isMobile ? undefined : () => setFeature2AutoHover(true)
+                    }
+                    onMouseLeave={
+                      isMobile ? undefined : () => setFeature2AutoHover(false)
+                    }
                   >
                     <div className="w-40 h-40 border-1 border-green-400 rounded-[67px] flex items-center justify-center">
                       <div className="w-30 h-30 border-1 border-green-400 rounded-[47px] flex items-center justify-center">
                         {/* INNER circle */}
-                        <div className={`inner border-2 bg-white border-green-500 rounded-[20px] flex items-center justify-center transition-all duration-500 delay-500 ${feature2AutoHover
-                          ? 'w-24 h-24 shadow-lg shadow-green-500/50'
-                          : 'w-20 h-20 group-hover:w-24 group-hover:h-24 group-hover:shadow-lg group-hover:shadow-green-500/50'
-                          }`}>
+                        <div
+                          className={`inner border-2 bg-white border-green-500 rounded-[20px] flex items-center justify-center transition-all duration-500 delay-500 ${
+                            feature2AutoHover
+                              ? "w-24 h-24 shadow-lg shadow-green-500/50"
+                              : "w-20 h-20 group-hover:w-24 group-hover:h-24 group-hover:shadow-lg group-hover:shadow-green-500/50"
+                          }`}
+                        >
                           <img
-                            className={`w-17 h-15 transition-transform duration-500 ${feature2AutoHover
-                              ? 'rotate-[-115deg] delay-[1000ms]'
-                              : 'group-hover:rotate-[-115deg] group-hover:delay-[1000ms]'
-                              }`}
+                            className={`w-17 h-15 transition-transform duration-500 ${
+                              feature2AutoHover
+                                ? "rotate-[-115deg] delay-[1000ms]"
+                                : "group-hover:rotate-[-115deg] group-hover:delay-[1000ms]"
+                            }`}
                             src="/midLogo.png"
                           />
                         </div>
@@ -1398,7 +1462,11 @@ const Home = () => {
 
               {/* Progress Card Component */}
               <div className=" ml-10 h-40">
-                <img className=" absolute sm:h-[45%] h-[34%] -ml-6 sm:mt-2 z-50 sm:w-[57%]" src="/mid4.png" alt="mid" />
+                <img
+                  className=" absolute sm:h-[45%] h-[34%] -ml-6 sm:mt-2 z-50 sm:w-[57%]"
+                  src="/mid4.png"
+                  alt="mid"
+                />
                 <div className="flex sm:w-[60%] w-[60%] ml-15 sm:ml-25 absolute bottom-0 mb-5 left-0 h-18 sm:h-28">
                   <ProgressCardComponent />
                 </div>
@@ -1423,44 +1491,103 @@ const Home = () => {
               <div className="flex-1 flex items-center justify-center">
                 <div
                   className="grid mt-4 sm:mt-10 grid-cols-5 gap-2 sm:gap-5 group"
-                  onMouseEnter={isMobile ? undefined : () => setFeature5AutoHover(true)}
-                  onMouseLeave={isMobile ? undefined : () => setFeature5AutoHover(false)}
+                  onMouseEnter={
+                    isMobile ? undefined : () => setFeature5AutoHover(true)
+                  }
+                  onMouseLeave={
+                    isMobile ? undefined : () => setFeature5AutoHover(false)
+                  }
                 >
                   {/* 5 child divs, each has two <img> tags */}
-                  <div className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${feature5AutoHover
-                    ? '-translate-y-4 sm:-translate-y-10'
-                    : 'group-hover:-translate-y-4 sm:group-hover:-translate-y-10'
-                    }`}>
-                    <img src="/Link1.png" className="w-full h-auto" alt="Link 1" />
-                    <img src="/Link2.png" className="w-full h-auto" alt="Link 2" />
+                  <div
+                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                      feature5AutoHover
+                        ? "-translate-y-4 sm:-translate-y-10"
+                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
+                    }`}
+                  >
+                    <img
+                      src="/Link1.png"
+                      className="w-full h-auto"
+                      alt="Link 1"
+                    />
+                    <img
+                      src="/Link2.png"
+                      className="w-full h-auto"
+                      alt="Link 2"
+                    />
                   </div>
-                  <div className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${feature5AutoHover
-                    ? 'translate-y-4 sm:translate-y-10'
-                    : 'group-hover:translate-y-4 sm:group-hover:translate-y-10'
-                    }`}>
-                    <img src="/Link3.png" className="w-full h-auto" alt="Link 3" />
-                    <img src="/Link4.png" className="w-full h-auto" alt="Link 4" />
+                  <div
+                    className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
+                      feature5AutoHover
+                        ? "translate-y-4 sm:translate-y-10"
+                        : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
+                    }`}
+                  >
+                    <img
+                      src="/Link3.png"
+                      className="w-full h-auto"
+                      alt="Link 3"
+                    />
+                    <img
+                      src="/Link4.png"
+                      className="w-full h-auto"
+                      alt="Link 4"
+                    />
                   </div>
-                  <div className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${feature5AutoHover
-                    ? '-translate-y-4 sm:-translate-y-10'
-                    : 'group-hover:-translate-y-4 sm:group-hover:-translate-y-10'
-                    }`}>
-                    <img src="/Link5.png" className="w-full h-auto" alt="Link 5" />
-                    <img src="/Link6.png" className="w-full h-auto" alt="Link 6" />
+                  <div
+                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                      feature5AutoHover
+                        ? "-translate-y-4 sm:-translate-y-10"
+                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
+                    }`}
+                  >
+                    <img
+                      src="/Link5.png"
+                      className="w-full h-auto"
+                      alt="Link 5"
+                    />
+                    <img
+                      src="/Link6.png"
+                      className="w-full h-auto"
+                      alt="Link 6"
+                    />
                   </div>
-                  <div className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${feature5AutoHover
-                    ? 'translate-y-4 sm:translate-y-10'
-                    : 'group-hover:translate-y-4 sm:group-hover:translate-y-10'
-                    }`}>
-                    <img src="/Link7.png" className="w-full h-auto" alt="Link 7" />
-                    <img src="/Link8.png" className="w-full h-auto" alt="Link 8" />
+                  <div
+                    className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
+                      feature5AutoHover
+                        ? "translate-y-4 sm:translate-y-10"
+                        : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
+                    }`}
+                  >
+                    <img
+                      src="/Link7.png"
+                      className="w-full h-auto"
+                      alt="Link 7"
+                    />
+                    <img
+                      src="/Link8.png"
+                      className="w-full h-auto"
+                      alt="Link 8"
+                    />
                   </div>
-                  <div className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${feature5AutoHover
-                    ? '-translate-y-4 sm:-translate-y-10'
-                    : 'group-hover:-translate-y-4 sm:group-hover:-translate-y-10'
-                    }`}>
-                    <img src="/Link9.png" className="w-full h-auto" alt="Link 9" />
-                    <img src="/Link10.png" className="w-full h-auto" alt="Link 10" />
+                  <div
+                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                      feature5AutoHover
+                        ? "-translate-y-4 sm:-translate-y-10"
+                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
+                    }`}
+                  >
+                    <img
+                      src="/Link9.png"
+                      className="w-full h-auto"
+                      alt="Link 9"
+                    />
+                    <img
+                      src="/Link10.png"
+                      className="w-full h-auto"
+                      alt="Link 10"
+                    />
                   </div>
                 </div>
               </div>
@@ -1547,10 +1674,11 @@ const Home = () => {
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`px-3 sm:px-4 py-2 text-xs whitespace-nowrap rounded-full font-medium transition duration-300 ${category === activeCategory
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                  }`}
+                className={`px-3 sm:px-4 py-2 text-xs whitespace-nowrap rounded-full font-medium transition duration-300 ${
+                  category === activeCategory
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                }`}
               >
                 {category}
               </button>
@@ -1613,36 +1741,42 @@ const Home = () => {
                   <div className="flex flex-nowrap gap-1.5 mb-4">
                     {/* Level Badge */}
                     <div
-                      className={`px-1.5 py-1 rounded-lg flex items-center gap-1 text-xs font-medium ${course.level === "Beginner"
-                        ? "bg-green-100 text-green-600"
-                        : course.level === "Intermediate"
+                      className={`px-1.5 py-1 rounded-lg flex items-center gap-1 text-xs font-medium ${
+                        course.level === "Beginner"
+                          ? "bg-green-100 text-green-600"
+                          : course.level === "Intermediate"
                           ? "bg-yellow-100 text-yellow-600"
                           : "bg-red-100 text-red-600"
-                        }`}
+                      }`}
                     >
-                      <img src={getLevelIcon(course.level)} alt={course.level} className="w-3 h-3" />
+                      <img
+                        src={getLevelIcon(course.level)}
+                        alt={course.level}
+                        className="w-3 h-3"
+                      />
                       <span className="pb-0.5">{course.level}</span>
                     </div>
 
                     {/* Duration Badge */}
                     <div className="flex items-center bg-[#A063F3]/10 rounded-lg py-1 px-1.5 gap-1">
                       <img src="/time.png" alt="" className="w-3 h-3" />
-                      <span className="text-xs pb-0.5 text-[#A063F3] font-medium">{course.duration}</span>
+                      <span className="text-xs pb-0.5 text-[#A063F3] font-medium">
+                        {course.duration}
+                      </span>
                     </div>
 
                     {/* Students Badge */}
                     <div className="flex items-center bg-[#008FA6]/10 rounded-lg py-1 px-2.5 gap-1">
                       <img src="/people.png" alt="" className="w-3 h-3" />
-                      <span className="text-xs pb-0.5 text-[#008FA6] font-medium">{course.students}</span>
+                      <span className="text-xs pb-0.5 text-[#008FA6] font-medium">
+                        {course.students}
+                      </span>
                     </div>
                   </div>
 
                   {/* Buttons Row - Improved Spacing */}
                   <div className="flex gap-2 mt-auto">
-                    <Link
-                      to={course.gamesLink}
-                      className="flex-1"
-                    >
+                    <Link to={course.gamesLink} className="flex-1">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -1653,15 +1787,17 @@ const Home = () => {
                       </motion.button>
                     </Link>
 
-                    <Link
-                      to={course.notesLink}
-                    >
+                    <Link to={course.notesLink}>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className="bg-[#D9A30B] flex items-center text-white font-medium py-2.5 px-3 rounded-lg hover:bg-orange-500 transition duration-300 text-sm"
                       >
-                        <img src="/notes.png" alt="Notes" className="w-5 h-5 mr-1" />
+                        <img
+                          src="/notes.png"
+                          alt="Notes"
+                          className="w-5 h-5 mr-1"
+                        />
                         Notes
                       </motion.button>
                     </Link>
@@ -1671,11 +1807,12 @@ const Home = () => {
             ))}
           </div>
           <div className="w-full h-full flex justify-center items-center">
-
-            <a href="/courses" className="border-2 sm:border-3 border-green-600 text-green-600 mt-6 sm:mt-8 mb-6 sm:mb-10 lg:mb-10 font-medium px-4 sm:px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300 text-sm sm:text-base">
+            <a
+              href="/courses"
+              className="border-2 sm:border-3 border-green-600 text-green-600 mt-6 sm:mt-8 mb-6 sm:mb-10 lg:mb-10 font-medium px-4 sm:px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300 text-sm sm:text-base"
+            >
               View More..
             </a>
-
           </div>
         </div>
       </section>
@@ -1763,19 +1900,22 @@ const Home = () => {
                 <ul className="text-xs space-y-2 flex-1 mt-2">
                   {plan.features.map((feat, i) => {
                     const text = typeof feat === "string" ? feat : feat.text;
-                    const excluded = typeof feat === "object" && feat.excluded === true;
+                    const excluded =
+                      typeof feat === "object" && feat.excluded === true;
 
                     return (
                       <li key={i} className="flex items-start gap-2">
                         <span className="w-4 h-4 flex-shrink-0 mt-1">
                           <img
-                            src={excluded
-                              ? "/pricingDesign/cross.svg"
-                              : "/pricingDesign/tick.svg"
+                            src={
+                              excluded
+                                ? "/pricingDesign/cross.svg"
+                                : "/pricingDesign/tick.svg"
                             }
                             alt={excluded ? "Not included" : "Included"}
-                            className={`w-full h-full object-contain ${excluded ? "" : "p-[1px]"
-                              }`}
+                            className={`w-full h-full object-contain ${
+                              excluded ? "" : "p-[1px]"
+                            }`}
                           />
                         </span>
                         <span className="text-black font-normal text-xs">
@@ -1795,8 +1935,6 @@ const Home = () => {
               </div>
             ))}
           </div>
-
-          
         </div>
       </section>
 
@@ -1835,8 +1973,9 @@ const Home = () => {
                     </h3>
                     <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
                       <ChevronDown
-                        className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${openFAQ === index ? "rotate-180" : ""
-                          }`}
+                        className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                          openFAQ === index ? "rotate-180" : ""
+                        }`}
                       />
                     </div>
                   </div>

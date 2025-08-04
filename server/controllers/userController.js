@@ -1,12 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
+import connectionManager from "../connectionManager.js";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken"; 
 import axios from "axios";
-
-const prisma = new PrismaClient();
 
 
 const sendOtpForRegistration = async (req, res) => {
@@ -195,22 +194,13 @@ const verifyOtpAndLogin = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ message: "Authorization token missing or malformed" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.Jwt_sec);
-
+    // User is already authenticated by middleware and available in req.user
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: req.user.id },
       select: {
         id: true,
         phonenumber: true,
+        email: true,
         name: true,
         age: true,
         userClass: true,
@@ -229,13 +219,104 @@ const getMe = async (req, res) => {
     res.status(200).json({ user });
   } catch (error) {
     console.error("Error fetching user:", error);
-    res.status(401).json({ message: "Invalid or expired token" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 // Test Route
 const test = async (req, res) => {
   res.status(200).json({ success: true, message: "Welcome to EduManiax!" });
+};
+
+// Update User Profile
+const updateProfile = async (req, res) => {
+  try {
+    // User is already authenticated by middleware and available in req.user
+    const userId = req.user.id;
+    const allowedFields = ['name', 'age', 'userClass', 'phonenumber', 'email'];
+    const updateData = {};
+
+    // Only allow updating specific fields
+    for (const [key, value] of Object.entries(req.body)) {
+      if (allowedFields.includes(key)) {
+        updateData[key] = value;
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
+    // Additional validation
+    if (updateData.age) {
+      const age = parseInt(updateData.age);
+      if (age < 1 || age > 100) {
+        return res.status(400).json({ message: "Age must be between 1 and 100" });
+      }
+      updateData.age = age;
+    }
+
+    if (updateData.phonenumber) {
+      // Check if phone number is already taken by another user
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          phonenumber: updateData.phonenumber,
+          NOT: { id: userId }
+        }
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({ message: "Phone number already in use" });
+      }
+    }
+
+    if (updateData.email) {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updateData.email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      // Check if email is already taken by another user
+      const existingEmailUser = await prisma.user.findFirst({
+        where: {
+          email: updateData.email,
+          NOT: { id: userId }
+        }
+      });
+      
+      if (existingEmailUser) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        phonenumber: true,
+        email: true,
+        name: true,
+        age: true,
+        userClass: true,
+        characterGender: true,
+        characterName: true,
+        characterStyle: true,
+        characterTraits: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Profile updated successfully", 
+      user: updatedUser 
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
@@ -245,5 +326,6 @@ export {
   verifyOtpAndRegister,
   verifyOtpAndLogin,
   getMe,
-  test
+  test,
+  updateProfile
 };

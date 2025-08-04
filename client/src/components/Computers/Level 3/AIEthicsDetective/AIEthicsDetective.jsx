@@ -39,7 +39,7 @@ export default function AIEthicsDetective() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-    const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
 
     const handleDrop = (label) => {
@@ -311,8 +311,9 @@ export default function AIEthicsDetective() {
                                     avgResponseTimeSec,
                                     studyTimeMinutes,
                                     completed: true,
-                                   
+
                                 });
+                                setStartTime(Date.now());
                                 setStep(4);
                             }}
                             className="mt-6 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full text-lg transition hover:scale-105"
@@ -376,6 +377,7 @@ export default function AIEthicsDetective() {
                                 });
                                 setJudgments({});
                                 setDraggedId(null);
+                                 setStartTime(Date.now());
                             }}
                             className="bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-3 rounded-full shadow-lg transition transform hover:scale-105"
                         >

@@ -126,8 +126,9 @@ const ClassifyIt = () => {
             avgResponseTimeSec,
             studyTimeMinutes,
             completed,
-             
+
           });
+          setStartTime(Date.now());
         } catch (error) {
           console.error("Error updating environment performance:", error);
         }
@@ -193,7 +194,11 @@ const ClassifyIt = () => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-4 w-full">
-            <button onClick={() => dispatch({ type: "RESET_GAME" })} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
+            <button onClick={() => {
+              dispatch({ type: "RESET_GAME" })
+              setStartTime(Date.now());
+            }
+            } className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
               Play Again
             </button>
             <button onClick={handleBackToLevels} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>

@@ -100,6 +100,7 @@ export default function FutureAIArchitect() {
         completed: true,
  
       });
+       setStartTime(Date.now());
     }
   };
 

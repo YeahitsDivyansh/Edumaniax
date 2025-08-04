@@ -240,6 +240,8 @@ const DigitalExplorer = () => {
     setReelIdea("");
     setShowFeedback("");
     setAttempts(0);
+    setStartTime(Date.now());
+
   };
 
   const navigate = useNavigate();
@@ -268,6 +270,8 @@ const DigitalExplorer = () => {
     };
 
     updatePerformance(payload); // call context method
+    setStartTime(Date.now());
+
 
     setLoading(true);
     setTimeout(() => {

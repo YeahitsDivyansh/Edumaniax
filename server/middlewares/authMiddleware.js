@@ -1,9 +1,7 @@
 // middleware/authMiddleware.js
 
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;

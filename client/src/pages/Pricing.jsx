@@ -72,37 +72,72 @@ const faqData = [
   {
     question: "What if I’m not satisfied with EduManiax after joining?",
     answer:
-      "No worries! EduManiax offers a 90% refund policy for your peace of mind. Before enrolling, you also get a full demo of the platform, personalized one-on-one interaction, and access to our 24/7 support team to help you at every step.",
+      "Don’t worry at all. EduManiax offers a refund as per the package bought, which you can get in your bank once your request is processed. Before enrolling, you will also get a full demo of the platform, personalized one-on-one interaction, and access to our support team to help you at every step.",
     QbgColor: "bg-[#6DEE0E]", // Vivid green
     AbgColor: "bg-[#E9FCD4]", // 🍏 Light green pastel
   },
   {
-    question: "How is EduManiax different from other platforms?",
+    question: "Is there a free trial available?",
     answer:
-      "With our unique combination of risk‑free demo and refund policy, personalized onboarding, and round‑the‑clock support, EduManiax is built to ensure every learner feels confident and supported.",
-    QbgColor: "bg-[#FEC6C7]", // Soft pink
-    AbgColor: "bg-[#FFF1F2]", // 🌸 Ultra-light pink
+      "Yes! EduManiax currently offers a free trial of one module of a course of your choice that grants access to all premium features.",
+    QbgColor: "bg-[#FFE7A1]", // Soft yellow
+    AbgColor: "bg-[#FFFBE5]", // ☀️ Pale yellow pastel
   },
   {
-    question: "What payment methods are accepted on EduManiax?",
+    question: "What is EduManiax?",
     answer:
-      "We use Razorpay as our secure payment gateway, which supports all major payment methods including credit/debit cards, UPI, net banking, PayPal, and wallets. Fast, safe, and hassle-free!",
+      "EduManiax is a gamified learning platform for students in Classes 6 to 12 across India. It teaches essential 21st-century skills like AI, finance, law, communication, and entrepreneurship through interactive, story-based modules designed to make learning fun and practical.",
     QbgColor: "bg-[#DBEDFB]", // Light blue
     AbgColor: "bg-[#F0F9FF]", // ❄️ Icy sky blue
   },
   {
-    question: "Can I speak to someone if I have doubts?",
+    question: "Who is EduManiax for?",
     answer:
-      "Absolutely! If you have any doubts or need help, our dedicated customer support team is just a call away. We're here to guide you throughout your learning journey.",
+      "Our programs are designed for school students (Classes 6–12), parents seeking skill-based education, and schools in cities like Delhi, Lucknow, Bengaluru, and Jaipur that want to integrate NEP 2020-aligned content into their curriculum.",
     QbgColor: "bg-[#DABFFF]", // Lavender
     AbgColor: "bg-[#F5EBFF]", // 🪻 Soft lavender haze
   },
   {
-    question: "Is there a free trial available?",
+    question: "What will students learn?",
     answer:
-      "Yes! EduManiax currently offers a one-day free trial that grants access to all premium features.",
-    QbgColor: "bg-[#FFE7A1]", // Soft yellow
-    AbgColor: "bg-[#FFFBE5]", // ☀️ Pale yellow pastel
+      "Students gain hands-on skills in AI tools, prompt engineering, legal awareness, investing, entrepreneurship, and public speaking. Each course delivers clear learning outcomes that build creativity, confidence, and future career readiness.",
+    QbgColor: "bg-[#FEC6C7]", // Soft pink
+    AbgColor: "bg-[#FFF1F2]", // 🌸 Ultra-light pink
+  },
+  {
+    question: "How does EduManiax assess student progress?",
+    answer:
+      "We use AI-driven assessments that adapt to each learner’s pace, offer real-time feedback, and generate detailed performance reports for parents and schools. The focus is on applied learning, not just marks.",
+    QbgColor: "bg-[#A8E6CF]", // Mint green
+    AbgColor: "bg-[#EAFBF3]", // 🌿 Pale mint pastel
+  },
+  {
+    question: "How is EduManiax different from regular edtech apps?",
+    answer:
+      "Unlike video-based apps, EduManiax turns learning into games and quests. Students complete challenges, earn rewards, and build real-world skills through simulations—making learning immersive and unforgettable.",
+    QbgColor: "bg-[#FFD6A5]", // Peach
+    AbgColor: "bg-[#FFF4E6]", // 🍑 Light peach pastel
+  },
+  {
+    question: "Is EduManiax aligned with the school curriculum?",
+    answer:
+      "Yes, our modules are mapped to NEP 2020 guidelines and complement school subjects like civics, coding, and economics, ensuring students stay ahead without adding academic pressure.",
+    QbgColor: "bg-[#B5EAEA]", // Aqua
+    AbgColor: "bg-[#E6FAFA]", // 🌊 Light aqua pastel
+  },
+  {
+    question: "Do students receive certificates?",
+    answer:
+      "Yes, learners receive digital certificates after completing modules, which are valuable for portfolios, internships, and college applications.",
+    QbgColor: "bg-[#FFB7B2]", // Coral pink
+    AbgColor: "bg-[#FFEDEC]", // 🌷 Light coral pastel
+  },
+  {
+    question: "Can schools partner with EduManiax?",
+    answer:
+      "Absolutely. Schools and institutes can integrate our programs during school hours or as weekend clubs. We offer dashboards, training, and ongoing support for seamless implementation.",
+    QbgColor: "bg-[#C7CEEA]", // Periwinkle
+    AbgColor: "bg-[#F2F4FF]", // 🌌 Soft periwinkle pastel
   },
 ];
 
@@ -214,9 +249,16 @@ const Pricing = () => {
               alt="Payment Methods"
               className="h-6 object-contain"
             />
+            <img
+              src="/pricingDesign/UPI-Logo-vector.svg"
+              alt="UPI"
+              className="h-6 object-contain -ml-2"
+            />
           </div>
           <p className="text-2xs mt-2 text-gray-400">
-            We accept Visa, American Express, Mastercard, Paypal and Crypto
+            We accept Visa, American Express, Mastercard,
+            <br className="block sm:hidden" />
+            Paypal, UPI and more.
           </p>
         </div>
 
@@ -233,54 +275,75 @@ const Pricing = () => {
               Everything you need to know before getting started
             </p>
 
+            {/* Split FAQs into two equal columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {faqData.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  onClick={() => toggleFAQ(index)}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className={`cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl 
-      ${index === 4 ? "md:col-span-2 md:mx-auto md:w-1/2" : ""}`}
-                >
-                  {/* Wrapper for Question + Answer */}
-                  <div className="rounded-2xl overflow-hidden">
-                    {/* Question Section */}
-                    <div
-                      className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
-                    >
-                      <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
-                        {faq.question}
-                      </h3>
-                      <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                        <ChevronDown
-                          className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
-                            openFAQ === index ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </div>
+              {faqData
+                .reduce((result, item, index) => {
+                  const colIndex =
+                    index < Math.ceil(faqData.length / 2) ? 0 : 1;
+                  if (!result[colIndex]) result[colIndex] = [];
+                  result[colIndex].push(item);
+                  return result;
+                }, [])
+                .map((column, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-4">
+                    {column.map((faq, index) => (
+                      <motion.div
+                        key={index}
+                        onClick={() =>
+                          toggleFAQ(
+                            index + colIndex * Math.ceil(faqData.length / 2)
+                          )
+                        }
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl"
+                      >
+                        {/* Wrapper for Question + Answer */}
+                        <div className="rounded-2xl overflow-hidden">
+                          {/* Question Section */}
+                          <div
+                            className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
+                          >
+                            <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
+                              {faq.question}
+                            </h3>
+                            <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                              <ChevronDown
+                                className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                                  openFAQ ===
+                                  index +
+                                    colIndex * Math.ceil(faqData.length / 2)
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </div>
 
-                    {/* Answer Section */}
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={
-                        openFAQ === index
-                          ? { height: "auto", opacity: 1 }
-                          : { height: 0, opacity: 0 }
-                      }
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className={`overflow-hidden ${faq.AbgColor}`}
-                    >
-                      <div className="p-4 pt-6 text-sm text-black text-left">
-                        {faq.answer}
-                      </div>
-                    </motion.div>
+                          {/* Answer Section */}
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={
+                              openFAQ ===
+                              index + colIndex * Math.ceil(faqData.length / 2)
+                                ? { height: "auto", opacity: 1 }
+                                : { height: 0, opacity: 0 }
+                            }
+                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                            className={`overflow-hidden ${faq.AbgColor}`}
+                          >
+                            <div className="p-4 pt-6 text-sm text-black text-left">
+                              {faq.answer}
+                            </div>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </motion.div>
-              ))}
+                ))}
             </div>
           </div>
         </section>

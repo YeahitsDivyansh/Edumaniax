@@ -19,7 +19,7 @@ const NitrogenReactor = () => {
   const [step, setStep] = useState(1);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   // Q1
   const [q1Process, setQ1Process] = useState("");
@@ -66,6 +66,8 @@ const NitrogenReactor = () => {
     setQ3Correct(null);
     setFinal(null);
     setPage("intro");
+    setStartTime(Date.now());
+
   };
 
   return (
@@ -306,9 +308,8 @@ const NitrogenReactor = () => {
                         avgResponseTimeSec: parseFloat((totalTimeMs / 1000).toFixed(2)),
                         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
                         completed: allCorrect,
-                        
                       };
-
+                      setStartTime(Date.now());
                       updatePerformance(payload);
                     }
 

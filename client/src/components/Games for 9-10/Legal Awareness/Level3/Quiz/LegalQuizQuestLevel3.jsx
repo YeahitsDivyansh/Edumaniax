@@ -336,6 +336,8 @@ const LegalQuizQuestLevel3 = () => {
     setGameComplete(false);
     setShowCelebration(false);
     setChallengeWrongAnswer(false);
+    setStartTime(Date.now());
+
   };
 
   const canvasRef = useRef(null);
@@ -361,6 +363,8 @@ const LegalQuizQuestLevel3 = () => {
       completed: true,
        
     });
+    setStartTime(Date.now());
+
   }, [gameComplete]);
 
 

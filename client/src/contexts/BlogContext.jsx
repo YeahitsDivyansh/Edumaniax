@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 const BlogContext = createContext();
 export const useBlog = () => useContext(BlogContext);
 
@@ -8,7 +8,8 @@ export const BlogProvider = ({ children }) => {
   const [singleBlog, setSingleBlog] = useState(null);
   const [similarBlogs, setSimilarBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const server = "https://edumaniax-api-343555083503.asia-south1.run.app";
+  const server = import.meta.env.VITE_API_URL; 
+  
   // Get all blogs
   const getAllBlogs = async () => {
     if (blogs.length > 0) return; // already fetched
@@ -32,7 +33,7 @@ export const BlogProvider = ({ children }) => {
   };
 
   // Get single blog by ID + similar blogs
-  const getBlogById = async (id) => {
+  const getBlogById = useCallback(async (id) => {
     setLoading(true);
     try {
       const cached = localStorage.getItem(`blog-${id}`);
@@ -57,7 +58,7 @@ export const BlogProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server]);
 
   // Create blog (expects FormData)
   const createBlog = async (blogData) => {
@@ -94,14 +95,83 @@ export const BlogProvider = ({ children }) => {
   };
 
   // Post comment
-  const postComment = async (blogId, name, content) => {
+  const postComment = useCallback(async (blogId, name, content, userId = null) => {
     try {
-      await axios.post(`${server}/blogs/comment`, { blogId, name, content });
+      // Create a composite name that includes userId for future retrieval
+      const commentName = userId ? `${name}|userId:${userId}` : name;
+      
+      const response = await axios.post(`${server}/blogs/comment`, { 
+        blogId, 
+        name: commentName, 
+        content
+      });
       getBlogById(blogId); // refresh comments
+      return { success: true, data: response.data };
     } catch (error) {
       console.error("Error posting comment:", error);
+      throw error; // Rethrow to allow component-level handling
     }
-  };
+  }, [server, getBlogById]);
+
+  // Get user comments by fetching all blogs and filtering comments
+  const getUserComments = useCallback(async (identifier, isUserId = false) => {
+    try {
+      // First get all blogs
+      const blogsRes = await axios.get(`${server}/blogs`);
+      const allBlogs = blogsRes.data;
+      
+      const userComments = [];
+      
+      // For each blog, get its details (which includes comments)
+      for (const blog of allBlogs) {
+        try {
+          const blogRes = await axios.get(`${server}/blogs/${blog.id}`);
+          const blogData = blogRes.data.blog;
+          
+          // Filter comments by user ID or name based on the flag
+          if (blogData.comments && Array.isArray(blogData.comments)) {
+            const userCommentsInBlog = blogData.comments.filter(
+              comment => {
+                if (isUserId) {
+                  // Check if comment name contains the userId pattern
+                  return comment.name.includes(`|userId:${identifier}`);
+                } else {
+                  // Fallback to name-based filtering for backward compatibility
+                  // This handles old comments that don't have userId
+                  return comment.name === identifier || comment.name.startsWith(`${identifier}|userId:`);
+                }
+              }
+            );
+            
+            // Add each comment with blog info and clean up the display name
+            userCommentsInBlog.forEach(comment => {
+              // Extract the actual display name (before |userId:)
+              const displayName = comment.name.split('|userId:')[0];
+              
+              userComments.push({
+                blogId: blog.id,
+                blogTitle: blog.title,
+                comment: comment.content,
+                date: comment.date,
+                displayName: displayName
+              });
+            });
+          }
+        } catch (err) {
+          console.warn("Failed to fetch blog:", blog.id);
+          // Continue with other blogs
+        }
+      }
+      
+      // Sort by date (newest first)
+      userComments.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      return userComments;
+    } catch (err) {
+      console.error("Failed to fetch user comments:", err);
+      return [];
+    }
+  }, [server]);
 
   return (
     <BlogContext.Provider
@@ -115,6 +185,7 @@ export const BlogProvider = ({ children }) => {
         createBlog,
         deleteBlog,
         postComment,
+        getUserComments,
       }}
     >
       {children}

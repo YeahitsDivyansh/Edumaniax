@@ -50,6 +50,8 @@ export default function IdentityShifter() {
         completed: true,
       
       });
+      setStartTime(Date.now());
+
     }
   }, [celebrate]);
 
@@ -208,6 +210,8 @@ export default function IdentityShifter() {
             onClick={() => {
               setThenList(initialThen);
               setCelebrate(false);
+              setStartTime(Date.now());
+
             }}
             className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-6 rounded-full text-lg shadow-lg transition"
           >

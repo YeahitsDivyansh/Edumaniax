@@ -49,7 +49,7 @@ const PersonaBuilderGame = () => {
   const [result, setResult] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const ageOptions = ["13-15", "16-18", "19-22", "23-25", "26-30", "31-35"];
 
@@ -177,9 +177,8 @@ Form data provided by user : ${JSON.stringify(formData)}
           avgResponseTimeSec: timeSpentSec, // or timeSpentSec / 1 if 1 input = 1 question
           studyTimeMinutes: Math.ceil(timeSpentSec / 60),
           completed: true,
-          
         });
-
+        setStartTime(Date.now());
         completeDMChallenge(0, 1); // already present, keep it
       }
 
@@ -221,6 +220,7 @@ Form data provided by user : ${JSON.stringify(formData)}
     setFeedback("");
     setResult(null);
     setError("");
+    setStartTime(Date.now());
   };
 
   // Start Screen

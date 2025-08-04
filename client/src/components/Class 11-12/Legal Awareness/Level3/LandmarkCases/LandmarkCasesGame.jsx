@@ -104,6 +104,8 @@ export default function LandmarkCasesGame() {
       studyTimeMinutes,
       completed: true,
     });
+    setStartTime(Date.now());
+
   }, [gameEnded]);
 
 

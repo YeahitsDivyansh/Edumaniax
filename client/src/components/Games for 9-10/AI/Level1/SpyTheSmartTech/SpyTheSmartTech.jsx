@@ -20,7 +20,7 @@ const SpyTheSmartTech = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const devices = [
     {
@@ -104,8 +104,10 @@ const SpyTheSmartTech = () => {
       avgResponseTimeSec,
       studyTimeMinutes,
       completed: true,
-      
+
     });
+    setStartTime(Date.now());
+
   };
 
 
@@ -123,6 +125,8 @@ const SpyTheSmartTech = () => {
     setAnswers({});
     setShowResults(false);
     setCompletedRows(new Set());
+    setStartTime(Date.now());
+
   };
 
   const allAnswered = devices.every(

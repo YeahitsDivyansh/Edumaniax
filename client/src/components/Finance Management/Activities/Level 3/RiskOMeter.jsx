@@ -104,6 +104,7 @@ export default function RiskOMeter() {
         completed: true,
         
       });
+      setStartTime(Date.now());
       // mark challenge completed
       completeFinanceChallenge(2, 1);
 

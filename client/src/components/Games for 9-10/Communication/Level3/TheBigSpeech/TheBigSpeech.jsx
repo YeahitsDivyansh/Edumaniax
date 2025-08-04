@@ -165,6 +165,8 @@ Give 2–3 specific improvement tips (max 20 words each).Respond in JSON like: {
       completed: total >= 7, // Mark completed if good score
       
     });
+    setStartTime(Date.now());
+
   };
 
 
@@ -180,6 +182,8 @@ Give 2–3 specific improvement tips (max 20 words each).Respond in JSON like: {
     setTotalScore(null);
     setScore2(0);
     setStep(1);
+    setStartTime(Date.now());
+
   };
 
   return (

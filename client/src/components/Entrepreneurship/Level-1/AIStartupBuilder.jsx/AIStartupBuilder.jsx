@@ -169,6 +169,7 @@ Make it clearer, exciting, and more suitable for school students.`,
   const resetGame = () => {
     setForm(initialState);
     setStep("intro");
+     setStartTime(Date.now());
   };
 
   const handleSubmit = () => {
@@ -191,6 +192,7 @@ Make it clearer, exciting, and more suitable for school students.`,
         completed: true,
         
       });
+       setStartTime(Date.now());
     }
   };
 

@@ -147,6 +147,8 @@ ${growthText}
           completed: true,
            
         });
+        setStartTime(Date.now());
+
       }
       else {
         setReview({ Feedback: "⚠️ Could not parse AI response." });

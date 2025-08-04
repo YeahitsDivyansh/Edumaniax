@@ -114,8 +114,8 @@ const DilemmaCards = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(totalTimeSec / 60),
         completed: score >= 9,
-        
       });
+      setStartTime(Date.now());
     }
   }, [index]);
 
@@ -137,6 +137,7 @@ const DilemmaCards = () => {
     setScore(0);
     setSelected(null);
     setShowConsequence(false);
+    setStartTime(Date.now());
   };
 
   if (index === -1) {

@@ -68,6 +68,7 @@ const SimulatedMarketGame = () => {
     setResults([]);
     setFinal(false);
     setErrorMsg("");
+    setStartTime(Date.now());
   };
 
   const playRound = () => {
@@ -134,8 +135,9 @@ const SimulatedMarketGame = () => {
           avgResponseTimeSec: timeSpent,
           studyTimeMinutes: Math.ceil(timeSpent / 60),
           completed: true,
-    
         });
+        setStartTime(Date.now());
+
 
         setFinal(true);
       }

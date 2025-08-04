@@ -112,6 +112,7 @@ const PeakPhosphorusPanic = () => {
         completed: score === scenarios.length,
          
       });
+      setStartTime(Date.now());
 
       if (score === scenarios.length) {
         completeEnvirnomentChallenge(2, 1);
@@ -158,6 +159,7 @@ const PeakPhosphorusPanic = () => {
     setCurrentScenario(null);
     setRotation(0);
     setStep("spin");
+    setStartTime(Date.now());
   };
 
   if (step === "intro") {

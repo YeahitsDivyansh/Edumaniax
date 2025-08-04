@@ -58,7 +58,7 @@ const EthicsLabyrinth = () => {
   const [started, setStarted] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (started && chosen === null && !showEnd) {
       const timer = setTimeout(() => {
@@ -81,8 +81,8 @@ const EthicsLabyrinth = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / (questions.length * 1000)).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: score === questions.length,
-    
       });
+      setStartTime(Date.now());
 
       if (score === questions.length) {
         completeLeadershipChallenge(1, 1);
@@ -115,6 +115,8 @@ const EthicsLabyrinth = () => {
     setTimeLeft(20);
     setShowEnd(false);
     setStarted(false);
+    setStartTime(Date.now());
+
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-50 to-blue-100 p-6 font-sans">

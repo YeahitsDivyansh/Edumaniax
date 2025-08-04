@@ -113,6 +113,7 @@ const MeltdownTracker = () => {
         completed: score >= 8,
      
       });
+      setStartTime(Date.now());
     }
   }, [timeLeft, currentIndex]);
 
@@ -136,6 +137,7 @@ const MeltdownTracker = () => {
     setSelected("");
     setSubmitted(false);
     setTimeLeft(120);
+    setStartTime(Date.now());
   };
 
   if (timeLeft <= 0 || currentIndex >= data.length) {

@@ -39,6 +39,8 @@ const DigitalDilemma = () => {
         completed: score >= 6,
         
       });
+      setStartTime(Date.now());
+
 
       if (score >= 6 && !challengeCompleted) {
         completeCommunicationChallenge(1, 1);
@@ -66,6 +68,8 @@ const DigitalDilemma = () => {
     setClarification("");
     setScore(null);
     setFeedback("");
+    setStartTime(Date.now());
+
   };
 
   const getFeedback = (pts) => {

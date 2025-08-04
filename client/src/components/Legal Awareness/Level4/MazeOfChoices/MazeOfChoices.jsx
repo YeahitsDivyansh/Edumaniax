@@ -685,7 +685,7 @@ export default function MazeOfChoices() {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
 
   const currentQuestionData = questions.find((q) => q.id === currentQuestion);
@@ -709,8 +709,10 @@ export default function MazeOfChoices() {
         avgResponseTimeSec: Math.round(timeTakenSec / 16),
         studyTimeMinutes: Math.ceil(timeTakenSec / 60),
         completed: true,
-        
+
       });
+      setStartTime(Date.now());
+
     }
   }, [gamePhase]);
 
@@ -880,6 +882,8 @@ export default function MazeOfChoices() {
     setSelectedAnswer(null);
     setShowResult(false);
     setTimeBonus(0);
+    setStartTime(Date.now());
+
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 p-4">

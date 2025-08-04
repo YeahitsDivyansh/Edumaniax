@@ -8,7 +8,9 @@ import {
   verifyOtpAndLogin,
   test,
   getMe,
+  updateProfile,
 } from "../controllers/userController.js";
+import authenticateUser from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -18,6 +20,7 @@ router.post("/send-otp-login", sendOtpForLogin);
 router.post("/verify-otp-register", verifyOtpAndRegister);
 router.post("/verify-otp-login", verifyOtpAndLogin);
 
-router.get("/me", getMe);
+router.get("/me", authenticateUser, getMe);
+router.put("/update-profile", authenticateUser, updateProfile);
 
 export default router;

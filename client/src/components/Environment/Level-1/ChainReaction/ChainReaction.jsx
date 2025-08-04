@@ -297,7 +297,7 @@ const ChainReaction = () => {
 
       const scaledScore = Number(((score / TOTAL_PUZZLES_SCORE) * 10).toFixed(2));
 
-      updatePerformance({ 
+      updatePerformance({
         moduleName: "Environment",
         topicName: "sustainableLeader",
         score: scaledScore,
@@ -305,8 +305,9 @@ const ChainReaction = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(totalTimeSec / 60),
         completed: true,
-    
+
       });
+      setStartTime(Date.now());
 
       setShowResult(true);
     }
@@ -346,6 +347,7 @@ const ChainReaction = () => {
     setReviewIndex(0);
     setUserAnswers([]);
     setIsTimerRunning(true);
+    setStartTime(Date.now());
   };
 
   const handleDragStartLargeScreen = (event) => {

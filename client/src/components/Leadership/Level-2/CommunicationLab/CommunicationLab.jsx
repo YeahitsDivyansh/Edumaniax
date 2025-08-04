@@ -28,7 +28,7 @@ const CommunicationLab = () => {
         completed: score >= 5,
          
       });
-
+setStartTime(Date.now());
       if (score >= 5) {
         completeLeadershipChallenge(1, 0); // Update challengeId and taskId as needed
       }
@@ -230,6 +230,7 @@ const CommunicationLab = () => {
             onClick={() => {
               setStep(-1);
               setScore(0);
+              setStartTime(Date.now());
             }}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
           >

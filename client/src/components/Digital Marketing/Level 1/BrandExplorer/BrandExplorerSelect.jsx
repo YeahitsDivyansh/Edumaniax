@@ -57,7 +57,7 @@ const BrandBrandExplorerGameSelect = () => {
   const [formData, setFormData] = useState([]);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleSubmit = () => {
     if (selectedBrands.length < 3) {
@@ -117,9 +117,9 @@ const BrandBrandExplorerGameSelect = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: Math.ceil(timeTakenSec / 60),
       completed: true,
-     
-    });
 
+    });
+    setStartTime(Date.now());
     navigate("/brand-explorer-game-complete");
   };
 

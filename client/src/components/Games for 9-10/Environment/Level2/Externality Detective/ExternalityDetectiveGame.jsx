@@ -114,6 +114,8 @@ const ExternalityDetectiveGame = () => {
     setMatchedPairs([]);
     setGameOver(false);
     setCards(createCards());
+    setStartTime(Date.now());
+
   };
 
   const handleCardClick = (cardId) => {
@@ -182,6 +184,8 @@ const ExternalityDetectiveGame = () => {
     setGameStarted(false);
     setGameOver(false);
     setShowCard(null);
+    setStartTime(Date.now());
+
   };
 
   const getCardStyle = (card) => {
@@ -289,6 +293,8 @@ const ExternalityDetectiveGame = () => {
       completed: true,
        
     });
+    setStartTime(Date.now());
+
   }, [gameOver, currentPage]);
 
 

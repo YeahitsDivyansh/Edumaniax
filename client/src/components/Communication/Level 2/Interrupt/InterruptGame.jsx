@@ -25,7 +25,7 @@ const InterruptGame = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [responseTimes, setResponseTimes] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(null);
 
@@ -151,10 +151,10 @@ const InterruptGame = () => {
         studyTimeMinutes: durationSec / 60,
         avgResponseTimeSec, // ✅ newly added
         completed: true,
-        
-      };
 
+      };
       updatePerformance(payload);
+      setStartTime(Date.now());
 
       setTimeout(() => setShowCelebration(false), 3000);
     }
@@ -168,6 +168,7 @@ const InterruptGame = () => {
     setSelectedRewrite("");
     setTimer(0);
     setShowTimer(false);
+    setStartTime(Date.now());
   };
 
   const speakText = (text) => {

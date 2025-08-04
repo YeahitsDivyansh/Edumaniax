@@ -35,7 +35,7 @@ const TortLawGame1 = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (score >= 50) {
@@ -66,6 +66,7 @@ const TortLawGame1 = () => {
       beginnerLegalIntellectAvgScore: scaledScore,
       beginnerLegalIntellectAccuracy: accuracy,
     });
+    setStartTime(Date.now());
   }, [currentPage]);
 
 
@@ -206,6 +207,7 @@ const TortLawGame1 = () => {
     setShowFeedback(false);
     setIsCorrect(false);
     setShowCelebration(false);
+    setStartTime(Date.now());
   }, []); // useCallback to memoize the function
 
   // These `const` declarations were inside the `GamePage` component, but needed access

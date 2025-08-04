@@ -48,8 +48,8 @@ export default function PitchArenaPro() {
       avgResponseTimeSec: 0,
       studyTimeMinutes: timeSpentMinutes,
       completed: true,
-       
     });
+    setStartTime(Date.now());
   };
 
 
@@ -62,6 +62,7 @@ export default function PitchArenaPro() {
     setSubmission({ name: '', tagline: '', confirm: false });
     setShowPDF(false);
     setShowBadge(false);
+    setStartTime(Date.now());
   };
 
 

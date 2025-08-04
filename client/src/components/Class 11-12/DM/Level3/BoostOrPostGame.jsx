@@ -113,8 +113,8 @@ const BoostOrPostGame = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: Math.round(timeTakenSec / 60),
       completed: option.isCorrect, // ✅ full only if correct
-      
     });
+    setStartTime(Date.now());
   };
 
 
@@ -124,6 +124,7 @@ const BoostOrPostGame = () => {
     setShowResult(false);
     setStars(0);
     setLoadingProgress(0);
+    setStartTime(Date.now());
   };
 
   const renderStars = (count) => {

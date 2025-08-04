@@ -133,7 +133,7 @@ const RespondDontReact = () => {
   const [feedbackGif, setFeedbackGif] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleChoice = (choice) => {
     setSelected(choice.text);
@@ -170,8 +170,9 @@ const RespondDontReact = () => {
         avgResponseTimeSec: durationSec / scenarios.length,
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: score >= 3,
-        
+
       });
+      setStartTime(Date.now());
 
     }
   };
@@ -185,6 +186,8 @@ const RespondDontReact = () => {
     setOutcome("");
     setShowResult(false);
     setFeedbackGif("");
+    setStartTime(Date.now());
+
   };
 
   const renderEndScreen = () => {

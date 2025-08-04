@@ -67,6 +67,8 @@ const BrandVoiceChallenge = () => {
      */
     const resetGame = () => {
         setState(getInitialState());
+        setStartTime(Date.now());
+
     };
 
     /**
@@ -272,6 +274,8 @@ ONLY return the JSON.
                 completed: true,
               
             });
+            setStartTime(Date.now());
+
 
 
         } catch (err) {

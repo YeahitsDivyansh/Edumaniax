@@ -19,7 +19,7 @@ const NVCGame = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [responseTimes, setResponseTimes] = useState([]);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
 
@@ -141,12 +141,13 @@ const NVCGame = () => {
         studyTimeMinutes: durationSec / 60,
         avgResponseTimeSec, // ✅ added!
         completed: true,
-         
+
       };
 
 
-      updatePerformance(payload);
 
+      updatePerformance(payload);
+      setStartTime(Date.now());
       setTimeout(() => setShowCelebration(false), 3000);
     }
   };
@@ -156,6 +157,7 @@ const NVCGame = () => {
   const resetGame = () => {
     setGameState("scenario");
     setSelectedChoice(null);
+    setStartTime(Date.now());
     setNvcSentence({ feeling: "", action: "", reason: "", solution: "" });
   };
 

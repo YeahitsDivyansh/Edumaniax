@@ -113,6 +113,7 @@ Benefit: ${benefit}
     setFeedback("");
     setBadgeEarned(false);
     setUplift(false);
+     setStartTime(Date.now());
   };
 
   const handleSubmit = () => {
@@ -149,6 +150,7 @@ Benefit: ${benefit}
       completed: true,
       
     });
+     setStartTime(Date.now());
   };
 
 

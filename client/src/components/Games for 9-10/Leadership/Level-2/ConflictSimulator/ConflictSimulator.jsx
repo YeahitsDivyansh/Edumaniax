@@ -141,6 +141,8 @@ const ConflictSimulator = () => {
       completed: true,
        
     });
+    setStartTime(Date.now());
+
   }, [step]);
 
 
@@ -175,6 +177,8 @@ const ConflictSimulator = () => {
     setStep(-1);
     setScore(0);
     setSelectedStyle([]);
+    setStartTime(Date.now());
+
   };
 
   if (step === -1) {

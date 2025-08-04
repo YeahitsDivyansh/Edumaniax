@@ -20,7 +20,7 @@ const StressBusterLab = () => {
   const [score, setScore] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const handleDrop = (e) => {
     const index = e.dataTransfer.getData("toolIndex");
     const tool = tools[index];
@@ -49,6 +49,8 @@ const StressBusterLab = () => {
     setDropItems([]);
     setFeedback({});
     setScore(null);
+    setStartTime(Date.now());
+
   };
 
   const calculateScore = () => {
@@ -82,8 +84,9 @@ const StressBusterLab = () => {
         avgResponseTimeSec: totalSeconds / 5,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 4,
- 
+
       });
+      setStartTime(Date.now());
 
       if (score >= 4) {
         completeSELChallenge(1, 0);

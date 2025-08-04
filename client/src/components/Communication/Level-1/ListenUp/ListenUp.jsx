@@ -225,7 +225,7 @@ const ListenUp = () => {
   const [results, setResults] = useState(Array(audioData.length).fill(false));
   // ✅ for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [responseTimes, setResponseTimes] = useState(Array(audioData.length).fill(null));
   const questionStartTimes = useRef(Array(audioData.length).fill(Date.now()));
 
@@ -257,9 +257,9 @@ const ListenUp = () => {
         avgResponseTimeSec, // ✅ Pass it here
         score,
         accuracy,
-   
-      });
 
+      });
+      setStartTime(Date.now());
       if (correctAnswers === total) {
         completeCommunicationChallenge(0, 0);
       }

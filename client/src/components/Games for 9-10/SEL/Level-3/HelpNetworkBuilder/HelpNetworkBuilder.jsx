@@ -53,7 +53,7 @@ const HelpNetworkBuilder = () => {
   const [score, setScore] = useState(0);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleSelect = (opt) => {
     if (answers[current] != null) return;
@@ -88,8 +88,9 @@ const HelpNetworkBuilder = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: score >= 5,
-        
+
       });
+      setStartTime(Date.now());
 
       setStage("result");
     }
@@ -102,6 +103,8 @@ const HelpNetworkBuilder = () => {
     setAnswers({});
     setScore(0);
     setFeedback(null);
+    setStartTime(Date.now());
+
   };
 
   // Final-screen GIF based on score

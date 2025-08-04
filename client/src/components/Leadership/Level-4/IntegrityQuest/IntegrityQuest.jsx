@@ -79,7 +79,7 @@ const IntegrityQuest = () => {
   const [finished, setFinished] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (finished && score >= 5) {
@@ -97,8 +97,10 @@ const IntegrityQuest = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / 6000).toFixed(2)), // 6 questions
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: score >= 5,
-      
+
       });
+      setStartTime(Date.now());
+
     }
   }, [finished, score]);
 
@@ -129,6 +131,7 @@ const IntegrityQuest = () => {
     setStep(-1);
     setScore(0);
     setFinished(false);
+    setStartTime(Date.now());
   };
 
   const getResultGif = () => {

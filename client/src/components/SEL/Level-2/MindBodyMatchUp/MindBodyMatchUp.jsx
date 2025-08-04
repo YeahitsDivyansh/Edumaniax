@@ -51,7 +51,7 @@ const MindBodyMatchUp = () => {
   const [showResult, setShowResult] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (showResult) {
       const endTime = Date.now();
@@ -68,8 +68,9 @@ const MindBodyMatchUp = () => {
         avgResponseTimeSec: totalSeconds / questions.length,
         studyTimeMinutes: Math.ceil(totalSeconds / 60),
         completed: score >= 3,
-       
+
       });
+      setStartTime(Date.now());
 
       if (score >= 3) {
         completeSELChallenge(1, 2);
@@ -123,6 +124,8 @@ const MindBodyMatchUp = () => {
     setScore(0);
     setSelected(null);
     setShowResult(false);
+    setStartTime(Date.now());
+
   };
 
   const getResultGif = () => {

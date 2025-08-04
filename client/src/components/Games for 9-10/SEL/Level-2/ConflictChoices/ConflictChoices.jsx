@@ -137,6 +137,8 @@ const ConflictChoices = () => {
         completed: nextScore >= 2,
          
       });
+      setStartTime(Date.now());
+
     }
   }, 2000);
 };
@@ -148,6 +150,8 @@ const ConflictChoices = () => {
     setFeedback(null);
     setGif(null);
     setAnswered(false);
+    setStartTime(Date.now());
+
   };
 
   const isWinner = score >= 2;

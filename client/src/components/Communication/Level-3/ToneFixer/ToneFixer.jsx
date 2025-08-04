@@ -49,7 +49,7 @@ const ToneFixer = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const currentQuestion = rudeMessages[questionIndex];
 
@@ -86,8 +86,9 @@ const ToneFixer = () => {
       studyTimeMinutes: durationSec / 60,
       avgResponseTimeSec,
       completed: true,
-      
+
     });
+    setStartTime(Date.now());
   };
 
 
@@ -113,6 +114,7 @@ const ToneFixer = () => {
     setIsCorrect(null);
     setScore(0);
     setGameFinished(false);
+    setStartTime(Date.now());
   };
 
   return (

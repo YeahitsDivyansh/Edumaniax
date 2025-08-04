@@ -67,7 +67,7 @@ export default function SmartOrNotGame() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-    const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
 
     const handleAnswer = (canDo) => {
@@ -261,9 +261,8 @@ export default function SmartOrNotGame() {
                                             avgResponseTimeSec: totalSeconds / tasks.length,
                                             studyTimeMinutes: totalSeconds / 60,
                                             completed: true,
-                                           
                                         });
-
+                                        setStartTime(Date.now());
                                         completeComputersChallenge(1, 1); // ✅ Mark task as complete
                                         setReflection({ ...reflection, submitted: true });
                                     }}

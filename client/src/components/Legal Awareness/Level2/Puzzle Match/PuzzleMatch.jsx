@@ -204,7 +204,7 @@ const PuzzleMatch = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     setTerms(shuffleArray(givenTerms));
@@ -245,8 +245,10 @@ const PuzzleMatch = () => {
         avgResponseTimeSec: parseFloat(avgResponseTimeSec.toFixed(2)),
         studyTimeMinutes,
         completed: true,
-        
+
       });
+      setStartTime(Date.now());
+
     }
   }, [gameState]);
 
@@ -308,6 +310,8 @@ const PuzzleMatch = () => {
     setMatches({});
     setShowExplanations(false);
     setShakeItem(null);
+    setStartTime(Date.now());
+
   };
 
   const formatTime = (seconds) => {

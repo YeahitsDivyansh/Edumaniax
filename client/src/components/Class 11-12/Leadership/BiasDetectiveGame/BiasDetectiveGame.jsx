@@ -63,6 +63,8 @@ const BiasDetectiveGame = () => {
         completed: true,
         
       });
+      setStartTime(Date.now());
+
     }
   }, [current]);
 
@@ -85,6 +87,8 @@ const BiasDetectiveGame = () => {
     setSelected("");
     setCustomSolution("");
     setShowResult(false);
+    setStartTime(Date.now());
+
   };
 
   if (current === cases.length) {

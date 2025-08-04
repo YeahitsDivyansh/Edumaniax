@@ -49,7 +49,7 @@ const DecodetheMessage = () => {
   const [draggedLabel, setDraggedLabel] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     const allCorrect = scenarios.every(
       (s) => s.userAnswer.replace(/^[^a-zA-Z]+/, '') === s.correctLabel
@@ -71,8 +71,10 @@ const DecodetheMessage = () => {
         avgResponseTimeSec: timeTakenSec,
         studyTimeMinutes: Math.ceil(timeTakenSec / 60),
         completed: true,
-        
+
       });
+      setStartTime(Date.now());
+
     }
   }, [scenarios]);
 
@@ -80,6 +82,8 @@ const DecodetheMessage = () => {
   const handleReplay = () => {
     setScenarios(initialScenarios); // Reset all answers
     setDraggedLabel(null);          // Clear drag state
+    setStartTime(Date.now());
+
   };
 
   const handleDrop = (scenarioId) => {

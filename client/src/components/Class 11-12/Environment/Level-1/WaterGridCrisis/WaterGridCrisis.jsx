@@ -58,6 +58,8 @@ const WaterGridCrisis = () => {
     setRiddleCorrect(null);
     setFinal(null);
     setPage("intro");
+    setStartTime(Date.now());
+
   };
 
   return (
@@ -360,6 +362,7 @@ const WaterGridCrisis = () => {
                       completed: allCorrect,
                      
                     });
+                    setStartTime(Date.now());
                   }}
                   className="mt-6 bg-green-600 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-green-700 transition"
                 >

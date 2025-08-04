@@ -65,7 +65,7 @@ export default function TeamLeadershipGame() {
   const [draggedTeammate, setDraggedTeammate] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (submitted && percent >= 75) {
@@ -80,9 +80,8 @@ export default function TeamLeadershipGame() {
         avgResponseTimeSec: parseFloat((totalTimeMs / (tasks.length * 1000)).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: true,
- 
       });
-
+      setStartTime(Date.now());
       completeLeadershipChallenge(1, 2);
       setScoreSent(true);
     }
@@ -145,6 +144,7 @@ export default function TeamLeadershipGame() {
     setSubmitted(false);
     setShowIntro(true);
     setDraggedTeammate(null);
+    setStartTime(Date.now());
     window.scrollTo({ top: 0, behavior: "smooth" }); // scroll to top
   };
 

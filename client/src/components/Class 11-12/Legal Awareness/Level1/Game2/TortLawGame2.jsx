@@ -198,6 +198,7 @@ const TortLawGame2 = () => {
     setShowFeedback(false);
     setIsCorrect(false);
     setShowCelebration(false);
+    setStartTime(Date.now());
   }, []); // useCallback to memoize the function
 
   // These `const` declarations were inside the `GamePage` component, but needed access
@@ -296,6 +297,8 @@ const TortLawGame2 = () => {
       studyTimeMinutes: Number(studyTimeMinutes.toFixed(2)),
       completed: true,
     });
+    setStartTime(Date.now());
+
   }, [currentPage]);
 
 

@@ -118,6 +118,8 @@ const SmartGoalLab = () => {
        
     });
 
+    setStartTime(Date.now());
+
     if (allCorrect) {
       completeSELChallenge(2, 0);
       confetti({ spread: 300, particleCount: 250, origin: { y: 0.6 } });
@@ -131,6 +133,8 @@ const SmartGoalLab = () => {
     setActionSteps(["", "", ""]);
     setSubmitted(false);
     setStep("intro");
+    setStartTime(Date.now());
+
   };
 
   if (step === "intro") {

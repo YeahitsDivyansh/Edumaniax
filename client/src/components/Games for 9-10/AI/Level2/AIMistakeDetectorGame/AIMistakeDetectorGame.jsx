@@ -59,7 +59,7 @@ export default function AIOopsGame() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
     useEffect(() => {
         if (showResult) {
@@ -82,8 +82,10 @@ export default function AIOopsGame() {
                 avgResponseTimeSec,
                 studyTimeMinutes,
                 completed: true,
-                
+
             });
+            setStartTime(Date.now());
+
         }
     }, [showResult]);
 
@@ -112,6 +114,8 @@ export default function AIOopsGame() {
         setAnswers([]);
         setShowResult(false);
         setSelected(null);
+        setStartTime(Date.now());
+
     };
 
     if (showResult) {

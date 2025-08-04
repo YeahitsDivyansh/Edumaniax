@@ -37,8 +37,8 @@ export default function FocusTracker() {
         avgResponseTimeSec: durationSec,
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: true,
-         
       });
+      setStartTime(Date.now());
     }
   }, [step]);
 
@@ -66,6 +66,8 @@ export default function FocusTracker() {
     setTasks([]);
     setSchedule({});
     setStep(1);
+    setStartTime(Date.now());
+
   };
 
   return (

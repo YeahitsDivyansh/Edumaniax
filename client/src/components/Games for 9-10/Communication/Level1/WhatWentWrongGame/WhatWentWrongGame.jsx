@@ -56,6 +56,8 @@ const WhatWentWrongGame = () => {
         completed: allCorrect,
         
       });
+      setStartTime(Date.now());
+
 
       if (allCorrect) {
         completeCommunicationChallenge(0, 2);
@@ -104,6 +106,8 @@ const WhatWentWrongGame = () => {
   const handleReplay = () => {
     setSelections({});
     setShowResult(false);
+    setStartTime(Date.now());
+
   };
 
   return (

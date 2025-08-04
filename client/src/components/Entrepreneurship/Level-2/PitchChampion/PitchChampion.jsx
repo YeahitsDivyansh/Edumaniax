@@ -16,7 +16,7 @@ const PitchChampion = () => {
   const [submitted, setSubmitted] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (submitted && verified) {
@@ -115,8 +115,9 @@ const PitchChampion = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: timeTakenMin,
       completed: true,
-      
+
     });
+    setStartTime(Date.now());
   };
 
 
@@ -134,6 +135,7 @@ const PitchChampion = () => {
     setAiFeedback("");
     setSubmitted(false);
     setPage("intro");
+    setStartTime(Date.now());
   };
 
   // ✅ If page is intro, show intro content only

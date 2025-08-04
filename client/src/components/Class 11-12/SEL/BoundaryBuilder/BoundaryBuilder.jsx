@@ -109,7 +109,7 @@ export default function BoundaryBuilder() {
   const [selected, setSelected] = useState(null);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-6 font-sans">
       <motion.div
@@ -235,8 +235,10 @@ export default function BoundaryBuilder() {
                   avgResponseTimeSec: durationSec,
                   studyTimeMinutes: Math.ceil(durationSec / 60),
                   completed: selectedScore >= 9,
-                   
+
                 });
+                setStartTime(Date.now());
+
               }}
               whileHover={{ scale: 1.06, rotate: [0, 1, -1, 0] }}
               whileTap={{ scale: 0.95 }}
@@ -300,7 +302,10 @@ export default function BoundaryBuilder() {
             <div className="text-center mt-6">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setSelected(null)}
+                onClick={() => {
+                  setSelected(null);
+                  setStartTime(Date.now());
+                }}
                 className="bg-pink-500 hover:bg-pink-600 text-white py-2 px-6 rounded-full shadow"
               >
                 🔄 Try Again
@@ -309,6 +314,6 @@ export default function BoundaryBuilder() {
           </motion.div>
         )}
       </motion.div>
-    </div>
+    </div >
   );
 }

@@ -141,8 +141,8 @@ const AdSpotterGame = () => {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: timeTakenMin,
       completed: true,
-    
     });
+    setStartTime(Date.now());
   };
 
 
@@ -483,6 +483,7 @@ const AdSpotterGame = () => {
                     setShowResults(false);
                     setScore(0);
                     setStars(0);
+                    setStartTime(Date.now());
                   }}
                   className="flex-1 bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold py-3 px-4 rounded-full hover:from-green-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-200 shadow-lg text-sm md:text-base"
                 >

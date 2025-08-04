@@ -107,7 +107,7 @@ const DayZero = () => {
   const { width, height } = useWindowSize();
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const current = questions[step - 1];
 
@@ -150,6 +150,8 @@ const DayZero = () => {
     setShowFeedback(false);
     setCurrentCorrect(false);
     setShowConfetti(false);
+    setStartTime(Date.now());
+
   };
 
   const allCorrect =
@@ -168,9 +170,9 @@ const DayZero = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / questions.length / 1000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: allCorrect,
-        
-      });
 
+      });
+      setStartTime(Date.now());
       if (allCorrect) {
         completeEnvirnomentChallenge(1, 1);
         setShowConfetti(true);

@@ -88,7 +88,7 @@ const SayItLikeUMeanItGame = () => {
 
         });
 
-
+        setStartTime(Date.now());
         if ((score + (correct ? 1 : 0)) >= 3) {
           completeCommunicationChallenge(0, 1); // Mark as complete
         }
@@ -110,6 +110,7 @@ const SayItLikeUMeanItGame = () => {
     setShowResult(false);
     setFeedbackGif(null);
     setDraggedMood(null);
+    setStartTime(Date.now());
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;

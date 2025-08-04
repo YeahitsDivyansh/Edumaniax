@@ -390,9 +390,9 @@ Constraints -
         avgResponseTimeSec: totalTime,
         studyTimeMinutes,
         completed: true,
-       
-      });
 
+      });
+      setStartTime(Date.now());
       if (!isNaN(scoreNumber) && scoreNumber >= 8) {
         completeFinanceChallenge(0, 0);// mark completed 
       }

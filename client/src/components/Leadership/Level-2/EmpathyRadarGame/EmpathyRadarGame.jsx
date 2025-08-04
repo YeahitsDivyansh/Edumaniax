@@ -32,6 +32,7 @@ const EmpathyRadarGame = () => {
         completed: score >= 5,
        
       });
+      setStartTime(Date.now());
 
       if (score >= 5) {
         completeLeadershipChallenge(1, 1);
@@ -377,6 +378,7 @@ Keep your reply short, simple, and kind with emojis if possible.`,
               setFeedbackGif(null);
               setGeminiSuggestion("");
               setAttemptsLeft(3);
+              setStartTime(Date.now());
             }}
             className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700"
           >

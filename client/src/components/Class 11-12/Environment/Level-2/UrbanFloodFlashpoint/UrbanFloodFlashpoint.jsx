@@ -97,7 +97,7 @@ const UrbanFloodFlashpoint = () => {
   const { width, height } = useWindowSize();
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const current = questions[step - 1];
 
   const allCorrect =
@@ -116,8 +116,9 @@ const UrbanFloodFlashpoint = () => {
         avgResponseTimeSec: parseFloat((totalTimeMs / questions.length / 1000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: allCorrect,
-        
+
       });
+      setStartTime(Date.now());
 
       if (allCorrect) {
         completeEnvirnomentChallenge(1, 0); // keep this if needed
@@ -168,6 +169,8 @@ const UrbanFloodFlashpoint = () => {
     setShowFeedback(false);
     setCurrentCorrect(false);
     setShowConfetti(false);
+    setStartTime(Date.now());
+
   };
 
   return (

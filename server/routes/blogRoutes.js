@@ -4,16 +4,18 @@ import {
   getBlogById,
   createBlog,
   postComment,
-  deleteBlog
+  deleteBlog,
+  getCommentsByUser,
 } from "../controllers/blogController.js";
 import upload from "../middlewares/multer.js";
 
-const router = express.Router(); 
+const router = express.Router();
 
 router.get("/", getAllBlogs);
+router.get("/user-comments/:name", getCommentsByUser);
 router.get("/:id", getBlogById);
-router.delete("/:id",deleteBlog);
-router.post("/", upload.single("image"), createBlog); 
+router.delete("/:id", deleteBlog);
+router.post("/", upload.single("image"), createBlog);
 router.post("/comment", postComment);
 
 export default router;

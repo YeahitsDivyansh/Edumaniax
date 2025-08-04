@@ -107,6 +107,7 @@ export default function IntroBudgetBattle() {
       completed: true,
  
     });
+     setStartTime(Date.now());
   }, [result]);
 
   const handleAllocationChange = (index, value) => {

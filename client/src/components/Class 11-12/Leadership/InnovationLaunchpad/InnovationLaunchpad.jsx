@@ -78,6 +78,7 @@ const InnovationLaunchpadGame = () => {
         completed: true,
        
       });
+setStartTime(Date.now());
 
       completeLeadershipChallenge(2, 1);
     }
@@ -95,6 +96,8 @@ const InnovationLaunchpadGame = () => {
     setPrototypeIdea("");
     setPitchSummary("");
     setSubmitted(false);
+    setStartTime(Date.now());
+
   };
 
   const isStepValid = () => {

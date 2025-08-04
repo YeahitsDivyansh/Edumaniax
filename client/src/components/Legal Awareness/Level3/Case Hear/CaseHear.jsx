@@ -526,7 +526,7 @@ export default function CaseHear() {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     let timer;
@@ -595,8 +595,9 @@ export default function CaseHear() {
         avgResponseTimeSec: timeTakenSec / 3,
         studyTimeMinutes: Math.ceil(timeTakenSec / 60),
         completed: true,
-        
+
       });
+      setStartTime(Date.now());
 
       completeLawChallenge(2, 0);
       setGamePhase("final");
@@ -612,6 +613,8 @@ export default function CaseHear() {
     setTimeLeft(20);
     setSelectedArgument(null);
     setCorrectArgument(null);
+    setStartTime(Date.now());
+
   };
 
   return (

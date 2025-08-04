@@ -393,6 +393,8 @@ const FeedbackLoopGame = () => {
     setScore(0);
     setGameComplete(false);
     setCurrentPage("welcome");
+    setStartTime(Date.now());
+
   };
 
   const clickSoundRefPop = useRef(new Audio(clickSoundFile));
@@ -474,6 +476,8 @@ const FeedbackLoopGame = () => {
       completed: score >= 8,
       
     });
+    setStartTime(Date.now());
+
   }, [gameComplete, score]);
 
 

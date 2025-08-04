@@ -71,7 +71,7 @@ const FriendshipFixer = () => {
   const [feedbackText, setFeedbackText] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (showResult) {
       const endTime = Date.now();
@@ -87,8 +87,9 @@ const FriendshipFixer = () => {
         avgResponseTimeSec,
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: score >= 3,
-         
+
       });
+      setStartTime(Date.now());
 
       if (score >= 3) {
         completeSELChallenge(0, 1);
@@ -133,6 +134,8 @@ const FriendshipFixer = () => {
     setShowResult(false);
     setFeedbackGif(null);
     setFeedbackText("");
+    setStartTime(Date.now());
+
   };
 
   const getOptionStyle = (option) => {

@@ -29,7 +29,7 @@ export default function InboxInsightGame() {
     const [loading, setLoading] = useState(false);
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
     const APIKEY = import.meta.env.VITE_API_KEY;
 
     const isAllEmailsFilled = responses.every(
@@ -103,9 +103,10 @@ ${promptText}`;
                 avgResponseTimeSec: timeTakenSec,
                 studyTimeMinutes: Math.ceil(timeTakenSec / 60),
                 completed: parsedFeedback.avatarType === "congratulatory",
-                 
+
             });
 
+            setStartTime(Date.now());
 
             if (parsedFeedback.avatarType === "congratulatory") {
                 completeCommunicationChallenge(2, 2);
@@ -124,6 +125,7 @@ ${promptText}`;
         setResponses(EMAILS.map(() => ({ subject: "", greeting: "", body: "", closing: "" })));
         setFeedback(null);
         setLoading(false);
+        setStartTime(Date.now());
     };
 
     return (

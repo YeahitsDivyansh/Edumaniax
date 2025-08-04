@@ -57,7 +57,7 @@ const ProblemSolutionGame = () => {
   const [showInstructions, setShowInstructions] = useState(true);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const problemExamples = [
     "Too much plastic waste at school",
@@ -212,9 +212,8 @@ Constraints -
         avgResponseTimeSec,
         studyTimeMinutes,
         completed: true,
-        
       });
-
+      setStartTime(Date.now());
     } catch (err) {
       setError("Error fetching AI response");
       console.log(err);
@@ -719,6 +718,7 @@ Constraints -
                         value: "",
                       });
                       setShowInstructions(true);
+                      setStartTime(Date.now());
                     }}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >

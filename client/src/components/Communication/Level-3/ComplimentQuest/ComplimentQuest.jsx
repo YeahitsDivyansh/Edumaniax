@@ -64,7 +64,7 @@ const ComplimentQuest = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleOptionClick = (index) => {
     if (selected !== null) return;
@@ -94,9 +94,9 @@ const ComplimentQuest = () => {
             studyTimeMinutes: durationSec / 60,
             avgResponseTimeSec, // ✅ new simple field
             completed: true,
-             
-          });
 
+          });
+          setStartTime(Date.now());
         } else {
           setCurrent(current + 1);
           setSelected(null);
@@ -110,6 +110,7 @@ const ComplimentQuest = () => {
     setScore(0);
     setSelected(null);
     setShowResult(false);
+    setStartTime(Date.now());
   };
 
   if (showResult) {

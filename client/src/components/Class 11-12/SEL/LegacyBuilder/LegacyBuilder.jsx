@@ -189,6 +189,8 @@ export default function LegacyBuilder() {
                 completed: true,
                 
               });
+              setStartTime(Date.now());
+
             }}
 
           >
@@ -210,6 +212,8 @@ export default function LegacyBuilder() {
             onClick={() => {
               setSelected({ traits: [], values: [], causes: [] });
               setQuote("");
+              setStartTime(Date.now());
+
             }}
             className="bg-gradient-to-r from-pink-400 via-yellow-400 to-green-400 hover:scale-105 transform transition-all duration-300 text-white py-3 px-8 rounded-full text-lg shadow-md tracking-wide flex items-center gap-2"
           >

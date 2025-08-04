@@ -20,7 +20,7 @@ export default function BrandCreatorGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const checkSumbit = () => {
     let x = Object.entries(brand)
@@ -110,8 +110,9 @@ export default function BrandCreatorGame() {
       avgResponseTimeSec: timeTakenSec,
       studyTimeMinutes: Math.ceil(timeTakenSec / 60),
       completed: true,
- 
+
     });
+    setStartTime(Date.now());
 
     // 🎉 Confetti animation
     setTimeout(shoot, 0);

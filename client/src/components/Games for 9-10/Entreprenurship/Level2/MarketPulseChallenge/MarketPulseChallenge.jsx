@@ -119,7 +119,7 @@ export default function MarketPulseChallenge() {
   const [loading, setLoading] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const spinIdea = () => {
     const random = ideas[Math.floor(Math.random() * ideas.length)];
@@ -257,8 +257,9 @@ Evaluate the quality of the user’s decision.
           avgResponseTimeSec: 0, // Not applicable here
           studyTimeMinutes: timeSpentMinutes,
           completed: true,
-          
+
         });
+        setStartTime(Date.now());
 
         // ✅ Mark challenge as completed
         completeEntreprenerushipChallenge(1, 0);

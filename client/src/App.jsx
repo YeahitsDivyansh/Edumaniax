@@ -26,7 +26,6 @@ import My_Purchase_Plan from "./components/Finance Management/Activities/Level 2
 import FinanceNotes from "./pages/FinanceNotes.jsx";
 import FAQ from "./FinanceDesign/FAQ.jsx";
 import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Section1 from "./pages/sections/Section1.jsx";
 import Section2 from "./pages/sections/Section2.jsx";
@@ -309,6 +308,7 @@ import AllBlogs from "./pages/AllBlogs";
 import SingleBlog from "./pages/SingleBlog";
 import CreateBlog from "./pages/CreateBlog";
 import Pricing from "./pages/Pricing";
+import Register from "./pages/Register";
 
 const INTRO_EXPIRY_HOURS = 0.5; // Change this to 1 for 1 hour, 0.1 for 6 minutes, etc.
 
@@ -552,8 +552,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/register" element={<Register />} />
+
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/courses" element={<Courses />} />
@@ -1374,6 +1373,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<AppContent />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </Router>
       )}

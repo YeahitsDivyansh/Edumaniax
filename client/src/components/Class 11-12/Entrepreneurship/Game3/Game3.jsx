@@ -30,7 +30,7 @@ const EthicsFirewallGame = () => {
   const [totalScore, setTotalScore] = useState(0);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const scenario = {
     title: "FitTracker Pro: The Data Dilemma",
@@ -194,9 +194,8 @@ The app tracks users' location, heart rate, sleep patterns, and workout data. Re
       avgResponseTimeSec: Math.round((endTime - startTime) / 1000 / 12),
       studyTimeMinutes: durationInMinutes,
       completed: true,
-     
     });
-
+    setStartTime(Date.now());
     setGameCompleted(true);
     setCurrentPage("completion");
   };
@@ -764,6 +763,7 @@ The app tracks users' location, heart rate, sleep patterns, and workout data. Re
                 setScore(0);
                 setMatrixScore(0);
                 setTotalScore(0);
+                setStartTime(Date.now());
               }}
               className="flex-1 bg-gradient-to-r from-pink-400 to-purple-500 text-white py-3 px-6 rounded-2xl font-extrabold text-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 flex items-center justify-center"
             >

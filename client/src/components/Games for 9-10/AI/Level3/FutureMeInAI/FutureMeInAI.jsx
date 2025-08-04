@@ -46,7 +46,7 @@ export default function FutureMeInAI() {
 
     //for performance
     const { updatePerformance } = usePerformance();
-   const [startTime,setStartTime] = useState(Date.now());
+    const [startTime, setStartTime] = useState(Date.now());
 
     useEffect(() => {
         if (step === 2) {
@@ -88,6 +88,7 @@ export default function FutureMeInAI() {
             studyTimeMinutes,
             completed: true,
         });
+        setStartTime(Date.now());
 
         setStep(2);
     };
@@ -289,6 +290,8 @@ export default function FutureMeInAI() {
                             setCareerData(careers.map((c) => ({ ...c, interest: "" })));
                             setReflection({ favorite: "", skillsToLearn: "" });
                             setStep(1);
+                            setStartTime(Date.now());
+
                         }}
                         whileHover={{ scale: 1.1 }}
                     >

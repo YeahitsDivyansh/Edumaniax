@@ -203,6 +203,8 @@ const CauseEffectGame = () => {
     setScore(0);
     setGameComplete(false);
     setCurrentPage("welcome");
+    setStartTime(Date.now());
+
   };
 
   const clickSoundRefPop = useRef(new Audio(clickSoundFile));
@@ -235,6 +237,8 @@ const CauseEffectGame = () => {
       completed: score >= 4, // ✅ You mentioned completed = score < 8, here it means if passed 4 or more out of 5
      
     });
+    setStartTime(Date.now());
+
   }, [gameComplete]);
 
 

@@ -49,7 +49,7 @@ const SpeakUpGame = () => {
   const [showResult, setShowResult] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleOptionClick = (index) => {
     if (selected !== null) return;
@@ -79,9 +79,9 @@ const SpeakUpGame = () => {
             studyTimeMinutes: durationSec / 60,
             avgResponseTimeSec,                     // ✅ new field
             completed: true,
-          
-          });
 
+          });
+          setStartTime(Date.now());
         }
         else {
           setCurrent(current + 1);
@@ -96,6 +96,7 @@ const SpeakUpGame = () => {
     setScore(0);
     setSelected(null);
     setShowResult(false);
+    setStartTime(Date.now());
   };
 
   if (showResult) {

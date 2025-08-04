@@ -55,7 +55,7 @@ export default function CommunicationCombatZone() {
   const [loading, setLoading] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   useEffect(() => {
     if (feedback) {
       completeLeadershipChallenge(0, 2);
@@ -71,9 +71,8 @@ export default function CommunicationCombatZone() {
         avgResponseTimeSec: parseFloat((totalTimeMs / (conversations.length * 1000)).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
         completed: true,
-       
       });
-
+      setStartTime(Date.now());
     }
   }, [feedback]);
 
@@ -126,6 +125,8 @@ Example format:
     setResponses({});
     setFeedback(null);
     setLoading(false);
+    setStartTime(Date.now());
+
   };
 
   return (

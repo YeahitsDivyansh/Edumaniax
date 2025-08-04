@@ -69,7 +69,7 @@ const WindowSeatWarGame = () => {
 
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleGameFinish = () => {
     const endTime = Date.now();
@@ -86,8 +86,9 @@ const WindowSeatWarGame = () => {
       studyTimeMinutes: durationSec / 60,
       avgResponseTimeSec: avgResponseTimeSec,
       completed: true,
-   
+
     });
+    setStartTime(Date.now());
   };
 
 
@@ -132,6 +133,7 @@ const WindowSeatWarGame = () => {
     setDropped([]);
     setMessage("");
     setCompleted(false);
+    setStartTime(Date.now());
   };
 
   return (
