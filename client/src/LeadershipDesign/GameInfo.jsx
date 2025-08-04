@@ -16,7 +16,7 @@ const GameInfo = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
           What’s in the game!
         </h2>
-        <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+        <p className="text-gray-600 lg:max-w-5xl text-sm md:text-base">
           Our creativity tools, interactive story-based lessons, and fun
           characters will motivate students to explore core leadership skills
           and take their first big steps toward building confidence,

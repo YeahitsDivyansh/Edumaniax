@@ -156,15 +156,11 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <section className="relative z-10 bg-transparent -mt-40 px-4 pt-16 pb-20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 inter-font">
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${
-                plan.title === "PRO PLAN"
-                  ? "border-[#068F36]"
-                  : "border-gray-200 hover:border-[#068F36]"
-              }`}
+              className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
             >
               {/* Tags */}
               <div className="relative mb-4">
@@ -172,26 +168,26 @@ const Pricing = () => {
                   <img
                     src="/pricingDesign/save20.svg"
                     alt="Save 20%"
-                    className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
+                    className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                   />
                 )}
                 {plan.tag && (
-                  <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
+                  <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
                     {plan.tag}
                   </span>
                 )}
               </div>
 
               {/* Title & Price */}
-              <div className="flex justify-start">
+              <div className="flex justify-start -mx-[1px]">
                 <h3
-                  className="text-xs font-bold uppercase text-[#007127] px-3 py-1 rounded"
+                  className="text-xs font-extrabold uppercase text-[#007127] px-3 py-1 rounded"
                   style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
                 >
                   {plan.title}
                 </h3>
               </div>
-              <p className="text-sm text-black mt-2">{plan.description}</p>
+              <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
               <hr className="my-3 border-gray-300" />
               <p className="text-4xl font-extrabold text-[#042038] mt-1">
                 {plan.price}
@@ -202,7 +198,7 @@ const Pricing = () => {
               <hr className="my-3 border-gray-300 mt-5" />
 
               {/* Features */}
-              <ul className="text-sm space-y-2 flex-1 mt-2">
+              <ul className="text-xs space-y-2 flex-1 mt-2">
                 {plan.features.map((feat, i) => {
                   const text = typeof feat === "string" ? feat : feat.text;
                   const excluded =
@@ -223,7 +219,7 @@ const Pricing = () => {
                           }`}
                         />
                       </span>
-                      <span className={excluded ? "text-red-600" : ""}>
+                      <span className={"text-black font-normal text-xs"}>
                         {text}
                       </span>
                     </li>
