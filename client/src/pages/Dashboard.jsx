@@ -487,7 +487,8 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Your Name</p>
                               {editingField === "name" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="text"
                                     value={editValues.name || ""}
@@ -495,24 +496,19 @@ const Dashboard = () => {
                                       handleInputChange("name", e.target.value)
                                     }
                                     onKeyDown={(e) => handleKeyPress(e, "name")}
-                                    className="font-semibold mt-1.5 bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     placeholder="Enter your name"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("name")}
                                       className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
                                       <CheckCircle size={18} />
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="text-red-500 hover:text-red-600"
-                                      title="Cancel"
-                                    >
-                                      <XCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -534,7 +530,8 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Class</p>
                               {editingField === "userClass" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="text"
                                     value={editValues.userClass || ""}
@@ -547,25 +544,20 @@ const Dashboard = () => {
                                     onKeyDown={(e) =>
                                       handleKeyPress(e, "userClass")
                                     }
-                                    className="font-semibold mt-1.5 bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() =>
                                         handleSaveClick("userClass")
                                       }
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -589,7 +581,8 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Age</p>
                               {editingField === "age" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="number"
                                     value={editValues.age || ""}
@@ -597,25 +590,20 @@ const Dashboard = () => {
                                       handleInputChange("age", e.target.value)
                                     }
                                     onKeyDown={(e) => handleKeyPress(e, "age")}
-                                    className="font-semibold mt-1.5 bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     min="1"
                                     max="100"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("age")}
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -651,7 +639,8 @@ const Dashboard = () => {
                             <div className="flex-1 min-w-0">
                               <p className="text-gray-500 text-xs">Email ID</p>
                               {editingField === "email" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="email"
                                     value={editValues.email || ""}
@@ -661,24 +650,19 @@ const Dashboard = () => {
                                     onKeyDown={(e) =>
                                       handleKeyPress(e, "email")
                                     }
-                                    className="font-semibold mt-1.5 bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     placeholder="Enter email address"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("email")}
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
