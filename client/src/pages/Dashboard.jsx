@@ -807,11 +807,11 @@ const Dashboard = () => {
                           </div>
                         ))}
 
-                        {/* Fact Section */}
-                        <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
+                        {/* Fact Section - Desktop Only */}
+                        <div className="hidden lg:block bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
                           <p className="text-xs text-gray-400 mb-1">Fact</p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Meet <strong>“{user.characterName}”</strong> who is{" "}
+                            Meet <strong>"{user.characterName}"</strong> who is{" "}
                             {user.characterTraits.map((trait, index) => {
                               const percentages = [40, 30, 20, 10];
                               const isLast =
@@ -836,24 +836,59 @@ const Dashboard = () => {
                         </Link>
                       </div>
 
-                      {/* Right: Character Image */}
-                      <div className="w-full lg:w-44 flex flex-col items-center mt-6 lg:mt-0">
+                      {/* Right: Character Image - Desktop Only */}
+                      <div className="hidden lg:flex lg:w-44 flex-col items-center mt-6 lg:mt-0">
                         <img
-                          src="/dashboardDesign/boy.svg"
+                          src="/dashboardDesign/boy_sporty.gif"
                           alt="Character"
-                          className="object-contain w-full h-[250px]" // height only on image
+                          className="object-contain w-full h-[250px]"
                         />
-
-                        {/* Button - Mobile Only */}
-                        <Link
-                          to="/courses"
-                          className="flex w-full lg:hidden mt-4 bg-[#068F36] text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 text-center"
-                        >
-                          Start Exploration Now
-                          <ChevronRight className="mt-1" size={18} />
-                        </Link>
                       </div>
                     </div>
+
+                    {/* Mobile: Image + Fact in 2-column grid (same width as traits above) */}
+                    <div className="lg:hidden grid grid-cols-2 gap-4 mt-6">
+                      {/* Character Image - Mobile */}
+                      <div className="flex items-center justify-center border rounded-lg p-3 bg-gray-50 shadow-sm">
+                        <img
+                          src="/dashboardDesign/boy_sporty.gif"
+                          alt="Character"
+                          className="object-contain w-full h-35"
+                        />
+                      </div>
+
+                      {/* Fact Box - Mobile */}
+                      <div className="bg-gray-50 rounded-lg p-3 text-left">
+                        <p className="text-xs text-gray-400 mb-1">Fact</p>
+                        <p className="text-sm leading-relaxed text-[#4A5565]">
+                          Meet{" "}
+                          <strong className="text-black">
+                            "{user.characterName}"
+                          </strong>{" "}
+                          who is{" "}
+                          {user.characterTraits.map((trait, index) => {
+                            const percentages = [40, 30, 20, 10];
+                            const isLast =
+                              index === user.characterTraits.length - 1;
+                            return (
+                              <span key={trait}>
+                                {percentages[index]}% {trait.toLowerCase()}
+                                {!isLast ? ", " : ""}
+                              </span>
+                            );
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Mobile Button - stays below */}
+                    <Link
+                      to="/courses"
+                      className="flex w-full lg:hidden mt-4 bg-[#068F36] text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 text-center"
+                    >
+                      Start Exploration Now
+                      <ChevronRight className="mt-1" size={18} />
+                    </Link>
                   </div>
                 </div>
               </div>
