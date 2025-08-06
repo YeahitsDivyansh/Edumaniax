@@ -837,12 +837,14 @@ const Dashboard = () => {
                       </div>
 
                       {/* Right: Character Image - Desktop Only */}
-                      <div className="hidden lg:flex lg:w-44 flex-col items-center mt-6 lg:mt-0">
-                        <img
-                          src="/dashboardDesign/boy_sporty.gif"
-                          alt="Character"
-                          className="object-contain w-full h-[250px]"
-                        />
+                      <div className="hidden lg:flex lg:w-56 flex-col items-center lg:mt-0">
+                        <div className="border border-gray-100 rounded-lg p-2 bg-white">
+                          <img
+                            src="/dashboardDesign/boy_sporty.gif"
+                            alt="Character"
+                            className="h-[360px] w-auto object-contain"
+                          />
+                        </div>
                       </div>
                     </div>
 
