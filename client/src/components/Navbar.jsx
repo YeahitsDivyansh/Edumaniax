@@ -57,13 +57,9 @@ const Navbar = () => {
             <div className="w-15 h-10 relative">
               {/* 3D Cube Icon */}
               <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
-              {/* TM Superscript */}
-              <span className="absolute -top-1 -right-2 text-[15px] font-bold text-black">
-                ™
-              </span>
             </div>
             <span className="text-[#09BE43] mt-1 font-bold text-2xl">
-              Edumaniax
+              Edumaniax<span className="text-sm align-super ml-1">™</span>
             </span>
           </Link>
         </div>
