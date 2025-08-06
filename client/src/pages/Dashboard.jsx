@@ -838,7 +838,7 @@ const Dashboard = () => {
 
                       {/* Right: Character Image - Desktop Only */}
                       <div className="hidden lg:flex lg:w-56 flex-col items-center lg:mt-0">
-                        <div className="border border-gray-100 rounded-lg p-2 bg-white">
+                        <div className="-mt-8 p-2 bg-white">
                           <img
                             src="/dashboardDesign/boy_sporty.gif"
                             alt="Character"
