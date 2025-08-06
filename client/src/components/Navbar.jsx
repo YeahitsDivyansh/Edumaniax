@@ -53,10 +53,14 @@ const Navbar = () => {
       <div className="w-full py-4 px-6 flex justify-between items-center max-w-7xl mx-auto">
         {/* Logo Section */}
         <div className="">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-15  h-10 relative">
-              {/* 3D Cube Icon - recreating the exact green cube from Figma */}
+          <Link to="/" className="flex items-center gap-2 relative">
+            <div className="w-15 h-10 relative">
+              {/* 3D Cube Icon */}
               <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
+              {/* TM Superscript */}
+              <span className="absolute -top-1 -right-2 text-[15px] font-bold text-black">
+                ™
+              </span>
             </div>
             <span className="text-[#09BE43] mt-1 font-bold text-2xl">
               Edumaniax
