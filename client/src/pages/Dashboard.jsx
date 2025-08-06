@@ -327,7 +327,7 @@ const Dashboard = () => {
             src="/dashboardDesign/profile.svg"
             alt="Profile"
             className={`w-6 h-6 mx-auto ${
-              selectedSection === "profile" ? "opacity-100" : "opacity-50"
+              selectedSection === "profile" ? "" : "grayscale"
             }`}
           />
         </button>
@@ -480,7 +480,7 @@ const Dashboard = () => {
                       </div>
 
                       {/* Profile Info */}
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
                         {/* Left Section: Name, Class, Age */}
                         <div className="border rounded-lg p-4 flex flex-col gap-4">
                           <div className="flex justify-between items-center">
