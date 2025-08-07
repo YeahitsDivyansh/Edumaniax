@@ -18,7 +18,7 @@ import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { useFinance } from "../../../../../contexts/FinanceContext.jsx";
 import { usePerformance } from "@/contexts/PerformanceContext"; // for performance
-
+import IntroScreen from "./IntroScreen.jsx";
 
 function parsePossiblyStringifiedJSON(text) {
   if (typeof text !== "string") return null;
@@ -53,6 +53,7 @@ const BudgetBuilder = () => {
   //for performance
   const { updatePerformance } = usePerformance();
   const [startTime, setStartTime] = useState(Date.now());
+  const [showIntro, setShowIntro] = useState(true);
 
   const initialExpenses = [
     {
@@ -282,6 +283,18 @@ const BudgetBuilder = () => {
   const [error, setError] = useState(null);
   const [result, setResult] = useState("");
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 4000); // show intro for 4 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showIntro) {
+    return <IntroScreen />;
+  }
+
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
@@ -390,11 +403,10 @@ Constraints -
         avgResponseTimeSec: totalTime,
         studyTimeMinutes,
         completed: true,
-
       });
       setStartTime(Date.now());
       if (!isNaN(scoreNumber) && scoreNumber >= 8) {
-        completeFinanceChallenge(0, 0);// mark completed 
+        completeFinanceChallenge(0, 0); // mark completed
       }
     } catch (err) {
       setError("Error fetching AI response");
