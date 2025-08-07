@@ -2,14 +2,15 @@ module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-       fontFamily: {
-  sigmar: ['"Sigmar One"', 'cursive'],
-},
-
+      fontFamily: {
+        sigmar: ['"Sigmar One"', "cursive"],
+        lilita: ['"Lilita One"', "sans-serif"],
+      },
       animation: {
         aurora: "aurora 10s ease-in-out infinite",
-        shake: "shake 0.4s ease-in-out", // 👈 add this
-        growShrink: 'grow-shrink 2.6s linear',
+        shake: "shake 0.4s ease-in-out",
+        growShrink: "grow-shrink 2.6s linear",
+        loadBar: "load-bar 3s linear forwards", // 👈 ADDED
       },
       keyframes: {
         aurora: {
@@ -18,16 +19,20 @@ module.exports = {
           "100%": { backgroundPosition: "0% 50%" },
         },
         shake: {
-          // 👈 add this
           "0%, 100%": { transform: "translateX(0)" },
           "25%": { transform: "translateX(-6px)" },
           "75%": { transform: "translateX(6px)" },
         },
         growShrink: {
-          '0%': { transform: 'scale(1)' },
-          '3.8%': { transform: 'scale(1.2)' }, // 100ms
-          '80.8%': { transform: 'scale(1.2)' }, // 2100ms
-          '100%': { transform: 'scale(1)' } // 2600ms
+          "0%": { transform: "scale(1)" },
+          "3.8%": { transform: "scale(1.2)" },
+          "80.8%": { transform: "scale(1.2)" },
+          "100%": { transform: "scale(1)" },
+        },
+        loadBar: {
+          // 👈 ADDED
+          "0%": { width: "0%" },
+          "100%": { width: "100%" },
         },
       },
       boxShadow: {
