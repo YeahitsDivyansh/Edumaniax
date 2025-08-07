@@ -60,56 +60,56 @@ const BudgetBuilder = () => {
       id: "1",
       label: "Save for Shoes",
       cost: 350,
-      icon: <FaShoePrints />,
+      imgSrc: "/financeGames6to8/level-1/shoes.svg",
       priorityScore: 4,
     },
     {
       id: "2",
       label: "Ice Cream Treat",
       cost: 150,
-      icon: <FaIceCream />,
+      imgSrc: "/financeGames6to8/level-1/ice-cream.svg",
       priorityScore: 2,
     },
     {
       id: "3",
       label: "Gift",
       cost: 150,
-      icon: <FaGift />,
+      imgSrc: "/financeGames6to8/level-1/gift.svg",
       priorityScore: 4,
     },
     {
       id: "4",
       label: "Data Plan",
       cost: 210,
-      icon: <FaMobileAlt />,
+      imgSrc: "/financeGames6to8/level-1/data-plan.svg",
       priorityScore: 4,
     },
     {
       id: "5",
       label: "Lend to a Friend",
       cost: 50,
-      icon: <FaUserFriends />,
+      imgSrc: "/financeGames6to8/level-1/lend-to-a-friend.svg",
       priorityScore: 3,
     },
     {
       id: "6",
       label: "Weekend Movie",
       cost: 50,
-      icon: <FaFilm />,
+      imgSrc: "/financeGames6to8/level-1/weekend-movie.svg",
       priorityScore: 2,
     },
     {
       id: "7",
       label: "Lunch",
       cost: 50,
-      icon: <FaHamburger />,
+      imgSrc: "/financeGames6to8/level-1/lunch.svg",
       priorityScore: 3,
     },
     {
       id: "8",
       label: "Books",
       cost: 50,
-      icon: <FaBook />,
+      imgSrc: "/financeGames6to8/level-1/books.svg",
       priorityScore: 5,
     },
   ];
@@ -139,17 +139,25 @@ const BudgetBuilder = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const navigate = useNavigate(); // ensure `useNavigate()` is defined
+  const [heartCount, setHeartCount] = useState(4);
+  const [isGameOver, setIsGameOver] = useState(false);
+
+  useEffect(() => {
+    if (heartCount === 0) {
+      setIsGameOver(true);
+    }
+  }, [heartCount]);
 
   const handleDragEnd = (result) => {
     const { source, destination } = result;
-    console.log(result, source, destination);
 
     if (!destination) return;
 
-    // Moving within same list - do nothing for now
+    // Ignore same list movement
     if (source.droppableId === destination.droppableId) return;
 
     let movedItem;
+
     // FROM AVAILABLE TO SPENT
     if (
       source.droppableId === "available" &&
@@ -168,14 +176,28 @@ const BudgetBuilder = () => {
       const newSpent = [...spent];
       newSpent.splice(destination.index, 0, movedItem);
 
+      const newWallet = wallet - movedItem.cost;
       setAvailable(newAvailable);
       setSpent(newSpent);
-      const newWallet = wallet - movedItem.cost;
       setWallet(newWallet);
+
+      // 💔 Deduct a life if priorityScore is 3 or below
+      if (movedItem.priorityScore <= 3) {
+        setHeartCount((prev) => {
+          const updated = Math.max(0, prev - 1);
+          if (updated === 0) {
+            setIsGameOver(true); // Trigger Game Over
+          }
+          return updated;
+        });
+      }
     }
 
     // FROM SPENT TO AVAILABLE
-    else {
+    else if (
+      source.droppableId === "spent" &&
+      destination.droppableId === "available"
+    ) {
       movedItem = spent[source.index];
 
       const newSpent = [...spent];
@@ -184,10 +206,12 @@ const BudgetBuilder = () => {
       const newAvailable = [...available];
       newAvailable.splice(destination.index, 0, movedItem);
 
+      const refund = wallet + movedItem.cost;
       setSpent(newSpent);
       setAvailable(newAvailable);
-      const refund = wallet + movedItem.cost;
       setWallet(refund);
+
+      // 🛑 No heartCount logic here as per your current rule
     }
   };
 
@@ -205,7 +229,6 @@ const BudgetBuilder = () => {
     const timer = setTimeout(() => {
       setShowIntro(false);
     }, 4000); // show intro for 4 seconds
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -343,173 +366,223 @@ Constraints -
     navigate("/budget-activity"); // ensure `useNavigate()` is defined
   };
 
+  if (isGameOver) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-black text-white text-center p-6">
+        <h1 className="text-4xl font-bold text-red-500 mb-6">💔 Game Over!</h1>
+        <p className="text-lg mb-8">You ran out of hearts. Try again!</p>
+        <button
+          className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition duration-300"
+          onClick={() => {
+            // Reset everything
+            setWallet(1000);
+            setAvailable(initialExpenses);
+            setSpent([]);
+            setHeartCount(4);
+            setIsGameOver(false);
+            setShowIntro(false); // go straight to the game
+          }}
+        >
+          🔁 Restart Game
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
-      <GameNav />
-      <div className="flex flex-col lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8">
-        {/* 🎮 Weekly Budget Builder */}
+      <GameNav heartCount={heartCount} />
+      <div className="flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8">
+        {/* Dark Theme Weekly Budget Builder */}
         <div
-          className="w-full lg:w-3/5 bg-gradient-to-b from-sky-200 to-blue-100 rounded-3xl p-6 font-sans shadow-xl border-4 border-yellow-300"
-          style={{ fontFamily: "'Comic Neue', cursive" }}
+          className="w-full bg-[#0A160E] font-sans"
+          style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          <div
-            className={`text-center text-4xl sm:text-5xl font-bold mb-8 text-pink-600 drop-shadow-sm`}
-          >
-            🎯 Weekly Budget Builder!
-          </div>
-
-          <div className="flex justify-center items-center text-2xl sm:text-3xl mb-8 text-green-700 font-bold animate-bounce">
-            💰 Wallet <FaWallet className="ml-3 mr-2" /> ₹{wallet}
-          </div>
-
           <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex flex-col md:flex-row justify-center md:space-x-14 space-y-8 md:space-y-0">
-              {/* Available Expenses */}
-              <Droppable droppableId="available">
-                {(provided) => (
-                  <div
-                    className="bg-white p-5 rounded-3xl shadow-lg w-full md:w-80 min-h-[300px] border-4 border-blue-300"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <h2 className="text-2xl font-bold text-center text-blue-600 mb-3">
-                      🛍️ Available Expenses
-                    </h2>
-                    {available.map((item, index) => (
-                      <Draggable
-                        key={item.id}
-                        draggableId={item.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            className="bg-blue-100 hover:bg-blue-300 transition-all duration-300 p-3 m-2 rounded-xl flex justify-between items-center shadow-sm cursor-grab"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <span className="text-lg flex items-center gap-2">
-                              {item.icon} {item.label}
-                            </span>
-                            <span className="text-sm font-bold">
-                              ₹{item.cost}
-                            </span>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+            <div className="flex flex-col lg:flex-row justify-center items-stretch gap-12 lg:gap-16 px-4 lg:px-8">
+              {/* Available Expenses Section */}
+              <div className="w-full lg:w-auto">
+                <h2 className="text-xl font-semibold text-center text-white mb-4">
+                  Available Expenses
+                </h2>
+
+                <Droppable droppableId="available">
+                  {(provided) => (
+                    <div
+                      className="bg-[#202F364D] p-6 rounded-xl shadow-lg w-full lg:w-96 min-h-[450px] border border-gray-600"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {available.map((item, index) => (
+                        <Draggable
+                          key={item.id}
+                          draggableId={item.id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
+                                snapshot.isDragging
+                                  ? "border-[#5F8428]"
+                                  : "border-gray-600"
+                              } bg-[#131F24] hover:bg-[#202F36]`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              {/* Left: Coin + Cost (inside bordered box) */}
+                              <div
+                                className={`flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border ${
+                                  snapshot.isDragging
+                                    ? "border-[#5F8428]"
+                                    : "border-gray-600"
+                                }`}
+                              >
+                                <img
+                                  src="/financeGames6to8/coin.svg"
+                                  alt="coin"
+                                  className="w-5 h-5"
+                                />
+                                <span className="text-yellow-400 font-bold">
+                                  ₹{item.cost}
+                                </span>
+                              </div>
+
+                              {/* Center: Label */}
+                              <div className="text-white font-medium text-sm text-center flex-1">
+                                {item.label}
+                              </div>
+
+                              {/* Right: Icon Image */}
+                              <img
+                                src={item.imgSrc}
+                                alt={item.label}
+                                className="w-6 h-6 flex-shrink-0"
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
 
               {/* Spent Expenses */}
-              <Droppable droppableId="spent">
-                {(provided) => (
-                  <div
-                    className="bg-white p-5 rounded-3xl shadow-lg w-full md:w-80 min-h-[300px] border-4 border-red-300"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <h2 className="text-2xl font-bold text-center text-red-600 mb-3">
-                      🧾 Spent
-                    </h2>
-                    {spent.map((item, index) => (
-                      <Draggable
-                        key={item.id}
-                        draggableId={item.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            className="bg-red-100 hover:bg-red-200 transition-all duration-300 p-3 m-2 rounded-xl flex justify-between items-center shadow-sm cursor-grab"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
+              <div className="w-full lg:w-96">
+                <h2 className="text-xl font-semibold text-center text-white mb-4">
+                  Spend It
+                </h2>
+
+                <Droppable droppableId="spent">
+                  {(provided) => (
+                    <div
+                      className="bg-[#0A160E] p-6 rounded-xl shadow-lg w-full min-h-[450px] border border-gray-600"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {spent.length === 0 ? (
+                        <div className="text-gray-400 text-center mt-40 text-sm">
+                          Drag and drop here from
+                          <br />
+                          available expenses
+                        </div>
+                      ) : (
+                        spent.map((item, index) => (
+                          <Draggable
+                            key={item.id}
+                            draggableId={item.id}
+                            index={index}
                           >
-                            <span className="flex items-center gap-2">
-                              {item.icon} {item.label}
-                            </span>
-                            <span className="text-sm font-bold">
-                              ₹{item.cost}
-                            </span>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+                            {(provided, snapshot) => (
+                              <div
+                                className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
+                                  snapshot.isDragging
+                                    ? "border-[#5F8428]"
+                                    : "border-[#5F8428]"
+                                } bg-[#131F24] hover:bg-[#202F36]`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                {/* Left: Coin + Cost */}
+                                <div className="flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border border-[#5F8428]">
+                                  <img
+                                    src="/financeGames6to8/coin.svg"
+                                    alt="coin"
+                                    className="w-5 h-5"
+                                  />
+                                  <span className="text-yellow-400 font-bold">
+                                    ₹{item.cost}
+                                  </span>
+                                </div>
+
+                                {/* Center: Label with green color */}
+                                <div className="text-[#5F8428] font-medium text-sm text-center flex-1">
+                                  {item.label}
+                                </div>
+
+                                {/* Right: Icon Image */}
+                                <img
+                                  src={item.imgSrc}
+                                  alt={item.label}
+                                  className="w-6 h-6 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
             </div>
           </DragDropContext>
 
-          <div className="mt-12">
-            <div className="flex justify-center">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center my-6">
-                  <div className="w-12 h-12 border-4 border-t-pink-500 border-yellow-200 rounded-full animate-spin"></div>
-                  <p className="mt-4 text-pink-600 text-2xl font-semibold">
-                    Thinking...
-                  </p>
-                </div>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="text-2xl rounded-full py-3 px-6 bg-yellow-300 hover:bg-yellow-400 text-pink-700 font-bold shadow-md hover:scale-105 transition-transform duration-300"
-                >
-                  🎉 Click for Feedback!
-                </button>
-              )}
-            </div>
-
-            {error && (
-              <p className="text-red-600 text-center mt-4 font-bold">{error}</p>
-            )}
-          </div>
-
           {!showVictoryScreen && result && (
-            <div className="mt-12">
+            <div className="mt-10">
               <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
-                <div className="bg-white border-4 p-6 border-fuchsia-400 rounded-3xl shadow-md whitespace-pre-wrap text-center space-y-6">
+                <div className="bg-[#243324] border border-gray-600 p-6 rounded-xl shadow-lg text-center space-y-4">
                   {parseInt(result?.spendingScore?.split("/")[0]) >= 7 ? (
-                    // 🎉 Victory Mode
+                    // Victory Mode
                     <>
-                      <h3 className="text-3xl font-semibold text-green-700">
+                      <h3 className="text-2xl font-semibold text-green-400">
                         🎉 Challenge Complete!
                       </h3>
-                      <p className="text-xl text-gray-700">
+                      <p className="text-lg text-gray-300">
                         🎯 Accuracy Score:{" "}
-                        <span className="font-bold">
+                        <span className="font-bold text-yellow-400">
                           {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
                         </span>
                       </p>
                       <div className="flex justify-center gap-4 pt-4">
                         <button
                           onClick={handleViewFeedback}
-                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-200"
+                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
                         >
                           🔍 View Feedback
                         </button>
                         <button
                           onClick={handleNextChallenge}
-                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-all duration-200"
+                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200"
                         >
                           ➡️ Next Challenge
                         </button>
                       </div>
                     </>
                   ) : (
-                    // 📝 Normal Feedback Mode
+                    // Normal Feedback Mode
                     <>
-                      <p className="text-xl font-bold text-green-800">
+                      <p className="text-lg font-semibold text-green-400">
                         🎯 Spending Score: {result?.spendingScore}
                       </p>
-                      <p className="text-md text-gray-800">
+                      <p className="text-sm text-gray-300">
                         💡 Tip: {result?.tip}
                       </p>
-                      <p className="text-md text-red-700">
+                      <p className="text-sm text-red-400">
                         ✂️ Cut this category: {result?.categoryToCut}
                       </p>
                     </>
@@ -519,26 +592,78 @@ Constraints -
             </div>
           )}
 
+          {/* Footer with Total Wallet and Check Now Button */}
+          <div className="relative mt-20 left-1/2 right-1/2 -mx-[50vw] w-screen bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center">
+            <div className="w-full max-w-4xl px-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+                {/* Wallet Info */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center">
+                    <img
+                      src="/financeGames6to8/coin.svg"
+                      alt="Coin"
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <div className="text-white">
+                    <span className="text-md sm:text-lg font-medium text-yellow-400">
+                      Total Wallet:
+                    </span>
+                    <span className="text-white text-xl font-bold ml-2">
+                      ₹{wallet}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Button or Loader */}
+                <div>
+                  {loading ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-8 h-8 border-4 border-t-green-500 border-gray-600 rounded-full animate-spin"></div>
+                      <p className="mt-2 text-green-400 text-sm font-medium">
+                        Analyzing...
+                      </p>
+                    </div>
+                  ) : (
+                    <img
+                      src="/financeGames6to8/check-now-btn.svg"
+                      alt="Check Now"
+                      onClick={handleSubmit}
+                      className="cursor-pointer w-[150px] hover:scale-105 transition-transform duration-200"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <p className="text-red-400 text-center mt-4 font-medium">
+                  {error}
+                </p>
+              )}
+            </div>
+          </div>
+
           {showVictoryScreen && (
-            <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-center p-6">
-              <h2 className="text-3xl font-bold mb-4 text-green-600">
+            <div className="fixed inset-0 z-50 bg-[#1a2e1a] flex flex-col items-center justify-center text-center p-6">
+              <h2 className="text-3xl font-bold mb-4 text-green-400">
                 🎉 Challenge Complete!
               </h2>
-              <p className="text-xl font-semibold mb-6">
+              <p className="text-xl font-semibold mb-6 text-white">
                 Accuracy Score:{" "}
-                <span className="text-blue-600">
+                <span className="text-yellow-400">
                   {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
                 </span>
               </p>
               <div className="flex gap-4">
                 <button
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded shadow"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-200"
                   onClick={handleViewFeedback}
                 >
                   View Feedback
                 </button>
                 <button
-                  className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded shadow"
+                  className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-200"
                   onClick={handleNextChallenge}
                 >
                   Next Challenge
@@ -546,7 +671,6 @@ Constraints -
               </div>
             </div>
           )}
-
           <ToastContainer />
         </div>
       </div>
