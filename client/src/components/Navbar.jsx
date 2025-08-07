@@ -69,7 +69,7 @@ const Navbar = () => {
               <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
             </div>
             <span className="text-[#09BE43] mt-1 font-bold text-2xl">
-              Edumaniax
+              Edumaniax<span className="text-sm align-super ml-1">™</span>
             </span>
           </Link>
         </div>
@@ -108,6 +108,14 @@ const Navbar = () => {
             </Link>
           ) : (
             <>
+
+              <Link
+                to="/register"
+                className="border border-green-600 text-green-600 font-medium px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300"
+              >
+                Register
+              </Link>
+
               <Link
                 to="/login"
                 className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"

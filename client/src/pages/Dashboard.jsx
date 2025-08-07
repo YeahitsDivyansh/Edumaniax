@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, NavLink, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronRight, XCircle } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
 
 const Dashboard = () => {
@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [editingField, setEditingField] = useState(null);
   const [editValues, setEditValues] = useState({});
   const { getUserComments } = useBlog();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   useEffect(() => {
     const fetchUserComments = async () => {
@@ -98,7 +99,7 @@ const Dashboard = () => {
   }, [user, role, navigate]);
 
   const handleLogout = () => {
-    logout(navigate);
+    logout(() => navigate("/")); // ✅ Redirects to home page
   };
 
   const handleUploadClick = () => {
@@ -305,7 +306,7 @@ const Dashboard = () => {
 
             {/* Logout */}
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutPopup(true)}
               className="flex items-center gap-3 text-red-500 hover:text-red-600"
             >
               <img
@@ -326,7 +327,7 @@ const Dashboard = () => {
             src="/dashboardDesign/profile.svg"
             alt="Profile"
             className={`w-6 h-6 mx-auto ${
-              selectedSection === "profile" ? "opacity-100" : "opacity-50"
+              selectedSection === "profile" ? "" : "grayscale"
             }`}
           />
         </button>
@@ -345,7 +346,7 @@ const Dashboard = () => {
           </button>
         )}
 
-        <button onClick={handleLogout}>
+        <button onClick={() => setShowLogoutPopup(true)}>
           <img
             src="/dashboardDesign/logout.svg"
             alt="Logout"
@@ -353,6 +354,34 @@ const Dashboard = () => {
           />
         </button>
       </nav>
+
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black/20 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+            <h2 className="text-lg font-semibold mb-4">
+              Are you sure you want to log out?
+            </h2>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  setShowLogoutPopup(false);
+                  handleLogout();
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+              >
+                Yes
+              </button>
+
+              <button
+                onClick={() => setShowLogoutPopup(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-lg"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-100 overflow-x-hidden">
@@ -451,14 +480,15 @@ const Dashboard = () => {
                       </div>
 
                       {/* Profile Info */}
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
                         {/* Left Section: Name, Class, Age */}
                         <div className="border rounded-lg p-4 flex flex-col gap-4">
                           <div className="flex justify-between items-center">
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Your Name</p>
                               {editingField === "name" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="text"
                                     value={editValues.name || ""}
@@ -466,24 +496,19 @@ const Dashboard = () => {
                                       handleInputChange("name", e.target.value)
                                     }
                                     onKeyDown={(e) => handleKeyPress(e, "name")}
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     placeholder="Enter your name"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("name")}
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -505,7 +530,8 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Class</p>
                               {editingField === "userClass" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="text"
                                     value={editValues.userClass || ""}
@@ -518,25 +544,20 @@ const Dashboard = () => {
                                     onKeyDown={(e) =>
                                       handleKeyPress(e, "userClass")
                                     }
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() =>
                                         handleSaveClick("userClass")
                                       }
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -560,7 +581,8 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Age</p>
                               {editingField === "age" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="number"
                                     value={editValues.age || ""}
@@ -568,25 +590,20 @@ const Dashboard = () => {
                                       handleInputChange("age", e.target.value)
                                     }
                                     onKeyDown={(e) => handleKeyPress(e, "age")}
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     min="1"
                                     max="100"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("age")}
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -612,64 +629,18 @@ const Dashboard = () => {
                               <p className="text-gray-500 text-xs">
                                 Phone Number
                               </p>
-                              {editingField === "phonenumber" ? (
-                                <div className="relative">
-                                  <input
-                                    type="tel"
-                                    value={editValues.phonenumber || ""}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        "phonenumber",
-                                        e.target.value
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "phonenumber")
-                                    }
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
-                                    autoFocus
-                                    placeholder="Enter phone number"
-                                  />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
-                                      onClick={() =>
-                                        handleSaveClick("phonenumber")
-                                      }
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
-                                      title="Save"
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="font-semibold">
-                                  {user.phonenumber}
-                                </p>
-                              )}
+                              <p className="font-semibold">
+                                {user.phonenumber || "N/A"}
+                              </p>
                             </div>
-                            {editingField !== "phonenumber" && (
-                              <button
-                                onClick={() => handleEditClick("phonenumber")}
-                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
-                              >
-                                Edit
-                              </button>
-                            )}
                           </div>
 
                           <div className="flex justify-between items-center">
                             <div className="flex-1 min-w-0">
                               <p className="text-gray-500 text-xs">Email ID</p>
                               {editingField === "email" ? (
-                                <div className="relative">
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  {/* Input Field */}
                                   <input
                                     type="email"
                                     value={editValues.email || ""}
@@ -679,24 +650,19 @@ const Dashboard = () => {
                                     onKeyDown={(e) =>
                                       handleKeyPress(e, "email")
                                     }
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
                                     autoFocus
                                     placeholder="Enter email address"
                                   />
-                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+
+                                  {/* Action Buttons - OUTSIDE input */}
+                                  <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveClick("email")}
-                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      className="text-green-500 hover:text-green-600"
                                       title="Save"
                                     >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={handleCancelClick}
-                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                                      title="Cancel"
-                                    >
-                                      ✕
+                                      <CheckCircle size={18} />
                                     </button>
                                   </div>
                                 </div>
@@ -841,11 +807,11 @@ const Dashboard = () => {
                           </div>
                         ))}
 
-                        {/* Fact Section */}
-                        <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
+                        {/* Fact Section - Desktop Only */}
+                        <div className="hidden lg:block bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
                           <p className="text-xs text-gray-400 mb-1">Fact</p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Meet <strong>“{user.characterName}”</strong> who is{" "}
+                            Meet <strong>"{user.characterName}"</strong> who is{" "}
                             {user.characterTraits.map((trait, index) => {
                               const percentages = [40, 30, 20, 10];
                               const isLast =
@@ -860,25 +826,71 @@ const Dashboard = () => {
                           </p>
                         </div>
 
-                        {/* Button */}
+                        {/* Button - Desktop Only */}
                         <Link
                           to="/courses"
-                          className="bg-[#068F36] col-span-2 mt-4 text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 flex justify-center items-center gap-2 w-full text-center"
+                          className="hidden lg:flex bg-[#068F36] col-span-2 mt-4 text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 w-full text-center"
                         >
                           Start Exploration Now
                           <ChevronRight className="mt-1" size={18} />
                         </Link>
                       </div>
 
-                      {/* Right: Character Image */}
-                      <div className="w-full h-[250px] lg:w-44 flex items-center justify-center mt-6 lg:mt-0">
-                        <img
-                          src="/dashboardDesign/boy.svg"
-                          alt="Character"
-                          className="object-contain w-full h-72"
-                        />
+                      {/* Right: Character Image - Desktop Only */}
+                      <div className="hidden lg:flex lg:w-56 flex-col items-center lg:mt-0">
+                        <div className="-mt-8 p-2 bg-white">
+                          <img
+                            src="/dashboardDesign/boy_sporty.gif"
+                            alt="Character"
+                            className="h-[360px] w-auto object-contain"
+                          />
+                        </div>
                       </div>
                     </div>
+
+                    {/* Mobile: Image + Fact in 2-column grid (same width as traits above) */}
+                    <div className="lg:hidden grid grid-cols-2 gap-4 mt-6">
+                      {/* Character Image - Mobile */}
+                      <div className="flex items-center justify-center border rounded-lg p-3 bg-gray-50 shadow-sm">
+                        <img
+                          src="/dashboardDesign/boy_sporty.gif"
+                          alt="Character"
+                          className="object-contain w-full h-35"
+                        />
+                      </div>
+
+                      {/* Fact Box - Mobile */}
+                      <div className="bg-gray-50 rounded-lg p-3 text-left">
+                        <p className="text-xs text-gray-400 mb-1">Fact</p>
+                        <p className="text-sm leading-relaxed text-[#4A5565]">
+                          Meet{" "}
+                          <strong className="text-black">
+                            "{user.characterName}"
+                          </strong>{" "}
+                          who is{" "}
+                          {user.characterTraits.map((trait, index) => {
+                            const percentages = [40, 30, 20, 10];
+                            const isLast =
+                              index === user.characterTraits.length - 1;
+                            return (
+                              <span key={trait}>
+                                {percentages[index]}% {trait.toLowerCase()}
+                                {!isLast ? ", " : ""}
+                              </span>
+                            );
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Mobile Button - stays below */}
+                    <Link
+                      to="/courses"
+                      className="flex w-full lg:hidden mt-4 bg-[#068F36] text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 text-center"
+                    >
+                      Start Exploration Now
+                      <ChevronRight className="mt-1" size={18} />
+                    </Link>
                   </div>
                 </div>
               </div>

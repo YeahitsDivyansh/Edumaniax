@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Confetti from "react-confetti";
 import useWindowSize from "react-use/lib/useWindowSize";
-import BackButton from "@/components/icon/GreenBudget/BackButton";
-import Vol from "@/components/icon/GreenBudget/Vol.jsx";
-import Heart from "@/components/icon/GreenBudget/heart.jsx";
+import GameNav from "./GameNav";
 import Checknow from "@/components/icon/GreenBudget/CheckNow.jsx";
 import ThinkingCloud from "@/components/icon/ThinkingCloud";
+import IntroScreen from "./IntroScreen";
+import InstructionsScreen from "./InstructionsScreen";
 
 // Placeholder for context functions if you're not setting up actual contexts
 const useEnvirnoment = () => ({
@@ -37,7 +37,7 @@ const questions = [
     items: [
       {
         name: "Solar lights",
-        cost: 350, // Updated cost to match image
+        cost: 250, // Updated cost to match image
         imageUrl: "http://googleusercontent.com/file_content/0",
         sustainable: true,
       },
@@ -49,25 +49,25 @@ const questions = [
       },
       {
         name: "Poster printout",
-        cost: 50, // Updated cost to match image
+        cost: 100, // Updated cost to match image
         imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AOWFSJn2sB.png",
         sustainable: false,
       },
       {
         name: "Packaged water",
-        cost: 50, // Updated cost to match image
+        cost: 100, // Updated cost to match image
         imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/WpoO0ju8bf.png",
         sustainable: false,
       },
       {
         name: "Plastic Dustin",
-        cost: 150, // Updated cost to match image
+        cost: 100, // Updated cost to match image
         imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/acqPZ0ZkQr.png",
         sustainable: false,
       },
       {
         name: "Cloth Banner",
-        cost: 210, // Updated cost to match image
+        cost: 150, // Updated cost to match image
         imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png",
         sustainable: true,
       },
@@ -156,57 +156,12 @@ const questions = [
   },
 ];
 
-const initialBudget = 1060; // Set initial budget to match image
+const initialBudget = 500; // Set initial budget to match image
 const itemsToSelect = 3;
 
 // =============================================================================
 // Components (Nested within the main file)
 // =============================================================================
-
-function IntroScreen({ onStartGame }) {
-  return (
-    <div className="flex flex-col items-center justify-center p-4 text-center font-['Comic_Neue'] min-h-[89vh]">
-      <h1 className="text-4xl font-bold mb-2 mt-8">Green Budget Challenge</h1>
-      <p className="text-lg text-gray-600 mb-6">
-        Test your eco-friendly budget skills!
-      </p>
-      <div className="bg-white rounded-xl shadow-md p-6 max-w-lg mb-6">
-        <p className="mb-2">
-          You have <b>₹{initialBudget}</b> and <b>3 minutes</b> for each scenario!
-        </p>
-        <p className="mb-2">
-          Select <b>{itemsToSelect} items</b> that best support sustainability in school.
-        </p>
-        <p className="mb-2">
-          🎯 <b>Scoring:</b>
-        </p>
-        <ul className="mb-2 text-left list-disc pl-5">
-          <li>
-            <span className="font-bold text-green-600">+5</span> = All 3
-            eco-wise
-          </li>
-          <li>
-            <span className="font-bold text-yellow-600">+2</span> = 2
-            sustainable
-          </li>
-          <li>
-            <span className="font-bold text-red-600">0</span> = Mostly
-            unsustainable
-          </li>
-        </ul>
-        <p className="mb-2">
-          🕐 <b>Time Limit:</b> 3 minutes per scenario
-        </p>
-      </div>
-      <button
-        onClick={onStartGame}
-        className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg text-xl font-semibold shadow-lg transition-colors duration-200"
-      >
-        Play Now
-      </button>
-    </div>
-  );
-}
 
 function ItemCard({ item, isSelected, onClick, isDisabled }) {
   const cardClasses = `
@@ -446,13 +401,14 @@ export default function GreenBudgetGame() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState("intro"); // intro, playing, end, review
+  const [introStep, setIntroStep] = useState("first"); // Add this state: 'first' or 'instructions'
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedItems, setSelectedItems] = useState([]);
   const [remainingBalance, setRemainingBalance] = useState(initialBudget);
   const [totalScore, setTotalScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [scoreAwarded, setScoreAwarded] = useState(0); // New state for score of current question
+  const [scoreAwarded, setScoreAwarded] = useState(0);
   const [scenarioResults, setScenarioResults] = useState([]);
 
   const currentQuestion = useMemo(
@@ -460,10 +416,9 @@ export default function GreenBudgetGame() {
     [currentQuestionIndex]
   );
   
-  const totalItemsCost = useMemo(
-    () => selectedItems.reduce((acc, item) => acc + item.cost, 0),
-    [selectedItems]
-  );
+  const handleShowInstructions = () => {
+    setIntroStep("instructions");
+  };
 
   const handleNextQuestion = useCallback(() => {
     setShowFeedback(false);
@@ -518,6 +473,7 @@ export default function GreenBudgetGame() {
 
   const startGame = () => {
     setStep("playing");
+    setIntroStep("first"); // Reset for future plays
     setCurrentQuestionIndex(0);
     setSelectedItems([]);
     setRemainingBalance(initialBudget);
@@ -555,12 +511,6 @@ export default function GreenBudgetGame() {
     setShowFeedback(false);
   };
   
-  const handleContinueClick = () => {
-    if (showFeedback) {
-      handleNextQuestion();
-    }
-  };
-
   const handlePlayAgain = () => startGame();
   const handleReviewAnswers = () => setStep("review");
   const handleBackToResults = () => setStep("end");
@@ -571,119 +521,119 @@ export default function GreenBudgetGame() {
   const buttonText = showFeedback ? "Continue" : "Check Now";
   const isButtonEnabled = showFeedback || selectedItems.length === itemsToSelect;
 
-
   return (
     <div>
-      {step === "intro" && <IntroScreen onStartGame={startGame} />}
-      <div className="main-container w-full h-[100vh] bg-[#0A160E] relative overflow-hidden flex flex-col justify-between">
-        {step === "playing" && currentQuestion && (
-          <>
-            <div className="w-full h-[10vh] bg-[#28343A] flex items-center justify-between px-[2vw] relative z-10">
-              <BackButton/>
-              <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
-                Green Budget
-              </span>
-              <div className="flex items-center space-x-[1vw]">
-              <Heart/>
-              <Vol/>
-              </div>
-            </div>
+      {/* Conditional rendering for the intro pages */}
+      {step === "intro" && introStep === "first" && (
+        <IntroScreen onShowInstructions={handleShowInstructions} />
+      )}
+      {step === "intro" && introStep === "instructions" && (
+        <InstructionsScreen onStartGame={startGame} />
+      )}
 
-            <div className="flex flex-1 items-center justify-center w-full px-[5vw] py-[2vh] gap-[4vw]">
-              <div className="flex flex-col w-auto h-[68vh] py-[3vh] p-[2vh] bg-[rgba(32,47,54,0.3)] rounded-[1.2vh] gap-[1.5vh] overflow-y-auto">
-                {currentQuestion.items.map((item) => (
-                  <ItemCard
-                    key={item.name}
-                    item={item}
-                    isSelected={selectedItems.some((selected) => selected.name === item.name)}
-                    onClick={() => toggleItem(item)}
-                    isDisabled={
-                      (selectedItems.length >= itemsToSelect &&
-                        !selectedItems.some((selected) => selected.name === item.name)) ||
-                      (remainingBalance < item.cost &&
-                        !selectedItems.some((selected) => selected.name === item.name))
-                    }
-                  />
-                ))}
-              </div>
-              <div className="relative flex flex-col w-[29vw] h-[68vh] p-[4vh] bg-[rgba(32,47,54,0.3)] rounded-[1.2vh] justify-center items-center text-white">
-                <span className="font-['Inter'] text-[1.4vw] font-medium leading-[3vh] text-center max-w-[30vw]">
-                  {currentQuestion.scenario}
-                </span>
-                {showFeedback && <FeedbackGIF message={feedbackMessage} scoreAwarded={scoreAwarded} />}
-              </div>
-            </div>
-
-            <div className="w-full h-[10vh] bg-[#28343A] flex justify-evenly items-center px-[5vw] z-10">
-              <div className="flex items-center gap-[1vw]">
-                <div className="w-[7vh] h-[7vh] rounded-full bg-[#232e34] border-[0.2vh] border-white flex justify-center items-center">
-                  <img src="Coin_gold.png" alt="wallet" className="w-[5vh] h-[5vh]" />
+      {/* The main game container will only render when the step is not "intro" */}
+      {step !== "intro" && (
+        <div className="main-container w-full h-[100vh] bg-[#0A160E] relative overflow-hidden flex flex-col justify-between">
+          {step === "playing" && currentQuestion && (
+            <>
+              <GameNav/>
+              <div className="flex flex-1 items-center justify-center w-full px-[5vw] py-[2vh] gap-[4vw]">
+                <div className="flex flex-col w-auto h-[68vh] py-[3vh] p-[2vh] bg-[rgba(32,47,54,0.3)] rounded-[1.2vh] gap-[1.5vh] overflow-y-auto">
+                  {currentQuestion.items.map((item) => (
+                    <ItemCard
+                      key={item.name}
+                      item={item}
+                      isSelected={selectedItems.some((selected) => selected.name === item.name)}
+                      onClick={() => toggleItem(item)}
+                      isDisabled={
+                        (selectedItems.length >= itemsToSelect &&
+                          !selectedItems.some((selected) => selected.name === item.name)) ||
+                        (remainingBalance < item.cost &&
+                          !selectedItems.some((selected) => selected.name === item.name))
+                      }
+                    />
+                  ))}
                 </div>
-                <div className="flex flex-col">
-                  <span className="lilita text-[2.5vh] text-[#ffcc00] [text-stroke:1px_black] tracking-[0.05vw]">Total Wallet:</span>
-                  <span className="lilita text-[2.5vh] text-white">
-                    ₹{remainingBalance}
+                <div className="relative flex flex-col w-[29vw] h-[68vh] p-[4vh] bg-[rgba(32,47,54,0.3)] rounded-[1.2vh] justify-center items-center text-white">
+                  <span className="font-['Inter'] text-[1.4vw] font-medium leading-[3vh] text-center max-w-[30vw]">
+                    {currentQuestion.scenario}
                   </span>
+                  {showFeedback && <FeedbackGIF message={feedbackMessage} scoreAwarded={scoreAwarded} />}
                 </div>
               </div>
-              
-              <div className="w-[12vw] h-[8vh]">
-                <button
-                  className="relative w-full h-full cursor-pointer"
-                  onClick={showFeedback ? handleNextQuestion : handleSubmit}
-                  disabled={!isButtonEnabled}
-                >
-                  <Checknow
-                    topGradientColor="#09be43"
-                    bottomGradientColor="#068F36"
-                    width="100%"
-                    height="100%"
-                  />
-                  <span
-                    className={`
-                      absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                      lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000]
-                      ${!isButtonEnabled && 'opacity-50'}
-                    `}
+
+              <div className="w-full h-[10vh] bg-[#28343A] flex justify-evenly items-center px-[5vw] z-10">
+                <div className="flex items-center gap-[1vw]">
+                  <div className="w-[7vh] h-[7vh] rounded-full bg-[#232e34] border-[0.2vh] border-white flex justify-center items-center">
+                    <img src="Coin_gold.png" alt="wallet" className="w-[5vh] h-[5vh]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="lilita text-[2.5vh] text-[#ffcc00] [text-stroke:1px_black] tracking-[0.05vw]">Total Wallet:</span>
+                    <span className="lilita text-[2.5vh] text-white">
+                      ₹{remainingBalance}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="w-[12vw] h-[8vh]">
+                  <button
+                    className="relative w-full h-full cursor-pointer"
+                    onClick={showFeedback ? handleNextQuestion : handleSubmit}
+                    disabled={!isButtonEnabled}
                   >
-                    {buttonText}
-                  </span>
-                </button>
+                    <Checknow
+                      topGradientColor="#09be43"
+                      bottomGradientColor="#068F36"
+                      width="100%"
+                      height="100%"
+                    />
+                    <span
+                      className={`
+                        absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                        lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000]
+                        ${!isButtonEnabled && 'opacity-50'}
+                      `}
+                    >
+                      {buttonText}
+                    </span>
+                  </button>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
 
-        {step === "end" && (
-          <>
-            <EndScreen
-              totalScore={totalScore}
-              totalPossibleScore={questions.length * 5}
-              onPlayAgain={handlePlayAgain}
-              onReviewAnswers={handleReviewAnswers}
-              onContinue={handleContinue}
-            />
-            <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
-          </>
-        )}
+          {step === "end" && (
+            <>
+              <EndScreen
+                totalScore={totalScore}
+                totalPossibleScore={questions.length * 5}
+                onPlayAgain={handlePlayAgain}
+                onReviewAnswers={handleReviewAnswers}
+                onContinue={handleContinue}
+              />
+              <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
+            </>
+          )}
 
-        {step === "review" && (
-          <>
-            <ReviewScreen
-              answers={scenarioResults}
-              onBackToResults={handleBackToResults}
-            />
-            <button
-              onClick={() => {
-                setStep("intro");
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-              Play Again
-            </button>
-          </>
-        )}
-      </div>
+          {step === "review" && (
+            <>
+              <ReviewScreen
+                answers={scenarioResults}
+                onBackToResults={handleBackToResults}
+              />
+              <button
+                onClick={() => {
+                  setStep("intro");
+                  setIntroStep("first"); // Reset to the very beginning
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Play Again
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

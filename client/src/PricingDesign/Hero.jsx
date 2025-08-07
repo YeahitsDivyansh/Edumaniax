@@ -28,7 +28,7 @@ const Hero = () => {
         </h1>
 
         {/* Subtext */}
-        <p className="text-[#111827] text-sm sm:text-lg -mt-2 text-center">
+        <p className="text-white text-sm sm:text-lg -mt-2 text-center">
           Affordable and scalable plans packed with features,
           <br className="block sm:hidden" />
           notes, and learning tools.
