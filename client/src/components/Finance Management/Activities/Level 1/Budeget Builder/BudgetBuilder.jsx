@@ -229,7 +229,6 @@ const BudgetBuilder = () => {
     const timer = setTimeout(() => {
       setShowIntro(false);
     }, 4000); // show intro for 4 seconds
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -543,6 +542,56 @@ Constraints -
             </div>
           </DragDropContext>
 
+          {!showVictoryScreen && result && (
+            <div className="mt-10">
+              <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
+                <div className="bg-[#243324] border border-gray-600 p-6 rounded-xl shadow-lg text-center space-y-4">
+                  {parseInt(result?.spendingScore?.split("/")[0]) >= 7 ? (
+                    // Victory Mode
+                    <>
+                      <h3 className="text-2xl font-semibold text-green-400">
+                        🎉 Challenge Complete!
+                      </h3>
+                      <p className="text-lg text-gray-300">
+                        🎯 Accuracy Score:{" "}
+                        <span className="font-bold text-yellow-400">
+                          {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
+                        </span>
+                      </p>
+                      <div className="flex justify-center gap-4 pt-4">
+                        <button
+                          onClick={handleViewFeedback}
+                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
+                        >
+                          🔍 View Feedback
+                        </button>
+                        <button
+                          onClick={handleNextChallenge}
+                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200"
+                        >
+                          ➡️ Next Challenge
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    // Normal Feedback Mode
+                    <>
+                      <p className="text-lg font-semibold text-green-400">
+                        🎯 Spending Score: {result?.spendingScore}
+                      </p>
+                      <p className="text-sm text-gray-300">
+                        💡 Tip: {result?.tip}
+                      </p>
+                      <p className="text-sm text-red-400">
+                        ✂️ Cut this category: {result?.categoryToCut}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Footer with Total Wallet and Check Now Button */}
           <div className="relative mt-20 left-1/2 right-1/2 -mx-[50vw] w-screen bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center">
             <div className="w-full max-w-4xl px-6">
@@ -594,56 +643,6 @@ Constraints -
               )}
             </div>
           </div>
-
-          {!showVictoryScreen && result && (
-            <div className="mt-8">
-              <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
-                <div className="bg-[#243324] border border-gray-600 p-6 rounded-xl shadow-lg text-center space-y-4">
-                  {parseInt(result?.spendingScore?.split("/")[0]) >= 7 ? (
-                    // Victory Mode
-                    <>
-                      <h3 className="text-2xl font-semibold text-green-400">
-                        🎉 Challenge Complete!
-                      </h3>
-                      <p className="text-lg text-gray-300">
-                        🎯 Accuracy Score:{" "}
-                        <span className="font-bold text-yellow-400">
-                          {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
-                        </span>
-                      </p>
-                      <div className="flex justify-center gap-4 pt-4">
-                        <button
-                          onClick={handleViewFeedback}
-                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          🔍 View Feedback
-                        </button>
-                        <button
-                          onClick={handleNextChallenge}
-                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          ➡️ Next Challenge
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    // Normal Feedback Mode
-                    <>
-                      <p className="text-lg font-semibold text-green-400">
-                        🎯 Spending Score: {result?.spendingScore}
-                      </p>
-                      <p className="text-sm text-gray-300">
-                        💡 Tip: {result?.tip}
-                      </p>
-                      <p className="text-sm text-red-400">
-                        ✂️ Cut this category: {result?.categoryToCut}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           {showVictoryScreen && (
             <div className="fixed inset-0 z-50 bg-[#1a2e1a] flex flex-col items-center justify-center text-center p-6">
