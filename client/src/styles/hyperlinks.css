@@ -1,0 +1,37 @@
+/* Custom hyperlink styles for blog content */
+.blog-hyperlink {
+  color: #2563eb !important; /* blue-600 - more vibrant blue */
+  text-decoration: underline !important;
+  text-decoration-color: #2563eb !important;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.blog-hyperlink:hover {
+  color: #1d4ed8 !important; /* blue-700 */
+  text-decoration-color: #1d4ed8 !important;
+  text-decoration-thickness: 2px;
+}
+
+.blog-hyperlink:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Preview styles for CreateBlog component */
+.blog-hyperlink-preview {
+  color: #2563eb !important; /* blue-600 */
+  text-decoration: underline !important;
+  text-decoration-color: #2563eb !important;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.blog-hyperlink-preview:hover {
+  color: #1d4ed8 !important; /* blue-700 */
+  text-decoration-color: #1d4ed8 !important;
+}

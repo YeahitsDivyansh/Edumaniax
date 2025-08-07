@@ -285,3 +285,19 @@ body > #video-speed-controller {
   visibility: hidden !important;
   z-index: -9999 !important;
 }
+
+/* Override for blog hyperlinks */
+a.blog-hyperlink, 
+.blog-content a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+  text-decoration-color: #2563eb !important;
+  font-weight: 500 !important;
+}
+
+a.blog-hyperlink:hover, 
+.blog-content a:hover {
+  color: #1d4ed8 !important;
+  text-decoration-color: #1d4ed8 !important;
+  text-decoration-thickness: 2px !important;
+}
