@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import BackButton from "@/components/icon/GreenBudget/BackButton";
 import Vol from "@/components/icon/GreenBudget/Vol.jsx";
-import Heart from "@/components/icon/GreenBudget/heart.jsx";
+import Heart from "@/components/icon/GreenBudget/Heart.jsx";
 
 // Assume bgMusic is available at this path. You might need to adjust it.
 import bgMusic from "/financeGames6to8/bgMusic.mp3"; 

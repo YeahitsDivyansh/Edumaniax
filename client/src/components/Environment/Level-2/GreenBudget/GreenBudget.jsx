@@ -260,15 +260,13 @@ function FeedbackGIF({ message, scoreAwarded }) {
         alt="Character talking"
         className="w-[10vw] h-[15vh] object-contain"
       />
-            {/* Thinking Cloud and Message */}     {" "}
+            {/* Thinking Cloud and Message */}   
       <div className="absolute left-[8vw] bottom-[6vh]">
-                <ThinkingCloud width="11vw" />     {" "}
+                <ThinkingCloud width="11vw" /> 
       </div>
-           {" "}
       <p className="absolute bottom-[11vh] left-[8.8vw] w-full text-[0.7vw] text-white text-center font-['Comic_Neue'] ">
-                {message}     {" "}
+                {message}    
       </p>
-         {" "}
     </div>
   );
 }
