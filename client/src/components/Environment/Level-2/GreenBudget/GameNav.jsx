@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import BackButton from "@/components/icon/GreenBudget/BackButton";
 import Vol from "@/components/icon/GreenBudget/Vol.jsx";
-import Heart from "@/components/icon/GreenBudget/heart.jsx";
+import Heart from "@/components/icon/GreenBudget/Heart.jsx";
 
 // Assume bgMusic is available at this path. You might need to adjust it.
 import bgMusic from "/financeGames6to8/bgMusic.mp3"; 
@@ -63,6 +63,13 @@ const GameNav = () => {
           className={`transition transform active:scale-95 hover:scale-110 ${isPlaying ? 'opacity-100' : 'opacity-90'}`}>
           <Vol isPlaying={isPlaying} />
         </button>
+      <BackButton />
+      <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
+        Green Budget
+      </span>
+      <div className="flex items-center space-x-[1vw]">
+        <Heart />
+        <Vol />
       </div>
     </div>
   );
