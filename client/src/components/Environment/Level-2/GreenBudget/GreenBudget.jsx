@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Confetti from "react-confetti";
 import useWindowSize from "react-use/lib/useWindowSize";
 import GameNav from "./GameNav";
-import Checknow from "@/components/icon/GreenBudget/CheckNow.jsx";
+import Checknow from "@/components/icon/GreenBudget/Checknow";
 import ThinkingCloud from "@/components/icon/ThinkingCloud";
 import IntroScreen from "./IntroScreen";
 import InstructionsScreen from "./InstructionsScreen";
@@ -33,7 +33,8 @@ const useNavigate = () => {
 const questions = [
   {
     id: 1,
-    scenario: "Your school wants to reduce its environment footprint. Pick 3 items.",
+    scenario:
+      "Your school wants to reduce its environment footprint. Pick 3 items.",
     items: [
       {
         name: "Solar lights",
@@ -44,31 +45,36 @@ const questions = [
       {
         name: "Compost bins",
         cost: 150,
-        imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png",
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/uAt6UTQyzg.png",
         sustainable: true,
       },
       {
         name: "Poster printout",
         cost: 100, // Updated cost to match image
-        imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AOWFSJn2sB.png",
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/AOWFSJn2sB.png",
         sustainable: false,
       },
       {
         name: "Packaged water",
         cost: 100, // Updated cost to match image
-        imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/WpoO0ju8bf.png",
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/WpoO0ju8bf.png",
         sustainable: false,
       },
       {
         name: "Plastic Dustin",
         cost: 100, // Updated cost to match image
-        imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/acqPZ0ZkQr.png",
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/acqPZ0ZkQr.png",
         sustainable: false,
       },
       {
         name: "Cloth Banner",
         cost: 150, // Updated cost to match image
-        imageUrl: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png",
+        imageUrl:
+          "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png",
         sustainable: true,
       },
     ],
@@ -172,7 +178,11 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
         ? "bg-[#202f36] border-[0.2vh] border-[#5f8428] shadow-[0_2px_0_0_#5f8428]"
         : "bg-[#131f24] border-[0.2vh] border-[#37464f]"
     }
-    ${isDisabled && !isSelected ? "opacity-50 cursor-not-allowed" : "hover:scale-102"}
+    ${
+      isDisabled && !isSelected
+        ? "opacity-50 cursor-not-allowed"
+        : "hover:scale-102"
+    }
   `;
 
   const walletIconUrl = isSelected
@@ -191,7 +201,11 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
   `;
   const priceContainerClasses = `
     flex w-[7vw] h-[4vh] justify-center items-center rounded-[0.8vh]
-    ${isSelected ? "border-[0.2vh] border-[#79b933]" : "border-[0.2vh] border-[#37464f]"}
+    ${
+      isSelected
+        ? "border-[0.2vh] border-[#79b933]"
+        : "border-[0.2vh] border-[#37464f]"
+    }
   `;
   const priceIconClasses = `
     w-[2.5vh] h-[2.5vh] shrink-0 object-contain
@@ -220,7 +234,11 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
   return (
     <div className={cardClasses} onClick={onClick}>
       <div className={priceContainerClasses}>
-        <img src={walletIconUrl} alt="wallet icon" className={priceIconClasses} />
+        <img
+          src={walletIconUrl}
+          alt="wallet icon"
+          className={priceIconClasses}
+        />
         <span className={costClasses}>₹{item.cost}</span>
       </div>
       <div className="flex-1 px-[1vw]">
@@ -233,25 +251,26 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
 
 // New GIF component to show feedback
 function FeedbackGIF({ message, scoreAwarded }) {
-
-  return (
-    <div className="absolute -right-[9vw] -bottom-[8vh] flex items-end">
-      {/* Character Image/GIF */}
-      <img
-        src="/feedbackcharacter.gif"
-        alt="Character talking"
-        className="w-[10vw] h-[15vh] object-contain"
-      />
-      {/* Thinking Cloud and Message */}
-      <div className="absolute left-[8vw] bottom-[6vh]">
-        <ThinkingCloud width="11vw" />
-      </div>
-      <p className="absolute bottom-[11vh] left-[8.8vw] w-full text-[0.7vw] text-white text-center font-['Comic_Neue'] ">
-        {message}
-      </p>
-    </div>
-  );
-
+  return (
+    <div className="absolute -right-[9vw] -bottom-[8vh] flex items-end">
+            {/* Character Image/GIF */}
+           {" "}
+      <img
+        src="/feedbackcharacter.gif"
+        alt="Character talking"
+        className="w-[10vw] h-[15vh] object-contain"
+      />
+            {/* Thinking Cloud and Message */}     {" "}
+      <div className="absolute left-[8vw] bottom-[6vh]">
+                <ThinkingCloud width="11vw" />     {" "}
+      </div>
+           {" "}
+      <p className="absolute bottom-[11vh] left-[8.8vw] w-full text-[0.7vw] text-white text-center font-['Comic_Neue'] ">
+                {message}     {" "}
+      </p>
+         {" "}
+    </div>
+  );
 }
 
 function EndScreen({
@@ -333,7 +352,9 @@ function ReviewScreen({ answers, onBackToResults }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full justify-evenly justify-items-center ">
           {answers.map((ans, idx) => {
             const isPassingScore = ans.scoreAwarded > 0;
-            const cardBgColor = isPassingScore ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]";
+            const cardBgColor = isPassingScore
+              ? "bg-[#c8ff9e]"
+              : "bg-[#ffdfe0]";
             return (
               <div
                 key={idx}
@@ -415,7 +436,7 @@ export default function GreenBudgetGame() {
     () => questions[currentQuestionIndex],
     [currentQuestionIndex]
   );
-  
+
   const handleShowInstructions = () => {
     setIntroStep("instructions");
   };
@@ -439,11 +460,13 @@ export default function GreenBudgetGame() {
       setShowFeedback(true);
       return;
     }
-  
-    let sustainableCount = selectedItems.filter(item => item.sustainable).length;
+
+    let sustainableCount = selectedItems.filter(
+      (item) => item.sustainable
+    ).length;
     let newScore = 0;
     let message = "";
-  
+
     if (sustainableCount === itemsToSelect) {
       newScore = 5;
       message = "Good going";
@@ -454,12 +477,12 @@ export default function GreenBudgetGame() {
       newScore = 0;
       message = "try harder next time";
     }
-  
+
     setTotalScore((prevScore) => prevScore + newScore);
     setScoreAwarded(newScore);
     setFeedbackMessage(message);
     setShowFeedback(true);
-    
+
     setScenarioResults((prevResults) => [
       ...prevResults,
       {
@@ -483,16 +506,20 @@ export default function GreenBudgetGame() {
     setFeedbackMessage("");
     setScoreAwarded(0);
   };
-  
-  const toggleItem = (item) => {
-    if (showFeedback) return; 
 
-    const isSelected = selectedItems.some((selected) => selected.name === item.name);
+  const toggleItem = (item) => {
+    if (showFeedback) return;
+
+    const isSelected = selectedItems.some(
+      (selected) => selected.name === item.name
+    );
     let newSelectedItems;
 
     if (isSelected) {
-      newSelectedItems = selectedItems.filter((selected) => selected.name !== item.name);
-      setRemainingBalance(prevBalance => prevBalance + item.cost);
+      newSelectedItems = selectedItems.filter(
+        (selected) => selected.name !== item.name
+      );
+      setRemainingBalance((prevBalance) => prevBalance + item.cost);
     } else {
       if (selectedItems.length >= itemsToSelect) {
         return;
@@ -504,22 +531,23 @@ export default function GreenBudgetGame() {
         return;
       }
       newSelectedItems = [...selectedItems, item];
-      setRemainingBalance(prevBalance => prevBalance - item.cost);
+      setRemainingBalance((prevBalance) => prevBalance - item.cost);
     }
-    
+
     setSelectedItems(newSelectedItems);
     setShowFeedback(false);
   };
-  
+
   const handlePlayAgain = () => startGame();
   const handleReviewAnswers = () => setStep("review");
   const handleBackToResults = () => setStep("end");
   const handleContinue = () => navigate(-1);
 
   const totalPossibleScore = questions.length * 5;
-  
+
   const buttonText = showFeedback ? "Continue" : "Check Now";
-  const isButtonEnabled = showFeedback || selectedItems.length === itemsToSelect;
+  const isButtonEnabled =
+    showFeedback || selectedItems.length === itemsToSelect;
 
   return (
     <div>
@@ -536,20 +564,26 @@ export default function GreenBudgetGame() {
         <div className="main-container w-full h-[100vh] bg-[#0A160E] relative overflow-hidden flex flex-col justify-between">
           {step === "playing" && currentQuestion && (
             <>
-              <GameNav/>
+              <GameNav />
               <div className="flex flex-1 items-center justify-center w-full px-[5vw] py-[2vh] gap-[4vw]">
                 <div className="flex flex-col w-auto h-[68vh] py-[3vh] p-[2vh] bg-[rgba(32,47,54,0.3)] rounded-[1.2vh] gap-[1.5vh] overflow-y-auto">
                   {currentQuestion.items.map((item) => (
                     <ItemCard
                       key={item.name}
                       item={item}
-                      isSelected={selectedItems.some((selected) => selected.name === item.name)}
+                      isSelected={selectedItems.some(
+                        (selected) => selected.name === item.name
+                      )}
                       onClick={() => toggleItem(item)}
                       isDisabled={
                         (selectedItems.length >= itemsToSelect &&
-                          !selectedItems.some((selected) => selected.name === item.name)) ||
+                          !selectedItems.some(
+                            (selected) => selected.name === item.name
+                          )) ||
                         (remainingBalance < item.cost &&
-                          !selectedItems.some((selected) => selected.name === item.name))
+                          !selectedItems.some(
+                            (selected) => selected.name === item.name
+                          ))
                       }
                     />
                   ))}
@@ -558,23 +592,34 @@ export default function GreenBudgetGame() {
                   <span className="font-['Inter'] text-[1.4vw] font-medium leading-[3vh] text-center max-w-[30vw]">
                     {currentQuestion.scenario}
                   </span>
-                  {showFeedback && <FeedbackGIF message={feedbackMessage} scoreAwarded={scoreAwarded} />}
+                  {showFeedback && (
+                    <FeedbackGIF
+                      message={feedbackMessage}
+                      scoreAwarded={scoreAwarded}
+                    />
+                  )}
                 </div>
               </div>
 
               <div className="w-full h-[10vh] bg-[#28343A] flex justify-evenly items-center px-[5vw] z-10">
                 <div className="flex items-center gap-[1vw]">
                   <div className="w-[7vh] h-[7vh] rounded-full bg-[#232e34] border-[0.2vh] border-white flex justify-center items-center">
-                    <img src="Coin_gold.png" alt="wallet" className="w-[5vh] h-[5vh]" />
+                    <img
+                      src="Coin_gold.png"
+                      alt="wallet"
+                      className="w-[5vh] h-[5vh]"
+                    />
                   </div>
                   <div className="flex flex-col">
-                    <span className="lilita text-[2.5vh] text-[#ffcc00] [text-stroke:1px_black] tracking-[0.05vw]">Total Wallet:</span>
+                    <span className="lilita text-[2.5vh] text-[#ffcc00] [text-stroke:1px_black] tracking-[0.05vw]">
+                      Total Wallet:
+                    </span>
                     <span className="lilita text-[2.5vh] text-white">
                       ₹{remainingBalance}
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="w-[12vw] h-[8vh]">
                   <button
                     className="relative w-full h-full cursor-pointer"
@@ -591,7 +636,7 @@ export default function GreenBudgetGame() {
                       className={`
                         absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
                         lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000]
-                        ${!isButtonEnabled && 'opacity-50'}
+                        ${!isButtonEnabled && "opacity-50"}
                       `}
                     >
                       {buttonText}
@@ -611,7 +656,12 @@ export default function GreenBudgetGame() {
                 onReviewAnswers={handleReviewAnswers}
                 onContinue={handleContinue}
               />
-              <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
+              <Confetti
+                width={width}
+                height={height}
+                recycle={false}
+                numberOfPieces={200}
+              />
             </>
           )}
 
