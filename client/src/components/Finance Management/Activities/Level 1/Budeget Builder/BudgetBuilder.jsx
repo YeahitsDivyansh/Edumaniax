@@ -191,6 +191,13 @@ const BudgetBuilder = () => {
           return updated;
         });
       }
+
+      // 🎯 Show gif for 1 sec, only 3 times
+      if (gifCount < 3) {
+        setShowGif(true);
+        setGifCount((prev) => prev + 1);
+        setTimeout(() => setShowGif(false), 3000);
+      }
     }
 
     // FROM SPENT TO AVAILABLE
@@ -218,6 +225,8 @@ const BudgetBuilder = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState("");
+  const [showGif, setShowGif] = useState(false);
+  const [gifCount, setGifCount] = useState(0);
 
   useEffect(() => {
     if (parseInt(result?.spendingScore?.split("/")[0]) >= 7) {
@@ -594,6 +603,24 @@ Constraints -
 
           {/* Footer with Total Wallet and Check Now Button */}
           <div className="relative mt-20 left-1/2 right-1/2 -mx-[50vw] w-screen bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center">
+            {/* Kid Celebration Gif + Speech Bubble */}
+            {showGif && (
+              <div className="absolute -top-28 left-[83%] transform -translate-x-1/2 z-50 flex items-start">
+                {/* Kid gif */}
+                <img
+                  src="/financeGames6to8/kid-gif.gif"
+                  alt="Kid Celebration"
+                  className="w-28 h-28"
+                />
+                {/* Speech bubble */}
+                <img
+                  src="/financeGames6to8/kid-saying.svg"
+                  alt="Kid Saying"
+                  className="absolute top-2 left-24 w-24"
+                />
+              </div>
+            )}
+
             <div className="w-full max-w-4xl px-6">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
                 {/* Wallet Info */}
