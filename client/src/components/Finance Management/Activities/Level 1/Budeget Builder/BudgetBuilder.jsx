@@ -377,23 +377,50 @@ Constraints -
 
   if (isGameOver) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-black text-white text-center p-6">
-        <h1 className="text-4xl font-bold text-red-500 mb-6">💔 Game Over!</h1>
-        <p className="text-lg mb-8">You ran out of hearts. Try again!</p>
-        <button
-          className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition duration-300"
-          onClick={() => {
-            // Reset everything
-            setWallet(1000);
-            setAvailable(initialExpenses);
-            setSpent([]);
-            setHeartCount(4);
-            setIsGameOver(false);
-            setShowIntro(false); // go straight to the game
-          }}
-        >
-          🔁 Restart Game
-        </button>
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        {/* Game Over Content */}
+        <div className="flex flex-col items-center justify-center flex-1 p-6">
+          {/* Game Over GIF */}
+          <img
+            src="/financeGames6to8/game-over-game.gif"
+            alt="Game Over"
+            className="w-64 h-auto mb-6"
+          />
+
+          {/* Text */}
+          <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">
+            Oops! That was close! Wanna Retry?
+          </p>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+          <img
+            src="/financeGames6to8/feedback.svg"
+            alt="Feedback"
+            onClick={handleViewFeedback}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/retry.svg"
+            alt="Retry"
+            onClick={() => {
+              setWallet(1000);
+              setAvailable(initialExpenses);
+              setSpent([]);
+              setHeartCount(4);
+              setIsGameOver(false);
+              setShowIntro(false);
+            }}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/next-challenge.svg"
+            alt="Next Challenge"
+            onClick={handleNextChallenge}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+        </div>
       </div>
     );
   }
@@ -672,29 +699,63 @@ Constraints -
           </div>
 
           {showVictoryScreen && (
-            <div className="fixed inset-0 z-50 bg-[#1a2e1a] flex flex-col items-center justify-center text-center p-6">
-              <h2 className="text-3xl font-bold mb-4 text-green-400">
-                🎉 Challenge Complete!
-              </h2>
-              <p className="text-xl font-semibold mb-6 text-white">
-                Accuracy Score:{" "}
-                <span className="text-yellow-400">
-                  {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
-                </span>
-              </p>
-              <div className="flex gap-4">
-                <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-200"
+            <div className="fixed inset-0 z-50 bg-[#0A160E] flex flex-col justify-between">
+              {/* Center Content */}
+              <div className="flex flex-col items-center justify-center flex-1 p-6">
+                {/* Trophy GIFs */}
+                <div className="relative w-64 h-64 flex items-center justify-center">
+                  <img
+                    src="/financeGames6to8/trophy-rotating.gif"
+                    alt="Rotating Trophy"
+                    className="absolute w-full h-full object-contain"
+                  />
+                  <img
+                    src="/financeGames6to8/trophy-celebration.gif"
+                    alt="Celebration Effects"
+                    className="absolute w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Challenge Complete Text */}
+                <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">
+                  Challenge Complete!
+                </h2>
+
+                {/* Accuracy Box */}
+                <div className="mt-6 w-64 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+                  {/* Title - shifted down */}
+                  <p className="text-black text-sm font-bold mb-1 mt-2">
+                    TOTAL ACCURACY
+                  </p>
+
+                  {/* Inner Dark Box - moved closer to title */}
+                  <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+                    <img
+                      src="/financeGames6to8/accImg.svg"
+                      alt="Target Icon"
+                      className="w-6 h-6 mr-2"
+                    />
+                    <span className="text-yellow-400 text-xl font-extrabold">
+                      {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+                <img
+                  src="/financeGames6to8/feedback.svg"
+                  alt="Feedback"
                   onClick={handleViewFeedback}
-                >
-                  View Feedback
-                </button>
-                <button
-                  className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-200"
+                  className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                />
+                <img
+                  src="/financeGames6to8/next-challenge.svg"
+                  alt="Next Challenge"
                   onClick={handleNextChallenge}
-                >
-                  Next Challenge
-                </button>
+                  className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                />
               </div>
             </div>
           )}
