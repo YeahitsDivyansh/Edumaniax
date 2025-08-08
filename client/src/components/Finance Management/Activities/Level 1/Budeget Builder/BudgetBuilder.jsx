@@ -19,6 +19,7 @@ import { usePerformance } from "@/contexts/PerformanceContext"; // for performan
 import IntroScreen from "./IntroScreen.jsx";
 import GameNav from "./GameNav.jsx";
 import { useNavigate } from "react-router-dom";
+import InstructionOverlay from "./InstructionOverlay.jsx";
 
 function parsePossiblyStringifiedJSON(text) {
   if (typeof text !== "string") return null;
@@ -227,6 +228,7 @@ const BudgetBuilder = () => {
   const [result, setResult] = useState("");
   const [showGif, setShowGif] = useState(false);
   const [gifCount, setGifCount] = useState(0);
+  const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
     if (parseInt(result?.spendingScore?.split("/")[0]) >= 7) {
@@ -427,8 +429,19 @@ Constraints -
 
   return (
     <>
-      <GameNav heartCount={heartCount} />
-      <div className="flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8">
+      <div
+        className={`${
+          showInstructions ? "brightness-50 transition-all duration-300" : ""
+        }`}
+      >
+        <GameNav heartCount={heartCount} />
+      </div>
+
+      <div
+        className={`flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8 ${
+          showInstructions ? "brightness-50" : ""
+        }`}
+      >
         {/* Dark Theme Weekly Budget Builder */}
         <div
           className="w-full bg-[#0A160E] font-sans"
@@ -762,6 +775,10 @@ Constraints -
           <ToastContainer />
         </div>
       </div>
+      {/* Instructions overlay */}
+      {showInstructions && (
+        <InstructionOverlay onClose={() => setShowInstructions(false)} />
+      )}
     </>
   );
 };
