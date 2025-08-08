@@ -3,30 +3,30 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, X } from "lucide-react";
 import Hero from "@/PricingDesign/Hero";
-import emailjs from '@emailjs/browser';
+import emailjs from "@emailjs/browser";
 
 // Trial Booking Modal Component - Copied from Home.jsx
 const TrialBookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    schoolName: ''
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    schoolName: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
-    
+
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -34,38 +34,38 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        fullName: '',
-        email: '',
-        phoneNumber: '',
-        class: ''
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        class: "",
       });
       setShowSuccess(false);
-      setError('');
+      setError("");
     }
   }, [isOpen]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       // EmailJS configuration - Same as Home.jsx
-      const serviceId = 'service_52co609';
-      const templateId = 'template_h7uvb49';
-      const publicKey = 'zgnJuM3MRywVUxjcR';
+      const serviceId = "service_52co609";
+      const templateId = "template_h7uvb49";
+      const publicKey = "zgnJuM3MRywVUxjcR";
 
       const templateParams = {
-        to_email: 'anujyelve3074@gmail.com',
-        subject: 'New Institutional Plan Inquiry - Contact Us',
+        to_email: "anujyelve3074@gmail.com",
+        subject: "New Institutional Plan Inquiry - Contact Us",
         name: formData.fullName,
         email: formData.email,
         phone: formData.phoneNumber,
@@ -75,21 +75,20 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
         Email: ${formData.email}
         Phone Number: ${formData.phoneNumber}
         Organization/Institution: ${formData.schoolName}
-        Plan: Institutional Plan`
+        Plan: Institutional Plan`,
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      
+
       setShowSuccess(true);
-      
+
       // Close modal after 2 seconds
       setTimeout(() => {
         onClose();
       }, 2000);
-      
     } catch (error) {
-      console.error('Error sending email:', error);
-      setError('Failed to send request. Please try again.');
+      console.error("Error sending email:", error);
+      setError("Failed to send request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -106,11 +105,11 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
         exit={{ opacity: 0 }}
       >
         {/* Backdrop with blur */}
-        <div 
+        <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         />
-        
+
         {/* Modal */}
         <motion.div
           className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto"
@@ -135,13 +134,17 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                   Contact US
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Fill out the form below and we'll contact you soon for your Institutional Plan!
+                  Fill out the form below and we'll contact you soon for your
+                  Institutional Plan!
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Full Name */}
                   <div>
-                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="fullName"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Full Name *
                     </label>
                     <input
@@ -158,7 +161,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Email */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Email Address *
                     </label>
                     <input
@@ -175,7 +181,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Phone Number */}
                   <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="phoneNumber"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Phone Number *
                     </label>
                     <input
@@ -192,7 +201,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
                   {/* Organization/Class */}
                   <div>
-                    <label htmlFor="class" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="class"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Organization/Institution *
                     </label>
                     <input
@@ -220,7 +232,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                     disabled={isSubmitting}
                     className="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
-                    {isSubmitting ? 'Sending Request...' : 'Contact Us'}
+                    {isSubmitting ? "Sending Request..." : "Contact Us"}
                   </button>
                 </form>
               </>
@@ -228,15 +240,26 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
               /* Success message */
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Request Sent Successfully!
                 </h3>
                 <p className="text-gray-600">
-                  Thank you! We'll contact you soon to discuss your Institutional Plan needs.
+                  Thank you! We'll contact you soon to discuss your
+                  Institutional Plan needs.
                 </p>
               </div>
             )}
@@ -345,7 +368,7 @@ const faqData = [
 const Pricing = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false); // Added for modal state
-  
+
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -353,9 +376,9 @@ const Pricing = () => {
   return (
     <div className="relative">
       {/* Trial Booking Modal */}
-      <TrialBookingModal 
-        isOpen={isTrialModalOpen} 
-        onClose={() => setIsTrialModalOpen(false)} 
+      <TrialBookingModal
+        isOpen={isTrialModalOpen}
+        onClose={() => setIsTrialModalOpen(false)}
       />
 
       {/* Hero Section */}
@@ -467,7 +490,7 @@ const Pricing = () => {
             />
           </div>
           <p className="text-2xs mt-2 text-gray-400">
-            We accept Visa, American Express, Mastercard, Paypal and Crypto
+            We accept Credit Cards, Debit Cards, Paypal and Crypto
           </p>
         </div>
 
