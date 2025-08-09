@@ -6,6 +6,8 @@ import IntroScreen from "./IntroScreen";
 import InstructionsScreen from "./InstructionsScreen";
 import GameNav from "./GameNav";
 import Checknow from "@/components/icon/GreenBudget/Checknow";
+import Confetti from "react-confetti";
+import useWindowSize from "react-use/lib/useWindowSize";
 
 import NaturalBioticImg from "/environmentGameInfo/ClassifyIt/biotic.png";
 import NaturalAbioticImg from "/environmentGameInfo/ClassifyIt/abiotic.png";
@@ -36,6 +38,7 @@ const categories = [
 
 const TIME_LIMIT = 180;
 const TOTAL_QUESTIONS = data.length;
+const PERFECT_SCORE = TOTAL_QUESTIONS * 2;
 
 const initialState = {
   gameState: "intro",
@@ -47,6 +50,7 @@ const initialState = {
   timeLeft: TIME_LIMIT,
   timerActive: false,
   answerSubmitted: false,
+  isVictory: false,
 };
 
 function reducer(state, action) {
@@ -93,8 +97,10 @@ function reducer(state, action) {
         timerActive: true,
         answerSubmitted: false,
       };
-    case "FINISH_GAME":
-      return { ...state, gameState: "finished", timerActive: false };
+    case "FINISH_GAME": {
+      const isVictory = state.score === PERFECT_SCORE;
+      return { ...state, gameState: "finished", timerActive: false, isVictory };
+    }
     case "REVIEW_GAME":
       return { ...state, gameState: "review" };
     case "BACK_TO_FINISH":
@@ -108,11 +114,153 @@ function reducer(state, action) {
   }
 }
 
+// =============================================================================
+// Victory and Losing Screen Components
+// =============================================================================
+
+function VictoryScreen({ onPlayAgain, onContinue, onViewFeedback, totalScore, totalPossibleScore }) {
+  const { width, height } = useWindowSize();
+  const accuracyScore = (totalScore / totalPossibleScore) * 100;
+  return (
+    <>
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        <div className="flex flex-col items-center justify-center flex-1 p-6">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            <img
+              src="/financeGames6to8/trophy-rotating.gif"
+              alt="Rotating Trophy"
+              className="absolute w-full h-full object-contain"
+            />
+            <img
+              src="/financeGames6to8/trophy-celebration.gif"
+              alt="Celebration Effects"
+              className="absolute w-full h-full object-contain"
+            />
+          </div>
+          <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">
+            Challenge Complete!
+          </h2>
+          <div className="mt-6 w-64 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+            <p className="text-black text-sm font-bold mb-1 mt-2">
+              TOTAL ACCURACY
+            </p>
+            <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+              <img
+                src="/financeGames6to8/accImg.svg"
+                alt="Target Icon"
+                className="w-6 h-6 mr-2"
+              />
+              <span className="text-yellow-400 text-xl font-extrabold">
+                {Math.round(accuracyScore)}%
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+          <img
+            src="/financeGames6to8/feedback.svg"
+            alt="Feedback"
+            onClick={onViewFeedback}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/retry.svg"
+            alt="Retry"
+            onClick={onPlayAgain}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/next-challenge.svg"
+            alt="Next Challenge"
+            onClick={onContinue}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function LosingScreen({ onPlayAgain, onViewFeedback, onContinue }) {
+  return (
+    <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+      <div className="flex flex-col items-center justify-center flex-1 p-6">
+        <img
+          src="/financeGames6to8/game-over-game.gif"
+          alt="Game Over"
+          className="w-64 h-auto mb-6"
+        />
+        <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">
+          Oops! That was close! Wanna Retry?
+        </p>
+      </div>
+      <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+        <img
+          src="/financeGames6to8/feedback.svg"
+          alt="Feedback"
+          onClick={onViewFeedback}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
+        <img
+          src="/financeGames6to8/retry.svg"
+          alt="Retry"
+          onClick={onPlayAgain}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
+        <img
+          src="/financeGames6to8/next-challenge.svg"
+          alt="Next Challenge"
+          onClick={onContinue}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ReviewScreen({ answers, onBackToResults }) {
+  return (
+    <div className="min-h-[90vh] flex flex-col items-center justify-center bg-green-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-6xl bg-white rounded-3xl shadow flex flex-col items-center p-6 sm:p-8 lg:p-10 relative">
+        <button onClick={onBackToResults} className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition">
+          <span className="font-['Comfortaa'] text-[36px] sm:text-[40px]  text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">+</span>
+        </button>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center w-full" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>Check your answers</h2>
+        <p className="mb-6 sm:mb-8 text-base sm:text-xl text-gray-700 text-center w-full" style={{ fontFamily: 'Commissioner, Arial, sans-serif' }}>Classify the given word into one of the given categories</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full justify-items-center">
+          {answers.map((ans, idx) => {
+            const isCorrect = ans.isCorrect;
+            return (
+              <div
+                key={idx}
+                className={`main-container flex w-full max-w-[280px] sm:max-w-[256px] h-[120px] sm:h-[117px] p-4 sm:pt-[18px] sm:pr-[24px] sm:pb-[18px] sm:pl-[24px] flex-col gap-[10px] justify-center items-start rounded-[15px] relative ${isCorrect ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]"}`}
+              >
+                <div className="flex w-full justify-between items-start relative">
+                  <div className="flex flex-col gap-[8px] sm:gap-[10px] items-start flex-1">
+                    <span className={`font-['Comic_Neue'] text-xl sm:text-[25px] font-bold leading-[24px] relative text-left whitespace-nowrap z-[2] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>{ans.word}</span>
+                    <div className="flex flex-col gap-[2px] sm:gap-[3px] items-start w-full">
+                      <span className={`font-['Commissioner'] text-sm sm:text-[18px] font-light leading-[20px] sm:leading-[24px] relative text-left whitespace-nowrap z-[4] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>You : {ans.selected}</span>
+                      <span className={`font-['Commissioner'] text-sm sm:text-[18px] font-light leading-[20px] sm:leading-[24px] relative text-left whitespace-nowrap z-[5] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>Ans : {ans.correctAnswer}</span>
+                    </div>
+                  </div>
+                  <div className="w-[30px] h-[30px] sm:w-[35px] sm:h-[35px] shrink-0 bg-contain bg-no-repeat ml-2" style={{ backgroundImage: isCorrect ? "url(/check.png)" : "url(/cancel.png)" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ClassifyIt = () => {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
   const { completeEnvirnomentChallenge } = useEnvirnoment();
   const { updatePerformance } = usePerformance();
+  const { width, height } = useWindowSize();
 
   useEffect(() => {
     if (state.gameState === "playing" && state.timerActive && state.timeLeft > 0) {
@@ -170,7 +318,19 @@ const ClassifyIt = () => {
     }
   };
 
-  const currentWord = data[state.currentIndex].word.toUpperCase();
+  const handlePlayAgain = () => {
+    dispatch({ type: "RESET_GAME" });
+  };
+
+  const handleViewFeedback = () => {
+    dispatch({ type: "REVIEW_GAME" });
+  };
+
+  const handleContinue = () => {
+    navigate(-1);
+  };
+
+  const currentWord = data[state.currentIndex]?.word.toUpperCase() || "";
   const buttonText = state.answerSubmitted ? "Continue" : "Submit";
   const isButtonEnabled = state.answerSubmitted || state.selected !== null;
   const showFeedback = state.answerSubmitted;
@@ -185,77 +345,40 @@ const ClassifyIt = () => {
   }
 
   if (state.gameState === "finished") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[90vh]">
-        <h1 className="text-4xl font-bold mb-2 mt-16 text-center">Classify it</h1>
-        <p className="text-lg text-gray-600 mb-6 text-center">
-          Classify the given word into one of the given categories
-        </p>
-        <div className="flex flex-1 flex-col items-center justify-center w-full px-7 pb-7">
-          <div className="flex flex-col items-center justify-center mb-6">
-            <img
-              src="/blogDesign/kidsImage.svg"
-              alt="Kids reading blog"
-              className="w-48 mx-auto mb-4"
-            />
-            <div className="text-5xl font-bold text-green-600 mb-2 text-center">
-              {state.score}/{TOTAL_QUESTIONS * 2}
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-4 w-full">
-            <button onClick={() => {
-              dispatch({ type: "RESET_GAME" })
-            }} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Play Again
-            </button>
-            <button onClick={() => navigate(-1)} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Continue
-            </button>
-            <button onClick={() => dispatch({ type: "REVIEW_GAME" })} className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a]" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Review Answers
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    const totalScore = state.score;
+    const totalPossibleScore = PERFECT_SCORE;
+    const isVictory = totalScore === totalPossibleScore;
+
+    if (isVictory) {
+      return (
+        <VictoryScreen
+          totalScore={totalScore}
+          totalPossibleScore={totalPossibleScore}
+          onPlayAgain={handlePlayAgain}
+          onViewFeedback={handleViewFeedback}
+          onContinue={handleContinue}
+        />
+      );
+    } else {
+      return (
+        <LosingScreen
+          onPlayAgain={handlePlayAgain}
+          onViewFeedback={handleViewFeedback}
+          onContinue={handleContinue}
+        />
+      );
+    }
   }
 
   if (state.gameState === "review") {
     return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center bg-green-100 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-6xl bg-white rounded-3xl shadow flex flex-col items-center p-6 sm:p-8 lg:p-10 relative">
-          <button onClick={() => dispatch({ type: "BACK_TO_FINISH" })} className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition">
-            <span className="font-['Comfortaa'] text-[36px] sm:text-[40px]  text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">+</span>
-          </button>
-          <h2 className="text-3xl sm:text-4xl font-bold text-center w-full" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>Check your answers</h2>
-          <p className="mb-6 sm:mb-8 text-base sm:text-xl text-gray-700 text-center w-full" style={{ fontFamily: 'Commissioner, Arial, sans-serif' }}>Classify the given word into one of the given categories</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full justify-items-center">
-            {state.answers.map((ans, idx) => {
-              const isCorrect = ans.isCorrect;
-              return (
-                <div
-                  key={idx}
-                  className={`main-container flex w-full max-w-[280px] sm:max-w-[256px] h-[120px] sm:h-[117px] p-4 sm:pt-[18px] sm:pr-[24px] sm:pb-[18px] sm:pl-[24px] flex-col gap-[10px] justify-center items-start rounded-[15px] relative ${isCorrect ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]"}`}
-                >
-                  <div className="flex w-full justify-between items-start relative">
-                    <div className="flex flex-col gap-[8px] sm:gap-[10px] items-start flex-1">
-                      <span className={`font-['Comic_Neue'] text-xl sm:text-[25px] font-bold leading-[24px] relative text-left whitespace-nowrap z-[2] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>{ans.word}</span>
-                      <div className="flex flex-col gap-[2px] sm:gap-[3px] items-start w-full">
-                        <span className={`font-['Commissioner'] text-sm sm:text-[18px] font-light leading-[20px] sm:leading-[24px] relative text-left whitespace-nowrap z-[4] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>You : {ans.selected}</span>
-                        <span className={`font-['Commissioner'] text-sm sm:text-[18px] font-light leading-[20px] sm:leading-[24px] relative text-left whitespace-nowrap z-[5] ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>Ans : {ans.correctAnswer}</span>
-                      </div>
-                    </div>
-                    <div className="w-[30px] h-[30px] sm:w-[35px] sm:h-[35px] shrink-0 bg-contain bg-no-repeat ml-2" style={{ backgroundImage: isCorrect ? "url(/check.png)" : "url(/cancel.png)" }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <ReviewScreen
+        answers={state.answers}
+        onBackToResults={() => dispatch({ type: "BACK_TO_FINISH" })}
+      />
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-black flex flex-col items-center">
       <GameNav />
@@ -264,7 +387,7 @@ const ClassifyIt = () => {
         <div className="w-full max-w-5xl flex items-center justify-center mt-12 mb-16">
           <div className="flex items-center space-x-4">
             <h2 className="text-4xl text-white font-['Lilita_One']">Word:</h2>
-              <span className="text-5xl text-white font-['Lilita_One']">{currentWord}</span>
+            <span className="text-5xl text-white font-['Lilita_One']">{currentWord}</span>
           </div>
         </div>
 
@@ -272,32 +395,26 @@ const ClassifyIt = () => {
         <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 lg:px-0">
           {categories.map((cat) => {
             const isSelected = state.selected === cat.name;
-            const correctAnswer = data[state.currentIndex].answer;
+            const currentQuestion = data[state.currentIndex];
+            const correctAnswer = currentQuestion?.answer;
 
-            // --- MODIFICATION START: New logic for card styling ---
             let borderClass = 'border-gray-500';
             let interactionClass = '';
 
             if (state.answerSubmitted) {
-              // After submission, no hover/scale effects
               interactionClass = '';
-              // If this card is the correct one, its border is green
               if (cat.name === correctAnswer) {
                 borderClass = 'border-green-500';
-              }
-              // If this card was selected AND it was wrong, its border is red
-              else if (isSelected && cat.name !== correctAnswer) {
+              } else if (isSelected && cat.name !== correctAnswer) {
                 borderClass = 'border-red-500';
               }
             } else {
-              // Before submission
-              interactionClass = 'hover:scale-102'; // Hover effect
+              interactionClass = 'hover:scale-102';
               if (isSelected) {
                 borderClass = 'border-green-500';
-                interactionClass = 'transform '; // Active selection effect
+                interactionClass = 'transform ';
               }
             }
-            // --- MODIFICATION END ---
 
             return (
               <div
@@ -305,7 +422,7 @@ const ClassifyIt = () => {
                 onClick={() => dispatch({ type: "SELECT_OPTION", payload: cat.name })}
                 className={`
                   px-6 pb-4 rounded-2xl cursor-pointer transition-all duration-300
-                  bg-gray-800/30 flex flex-col justify-start items-center  
+                  bg-gray-800/30 flex flex-col justify-start items-center
                   border-2 ${borderClass}
                   ${interactionClass}
                 `}
@@ -329,14 +446,12 @@ const ClassifyIt = () => {
               onClick={showFeedback ? handleNextQuestion : handleSubmit}
               disabled={!isButtonEnabled}
             >
-              {/* --- MODIFICATION START: Updated Checknow component props --- */}
               <Checknow
                 topGradientColor={"#09be43"}
                 bottomGradientColor={"#068F36"}
                 width="100%"
                 height="100%"
               />
-              {/* --- MODIFICATION END --- */}
               <span
                 className={`
                   absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2

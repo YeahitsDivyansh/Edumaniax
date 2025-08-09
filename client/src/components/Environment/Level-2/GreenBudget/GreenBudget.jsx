@@ -72,7 +72,7 @@ const questions = [
       },
       {
         name: "Cloth Banner",
-        cost: 150, // Updated cost to match image
+        cost: 100, // Updated cost to match image
         imageUrl:
           "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-30/HjLNQqsr1Y.png",
         sustainable: true,
@@ -253,71 +253,121 @@ function ItemCard({ item, isSelected, onClick, isDisabled }) {
 function FeedbackGIF({ message, scoreAwarded }) {
   return (
     <div className="absolute -right-[9vw] -bottom-[8vh] flex items-end">
-            {/* Character Image/GIF */}
-           {" "}
+      {/* Character Image/GIF */}
       <img
         src="/feedbackcharacter.gif"
         alt="Character talking"
         className="w-[10vw] h-[15vh] object-contain"
       />
-            {/* Thinking Cloud and Message */}   
+      {/* Thinking Cloud and Message */}
       <div className="absolute left-[8vw] bottom-[6vh]">
-                <ThinkingCloud width="11vw" /> 
+        <ThinkingCloud width="11vw" />
       </div>
       <p className="absolute bottom-[11vh] left-[8.8vw] w-full text-[0.7vw] text-white text-center font-['Comic_Neue'] ">
-                {message}    
+        {message}
       </p>
     </div>
   );
 }
 
-function EndScreen({
-  totalScore,
-  totalPossibleScore,
-  onPlayAgain,
-  onReviewAnswers,
-  onContinue,
-}) {
+// Victory Screen with trophy and accuracy
+function VictoryScreen({ onPlayAgain, onContinue, onViewFeedback, totalScore, totalPossibleScore }) {
+  const { width, height } = useWindowSize();
+  const accuracyScore = (totalScore / totalPossibleScore) * 100;
   return (
-    <div className="flex flex-col items-center justify-center min-h-[85vh] p-4 text-center font-['Comic_Neue']">
-      <h1 className="text-4xl font-bold mb-2 mt-16 text-center">Game Over!</h1>
-      <p className="text-lg text-gray-600 mb-6 text-center">
-        Your choices matter!
-      </p>
-      <div className="flex flex-1 flex-col items-center justify-center w-full px-7 pb-7">
-        <div className="flex flex-col items-center justify-center mb-6">
-          <img
-            src="/blogDesign/kidsImage.svg"
-            alt="Kids reading blog"
-            className="w-48 mx-auto mb-4"
-          />
-          <div className="text-5xl font-bold text-green-600 mb-2 text-center">
-            {totalScore}/{totalPossibleScore}
+    <>
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        <div className="flex flex-col items-center justify-center flex-1 p-6">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            <img
+              src="/financeGames6to8/trophy-rotating.gif"
+              alt="Rotating Trophy"
+              className="absolute w-full h-full object-contain"
+            />
+            <img
+              src="/financeGames6to8/trophy-celebration.gif"
+              alt="Celebration Effects"
+              className="absolute w-full h-full object-contain"
+            />
+          </div>
+          <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">
+            Challenge Complete!
+          </h2>
+          <div className="mt-6 w-64 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+            <p className="text-black text-sm font-bold mb-1 mt-2">
+              TOTAL ACCURACY
+            </p>
+            <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+              <img
+                src="/financeGames6to8/accImg.svg"
+                alt="Target Icon"
+                className="w-6 h-6 mr-2"
+              />
+              <span className="text-yellow-400 text-xl font-extrabold">
+                {Math.round(accuracyScore)}%
+              </span>
+            </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-4 w-full">
-          <button
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+          <img
+            src="/financeGames6to8/feedback.svg"
+            alt="Feedback"
+            onClick={onViewFeedback}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/retry.svg"
+            alt="Retry"
             onClick={onPlayAgain}
-            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] "
-            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
-          >
-            Play Again
-          </button>
-          <button
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/next-challenge.svg"
+            alt="Next Challenge"
             onClick={onContinue}
-            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 "
-            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
-          >
-            Continue
-          </button>
-          <button
-            onClick={onReviewAnswers}
-            className="w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a]"
-            style={{ fontFamily: "Comic Neue, Comic Sans MS, cursive" }}
-          >
-            Review Answers
-          </button>
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
         </div>
+      </div>
+    </>
+  );
+}
+
+// Game Over Screen with "Oops" and retry
+function LosingScreen({ onPlayAgain, onViewFeedback, onContinue }) {
+  return (
+    <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+      <div className="flex flex-col items-center justify-center flex-1 p-6">
+        <img
+          src="/financeGames6to8/game-over-game.gif"
+          alt="Game Over"
+          className="w-64 h-auto mb-6"
+        />
+        <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">
+          Oops! That was close! Wanna Retry?
+        </p>
+      </div>
+      <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+        <img
+          src="/financeGames6to8/feedback.svg"
+          alt="Feedback"
+          onClick={onViewFeedback}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
+        <img
+          src="/financeGames6to8/retry.svg"
+          alt="Retry"
+          onClick={onPlayAgain}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
+        <img
+          src="/financeGames6to8/next-challenge.svg"
+          alt="Next Challenge"
+          onClick={onContinue}
+          className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+        />
       </div>
     </div>
   );
@@ -331,7 +381,7 @@ function ReviewScreen({ answers, onBackToResults }) {
           onClick={onBackToResults}
           className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition"
         >
-          <span className="font-['Comfortaa'] text-[36px] sm:text-[40px]  text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">
+          <span className="font-['Comfortaa'] text-[36px] sm:text-[40px] text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">
             +
           </span>
         </button>
@@ -542,6 +592,7 @@ export default function GreenBudgetGame() {
   const handleContinue = () => navigate(-1);
 
   const totalPossibleScore = questions.length * 5;
+  const isVictory = totalScore === totalPossibleScore;
 
   const buttonText = showFeedback ? "Continue" : "Check Now";
   const isButtonEnabled =
@@ -632,10 +683,10 @@ export default function GreenBudgetGame() {
                     />
                     <span
                       className={`
-                        absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                        lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000]
-                        ${!isButtonEnabled && "opacity-50"}
-                      `}
+                          absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                          lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000]
+                          ${!isButtonEnabled && "opacity-50"}
+                        `}
                     >
                       {buttonText}
                     </span>
@@ -645,22 +696,22 @@ export default function GreenBudgetGame() {
             </>
           )}
 
-          {step === "end" && (
-            <>
-              <EndScreen
-                totalScore={totalScore}
-                totalPossibleScore={questions.length * 5}
-                onPlayAgain={handlePlayAgain}
-                onReviewAnswers={handleReviewAnswers}
-                onContinue={handleContinue}
-              />
-              <Confetti
-                width={width}
-                height={height}
-                recycle={false}
-                numberOfPieces={200}
-              />
-            </>
+          {step === "end" && isVictory && (
+            <VictoryScreen
+              totalScore={totalScore}
+              totalPossibleScore={totalPossibleScore}
+              onPlayAgain={handlePlayAgain}
+              onViewFeedback={handleReviewAnswers}
+              onContinue={handleContinue}
+            />
+          )}
+
+          {step === "end" && !isVictory && (
+            <LosingScreen
+              onPlayAgain={handlePlayAgain}
+              onViewFeedback={handleReviewAnswers}
+              onContinue={handleContinue}
+            />
           )}
 
           {step === "review" && (
@@ -669,15 +720,6 @@ export default function GreenBudgetGame() {
                 answers={scenarioResults}
                 onBackToResults={handleBackToResults}
               />
-              <button
-                onClick={() => {
-                  setStep("intro");
-                  setIntroStep("first"); // Reset to the very beginning
-                }}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Play Again
-              </button>
             </>
           )}
         </div>
