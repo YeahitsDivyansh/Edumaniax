@@ -734,23 +734,35 @@ Constraints -
                   Challenge Complete!
                 </h2>
 
-                {/* Accuracy Box */}
-                <div className="mt-6 w-64 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
-                  {/* Title - shifted down */}
-                  <p className="text-black text-sm font-bold mb-1 mt-2">
-                    TOTAL ACCURACY
-                  </p>
+                {/* Accuracy + Insight Boxes Side by Side */}
+                <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                  {/* Accuracy Box */}
+                  <div className="w-64 bg-[#09BE43] rounded-xl p-1 flex flex-col items-center">
+                    <p className="text-black text-sm font-bold mb-1 mt-2">
+                      TOTAL ACCURACY
+                    </p>
+                    <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+                      <img
+                        src="/financeGames6to8/accImg.svg"
+                        alt="Target Icon"
+                        className="w-6 h-6 mr-2"
+                      />
+                      <span className="text-[#09BE43] text-xl font-extrabold">
+                        {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
+                      </span>
+                    </div>
+                  </div>
 
-                  {/* Inner Dark Box - moved closer to title */}
-                  <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
-                    <img
-                      src="/financeGames6to8/accImg.svg"
-                      alt="Target Icon"
-                      className="w-6 h-6 mr-2"
-                    />
-                    <span className="text-yellow-400 text-xl font-extrabold">
-                      {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
-                    </span>
+                  {/* Insight Box */}
+                  <div className="w-74 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+                    <p className="text-black text-sm font-bold mb-1 mt-2">
+                      INSIGHT
+                    </p>
+                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center">
+                      <span className="text-[#FFCC00] lilita-one-regular text-sm font-medium italic">
+                        {result?.tip || "Analyzing your results..."}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
