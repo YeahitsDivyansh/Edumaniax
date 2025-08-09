@@ -1,377 +1,343 @@
 import React, { useReducer, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
-import { usePerformance } from "@/contexts/PerformanceContext";
-const questions = [
-  {
-    question: "The layer that includes soil, rocks, and land where we build houses and grow food",
-    answer: "Lithosphere",
-  },
-  {
-    question: "The part of Earth that holds all the air and gases like oxygen and carbon dioxide",
-    answer: "Atmosphere",
-  },
-  {
-    question: "All water bodies – including oceans, rivers, glaciers, and lakes",
-    answer: "Hydrosphere",
-  },
-  {
-    question: "The zone of life — where animals, plants, and humans interact with air, water, and land",
-    answer: "Biosphere",
-  },
-  {
-    question: "This zone plays a key role in the water cycle and supports aquatic life",
-    answer: "Hydrosphere",
-  },
-  {
-    question: "This zone is directly affected by air pollution and climate change",
-    "answer": "Atmosphere",
-  },
-];
+import Confetti from "react-confetti";
+import useWindowSize from "react-use/lib/useWindowSize";
+
+// MODIFIED: Importing the required components from external files
+import IntroScreen from "./IntroScreen";
+import InstructionsScreen from "./InstructionsScreen";
+import GameNav from "./GameNav";
+import Checknow from "@/components/icon/GreenBudget/Checknow"; // Assuming this path is correct from your other files
+
+// =============================================================================
+// Mock Contexts and Hooks (for standalone functionality)
+// =============================================================================
+const useEnvirnoment = () => ({
+  completeEnvirnomentChallenge: () => console.log("Challenge marked complete."),
+});
+const usePerformance = () => ({
+  updatePerformance: (data) => console.log("Performance updated:", data),
+});
+
+// =============================================================================
+// Reusable Components (End Screens are kept here as they are specific to this game's flow)
+// =============================================================================
+
+function VictoryScreen({ onContinue, onViewFeedback, accuracyScore, insight }) {
+  const { width, height } = useWindowSize();
+  return (
+    <>
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={200} />
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        <div className="flex flex-col items-center justify-center flex-1 p-6">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            <img src="/financeGames6to8/trophy-rotating.gif" alt="Rotating Trophy" className="absolute w-full h-full object-contain" />
+            <img src="/financeGames6to8/trophy-celebration.gif" alt="Celebration Effects" className="absolute w-full h-full object-contain" />
+          </div>
+          <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">Challenge Complete!</h2>
+          <div className="mt-6 flex flex-col sm:flex-row gap-4">
+            <div className="w-64 bg-[#09BE43] rounded-xl p-1 flex flex-col items-center">
+              <p className="text-black text-sm font-bold mb-1 mt-2">TOTAL ACCURACY</p>
+              <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+                <img src="/financeGames6to8/accImg.svg" alt="Target Icon" className="w-6 h-6 mr-2" />
+                <span className="text-[#09BE43] text-xl font-extrabold">{accuracyScore}%</span>
+              </div>
+            </div>
+            <div className="w-74 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+              <p className="text-black text-sm font-bold mb-1 mt-2">INSIGHT</p>
+              <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center">
+                <span className="text-[#FFCC00] lilita-one-regular text-sm font-medium italic">{insight}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+          <img src="/financeGames6to8/feedback.svg" alt="Feedback" onClick={onViewFeedback} className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200" />
+          <img src="/financeGames6to8/next-challenge.svg" alt="Next Challenge" onClick={onContinue} className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function LosingScreen({ onPlayAgain, onViewFeedback, onContinue, insight, accuracyScore }) {
+  return (
+    <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+      <div className="flex flex-col items-center justify-center flex-1 p-6">
+        <img src="/financeGames6to8/game-over-game.gif" alt="Game Over" className="w-64 h-auto mb-6" />
+        <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">Oops! That was close! Wanna Retry?</p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-4">
+          <div className="w-64 bg-red-500 rounded-xl p-1 flex flex-col items-center">
+            <p className="text-black text-sm font-bold mb-1 mt-2">TOTAL ACCURACY</p>
+            <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+              <img src="/financeGames6to8/accImg.svg" alt="Target Icon" className="w-6 h-6 mr-2" />
+              <span className="text-red-500 text-xl font-extrabold">{accuracyScore}%</span>
+            </div>
+          </div>
+          <div className="w-74 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+            <p className="text-black text-sm font-bold mb-1 mt-2">INSIGHT</p>
+            <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center">
+              <span className="text-[#FFCC00] lilita-one-regular text-sm font-medium italic">{insight}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+        <img src="/financeGames6to8/feedback.svg" alt="Feedback" onClick={onViewFeedback} className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200" />
+        <img src="/financeGames6to8/retry.svg" alt="Retry" onClick={onPlayAgain} className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200" />
+        <img src="/financeGames6to8/next-challenge.svg" alt="Next Challenge" onClick={onContinue} className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200" />
+      </div>
+    </div>
+  );
+}
+
+// MODIFIED: ReviewScreen component updated to a 3x2 grid that fits the screen
+function ReviewScreen({ answers, onBackToResults }) {
+    return (
+        <div className="w-full h-screen bg-[#0A160E] text-white p-6 flex flex-col items-center justify-center">
+            <h1 className="text-4xl font-bold lilita-one-regular mb-6 text-yellow-400 flex-shrink-0">Review Your Answers</h1>
+            
+            <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-5 flex-grow">
+                {answers.map((ans, idx) => (
+                    <div 
+                        key={idx} 
+                        className={`p-4 rounded-lg flex flex-col justify-center ${ans.isCorrect ? 'bg-green-800' : 'bg-red-800/80'} transition-all duration-300`}
+                    >
+                        <p className="text-gray-300 text-sm mb-2 leading-tight">Q: {ans.description}</p>
+                        <p className="font-semibold text-base">
+                            Your Answer: 
+                            <span className={ans.isCorrect ? 'text-white' : 'text-red-300'}> {ans.selected || "Not Answered"}</span>
+                        </p>
+                        {!ans.isCorrect && (
+                            <p className="font-semibold text-base">
+                                Correct Answer: 
+                                <span className="text-green-300"> {ans.correctAnswer}</span>
+                            </p>
+                        )}
+                    </div>
+                ))}
+                {/* This part adds empty divs to maintain the grid structure if there are fewer than 6 answers */}
+                {Array(Math.max(0, 6 - answers.length)).fill(0).map((_, index) => (
+                    <div key={`empty-${index}`} className="opacity-0"></div>
+                ))}
+            </div>
+
+            <button 
+                onClick={onBackToResults} 
+                className="
+                  mt-6 px-8 py-3 
+                  bg-yellow-600 
+                  text-lg 
+                  lilita 
+                  [text-shadow:1px_2px_0_#000] [text-stroke:1px_black]
+                  hover:bg-yellow-700 
+                  transition-colors 
+                  flex-shrink-0
+                  [clip-path:polygon(10%_0,100%_0,90%_100%,0%_100%)]
+                  /* --- Background and 3D Effect --- */
+                  bg-amber-400 
+                  border-b-4 border-amber-600 
+                  [clip-path:polygon(8%_0,_100%_0,_92%_100%,_0%_100%)]
+                  
+                "
+            >
+                Back to Results
+            </button>
+        </div>
+    );
+}
+
+
+// =============================================================================
+// Game Data
+// =============================================================================
 
 const options = [
-  "Lithosphere",
-  "Atmosphere",
-  "Hydrosphere",
-  "Biosphere",
+    { name: "Lithosphere", iconUrl: "https://www.svgrepo.com/show/448839/rock.svg" },
+    { name: "Atmosphere", iconUrl: "https://www.svgrepo.com/show/443315/atmosphere.svg" },
+    { name: "Hydrosphere", iconUrl: "https://www.svgrepo.com/show/450379/hydrosphere.svg" },
+    { name: "Biosphere", iconUrl: "https://www.svgrepo.com/show/442751/biosphere.svg" },
 ];
 
+const questions = [
+    { description: "The layer that includes soil, rocks, and land where we build houses and grow food.", correctAnswer: "Lithosphere" },
+    { description: "All the water on Earth, including oceans, rivers, lakes, and glaciers.", correctAnswer: "Hydrosphere" },
+    { description: "The layer of gases surrounding the Earth that we breathe.", correctAnswer: "Atmosphere" },
+    { description: "The part of Earth where life exists, including all plants and animals.", correctAnswer: "Biosphere" },
+    { description: "This sphere contains clouds and protects us from the sun's harmful radiation.", correctAnswer: "Atmosphere" },
+];
+
+const TIME_LIMIT = 120; // 2 minutes
 const TOTAL_QUESTIONS = questions.length;
-const TIME_LIMIT = 120;
+const PERFECT_SCORE = TOTAL_QUESTIONS * 2;
+
+// =============================================================================
+// Reducer Logic
+// =============================================================================
 
 const initialState = {
-  gameState: "start", // "start", "playing", "finished", "review"
-  currentIndex: 0,
-  selected: null,
-  score: 0,
-  answers: [], // Stores { question, selected, correctAnswer, isCorrect } for review
-  timeLeft: TIME_LIMIT,
-  timerActive: false,
+  gameState: "intro",
+  introStep: "first",
+  currentIndex: 0,
+  selected: null,
+  score: 0,
+  answers: [],
+  timeLeft: TIME_LIMIT,
+  timerActive: false,
+  answerSubmitted: false,
 };
 
 function reducer(state, action) {
-  switch (action.type) {
-    case "START":
-      return { ...initialState, gameState: "playing", timerActive: true };
-    case "SELECT":
-      return { ...state, selected: action.value };
-    case "SUBMIT": {
-      if (state.selected === null) return state;
-      const current = questions[state.currentIndex];
-      const isCorrect = current.answer === state.selected;
-      return {
-        ...state,
-        answers: [
-          ...state.answers,
-          {
-            question: current.question,
-            selected: state.selected,
-            correctAnswer: current.answer,
-            isCorrect,
-          },
-        ],
-        score: isCorrect ? state.score + 1 : state.score,
-        timerActive: false,
-      };
-    }
-    case "NEXT":
-      if (state.currentIndex < TOTAL_QUESTIONS - 1) {
-        return {
-          ...state,
-          currentIndex: state.currentIndex + 1,
-          selected: null,
-          timerActive: true,
-        };
-      } else {
-        return {
-          ...state,
-          gameState: "finished",
-          timerActive: false,
-        };
-      }
-    case "TICK":
-      return { ...state, timeLeft: state.timeLeft - 1 };
-    case "TIME_UP":
-      return { ...state, gameState: "finished", timerActive: false };
-
-    case "FINISH_GAME":
-      return { ...state, gameState: "finished", timerActive: false };
-    case "REVIEW_GAME":
-      return { ...state, gameState: "review" };
-    case "BACK_TO_FINISH":
-      return { ...state, gameState: "finished" };
-    case "RESET_GAME":
-      return { ...initialState, gameState: "playing", timerActive: true };
-
-    default:
-      return state;
-  }
+  switch (action.type) {
+    case "SHOW_INSTRUCTIONS": return { ...state, introStep: "instructions" };
+    case "START_GAME": return { ...initialState, gameState: "playing", timerActive: true };
+    case "SELECT_OPTION": if (state.answerSubmitted) return state; return { ...state, selected: action.payload };
+    case "SUBMIT_ANSWER": {
+      const current = questions[state.currentIndex];
+      const isCorrect = current.correctAnswer === state.selected;
+      return {
+        ...state,
+        answers: [...state.answers, { description: current.description, selected: state.selected, correctAnswer: current.correctAnswer, isCorrect }],
+        score: isCorrect ? state.score + 2 : state.score,
+        answerSubmitted: true,
+      };
+    }
+    case "NEXT_QUESTION":
+      if (state.currentIndex + 1 >= TOTAL_QUESTIONS) {
+        return { ...state, gameState: "finished", timerActive: false };
+      }
+      return { ...state, currentIndex: state.currentIndex + 1, selected: null, answerSubmitted: false };
+    case "FINISH_GAME": return { ...state, gameState: "finished", timerActive: false };
+    case "REVIEW_GAME": return { ...state, gameState: "review" };
+    case "BACK_TO_FINISH": return { ...state, gameState: "finished" };
+    case "TICK":
+      if (state.timeLeft <= 1) {
+        return { ...state, timeLeft: 0, gameState: "finished", timerActive: false };
+      }
+      return { ...state, timeLeft: state.timeLeft - 1 };
+    case "RESET_GAME": return { ...initialState, gameState: "playing", timerActive: true };
+    default: return state;
+  }
 }
 
+// =============================================================================
+// Main Game Component
+// =============================================================================
 
-function PickZoneOption({ text, selected, onClick }) {
-  const iconUrl = selected
-    ? "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-24/OUPKF7XyuA.png"
-    : "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-07-24/szijJePOLJ.png";
+const PickTheZone = () => {
+    const navigate = useNavigate();
+    const [state, dispatch] = useReducer(reducer, initialState);
+    
+    useEffect(() => {
+        if (state.gameState === "playing" && state.timerActive) {
+            const timer = setInterval(() => dispatch({ type: "TICK" }), 1000);
+            return () => clearInterval(timer);
+        }
+    }, [state.gameState, state.timerActive]);
+    
+    const handleSubmit = () => {
+        if (state.selected === null) return;
+        dispatch({ type: "SUBMIT_ANSWER" });
+    };
 
-  return (
-    <div
-      className={`relative cursor-pointer w-full h-[58px] flex items-center justify-between
-                   ${selected ? "border-transparent bg-[#ffffff]" : "border-solid border-[3px] border-[rgba(141,189,156,0.2)]"}`}
-      onClick={onClick}
-    >
-      <div className="flex items-center h-full">
-        <div className={`w-[11px] h-full absolute left-0 top-0 ${selected ? "bg-[#09be43]" : "bg-transparent"}`} />
-        <span className="font-['Comic_Neue'] text-[20px] md:text-[22px] lg:text-[25px] font-bold leading-[24px] text-[#8cbd9c] ml-[20px] sm:ml-[33px] whitespace-nowrap">
-          {text}
-        </span>
-      </div>
-      <img
-        src={iconUrl}
-        alt={selected ? "selected" : "unselected"}
-        className="w-[30px] h-[30px] mr-4 shrink-0"
-      />
-    </div>
-  );
-}
+    const handleNextQuestion = () => {
+        dispatch({ type: "NEXT_QUESTION" });
+    };
+    
+    const handlePlayAgain = () => dispatch({ type: "RESET_GAME" });
+    const handleViewFeedback = () => dispatch({ type: "REVIEW_GAME" });
+    const handleContinue = () => navigate("/environmental/games");
 
+    const currentQuestion = questions[state.currentIndex];
+    const buttonText = state.answerSubmitted ? "Continue" : "Check Now";
+    const isButtonEnabled = state.answerSubmitted || state.selected !== null;
 
-const PickZone = () => {
-  const navigate = useNavigate();
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { completeEnvirnomentChallenge } = useEnvirnoment();
-  const { updatePerformance } = usePerformance();
+    if (state.gameState === "intro") {
+        return state.introStep === "first"
+            ? <IntroScreen onShowInstructions={() => dispatch({ type: "SHOW_INSTRUCTIONS" })} />
+            : <InstructionsScreen onStartGame={() => dispatch({ type: "START_GAME" })} />;
+    }
 
-  useEffect(() => {
-    if (state.gameState === "finished") {
-      completeEnvirnomentChallenge(0, 1);
+    if (state.gameState === "finished") {
+        const accuracyScore = Math.round((state.score / PERFECT_SCORE) * 100);
+        const isVictory = state.score === PERFECT_SCORE;
+        let insightText = "";
+        if (isVictory) {
+            insightText = "Perfect score! You're a master of the Earth's spheres!";
+        } else if (accuracyScore >= 70) {
+            insightText = "Great job! You have a solid understanding of our planet's systems.";
+        } else {
+            insightText = "Good effort! Reviewing the answers will help you learn even more.";
+        }
+        
+        return isVictory
+            ? <VictoryScreen accuracyScore={accuracyScore} insight={insightText} onViewFeedback={handleViewFeedback} onContinue={handleContinue} />
+            : <LosingScreen accuracyScore={accuracyScore} insight={insightText} onPlayAgain={handlePlayAgain} onViewFeedback={handleViewFeedback} onContinue={handleContinue} />;
+    }
 
-      const totalAnswered = state.answers.length;
-      const correct = state.answers.filter(a => a.isCorrect).length;
+    if (state.gameState === "review") {
+        return <ReviewScreen answers={state.answers} onBackToResults={() => dispatch({ type: "BACK_TO_FINISH" })} />;
+    }
 
-      const rawScore = state.score; // out of 6
-      const scaledScore = parseFloat(((rawScore / TOTAL_QUESTIONS) * 10).toFixed(2)); // out of 10
-      const accuracy = totalAnswered ? (correct / totalAnswered) * 100 : 0;
-      const scaledAccuracy = parseFloat(accuracy.toFixed(2)); // out of 100
+    return (
+        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start pt-24 pb-32">
+            <GameNav />
+            
+            <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 px-4">
+                <div className="w-full md:w-1/2 bg-[rgba(32,47,54,0.3)] rounded-xl p-6 space-y-4">
+                    {options.map((opt) => {
+                        const isSelected = state.selected === opt.name;
+                        let ringColor = 'ring-gray-600';
+                        if (state.answerSubmitted) {
+                            if (currentQuestion.correctAnswer === opt.name) {
+                                ringColor = 'ring-green-500';
+                            } else if (isSelected) {
+                                ringColor = 'ring-red-500';
+                            }
+                        } else if (isSelected) {
+                            ringColor = 'ring-green-500';
+                        }
 
-      const completed = totalAnswered === TOTAL_QUESTIONS;
-      const studyTimeMinutes = Math.round((TIME_LIMIT - state.timeLeft) / 60);
-      const avgResponseTimeSec = totalAnswered ? Math.round((TIME_LIMIT - state.timeLeft) / totalAnswered) : 0;
+                        return (
+                            <div 
+                                key={opt.name}
+                                onClick={() => dispatch({ type: 'SELECT_OPTION', payload: opt.name })}
+                                className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all bg-[#131f24] ring-2 ${ringColor} shadow-[0_2px_0_0_#000]`}
+                            >
+                                <div className={`w-8 h-8 rounded-md border-2 ${isSelected ? 'bg-green-600 border-green-400' : 'border-gray-500'} flex items-center justify-center`}>
+                                   {isSelected && <span className="text-white text-xl">✓</span>}
+                                </div>
+                                <span className="flex-1 text-xl font-medium">{opt.name}</span>
+                                <img src={opt.iconUrl} alt={opt.name} className="w-8 h-8" />
+                            </div>
+                        );
+                    })}
+                </div>
 
-      updatePerformance({
-        moduleName: "Environment",
-        topicName: "sustainableLeader",
-        score: scaledScore,
-        accuracy: scaledAccuracy,
-        avgResponseTimeSec,
-        studyTimeMinutes,
-        completed,
+                <div className="w-full md:w-1/2 bg-[rgba(32,47,54,0.3)] rounded-xl p-6 flex items-center justify-center">
+                    <p className="text-xl text-center font-medium leading-relaxed">
+                        {currentQuestion.description}
+                    </p>
+                </div>
+            </div>
 
-      });
-      setStartTime(Date.now());
-    }
-  }, [state.gameState, state.score, state.answers, state.timeLeft]);
-
-
-  useEffect(() => {
-    if (state.gameState === "playing" && state.timerActive && state.timeLeft > 0) {
-      const timer = setTimeout(() => dispatch({ type: "TICK" }), 1000);
-      return () => clearTimeout(timer);
-    }
-    if (state.timeLeft === 0 && state.gameState === "playing") {
-      dispatch({ type: "FINISH_GAME" });
-    }
-  }, [state.gameState, state.timerActive, state.timeLeft]);
-
-  const progress = ((TIME_LIMIT - state.timeLeft) / TIME_LIMIT) * 100;
-  const minutes = Math.floor(state.timeLeft / 60);
-  const seconds = state.timeLeft % 60;
-  const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
-  const handleBackToLevels = () => navigate(-1);
-
-  if (state.gameState === "review") {
-    return (
-      <div className="min-h-[90vh] flex flex-col items-center justify-center bg-green-100  px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-6xl bg-white rounded-3xl shadow flex flex-col items-center p-6 sm:p-8 lg:p-10 lg:px-20 relative">
-          <button onClick={() => dispatch({ type: "BACK_TO_FINISH" })} className="flex justify-center items-center absolute top-4 right-4 z-[139] w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-full hover:bg-gray-200 transition">
-            <span className="font-['Comfortaa'] text-[36px] sm:text-[40px] text-[#6f6f6f] rotate-[-45deg] font-semibold select-none">+</span>
-          </button>
-          <h2 className="text-3xl sm:text-4xl font-bold text-center w-full" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>Check your answers</h2>
-          <p className="mb-6 sm:mb-8 text-base sm:text-xl text-gray-700 text-center w-full" style={{ fontFamily: 'Commissioner, Arial, sans-serif' }}>Match each environment description to its correct zone</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full justify-items-center">
-            {state.answers.map((ans, idx) => {
-              const isCorrect = ans.isCorrect;
-              return (
-                <div
-                  key={idx}
-                  className={`main-container flex flex-col p-4 sm:p-5 gap-2 rounded-[15px] relative w-full max-w-[300px] sm:max-w-[calc(100%-1rem)] lg:max-w-[calc(100%-1rem)] xl:max-w-[280px] ${isCorrect ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]"}`}
-                >
-                  <div className="flex w-full justify-between items-start relative">
-                    <div className="flex flex-col gap-1 items-start flex-1 mr-2">
-                      <span className={`font-['Comic_Neue'] text-lg sm:text-xl font-bold leading-tight relative text-left ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>
-                        {ans.question}
-                      </span>
-                      <span className={`font-['Commissioner'] text-sm sm:text-base font-light leading-tight relative text-left ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>You : {ans.selected}</span>
-                      <span className={`font-['Commissioner'] text-sm sm:text-base font-light leading-tight relative text-left ${isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"}`}>Ans : {ans.correctAnswer}</span>
-                    </div>
-                    <div className="w-[30px] h-[30px] sm:w-[35px] sm:h-[35px] shrink-0 bg-contain bg-no-repeat" style={{ backgroundImage: isCorrect ? "url(/check.png)" : "url(/cancel.png)" }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (state.gameState === "finished") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 pb-8 md:pb-0">
-        <h1 className="text-4xl font-bold mb-2 mt-16 text-center">Pick the Zone</h1>
-        <p className="text-lg text-gray-600 mb-6 text-center">
-          Match each environment description to its correct zone
-        </p>
-        <div className="flex flex-1 flex-col items-center justify-center w-full">
-          <div className="flex flex-col items-center justify-center mb-6">
-            <img
-              src="/blogDesign/kidsImage.svg"
-              alt="Result illustration"
-              className="w-48 mx-auto mb-4"
-            />
-            <div className="text-5xl font-bold text-green-600 mb-2 text-center">
-              {state.score}/{TOTAL_QUESTIONS}
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mt-4 w-full max-w-xl">
-            <button onClick={() => {
-              dispatch({ type: "RESET_GAME" })
-              setStartTime(Date.now());
-            }
-            } className="w-full md:w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a] " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Play Again
-            </button>
-            <button onClick={handleBackToLevels} className="w-full md:w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600 " style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Continue
-            </button>
-            <button onClick={() => dispatch({ type: "REVIEW_GAME" })} className="w-full md:w-60 h-[60px] rounded-[10px] text-lg font-semibold transition-all bg-[#C9FF9F] border-2 border-[rgba(9,190,67,0.65)] shadow-[0px_2px_0px_0px_rgba(9,190,67,0.65)] text-[#4B4B4B] hover:bg-[#b2f47a]" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>
-              Review Answers
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (state.gameState === "playing") {
-    const currentQ = questions[state.currentIndex];
-
-    return (
-      <div className="min-h-screen flex flex-col items-center bg-white p-4 sm:p-6 md:p-8">
-
-        <div className="w-full max-w-4xl flex items-center justify-between mb-8 relative">
-          <div className="flex items-center gap-2 pr-2 sm:pr-4">
-            <span className="font-['Comic_Neue'] text-lg md:text-xl font-bold text-[#4B4B4B]">
-              {formattedTime}
-            </span>
-          </div>
-          <div className="flex-1 h-[22px] rounded-[20px] bg-[#D9D9D9] overflow-hidden">
-            <div
-              className="h-[22px] rounded-[20px] bg-[#09BE43] transition-all duration-300"
-              style={{ width: `${Math.max(0, progress)}%`, minWidth: 0 }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Main Content Container (Light Green Box) */}
-
-        <div className="w-full max-w-[1165px] bg-[#f5ffed] rounded-[25px] mx-auto
-                    p-4 sm:p-8 md:px-12 md:py-18
-                    flex flex-col lg:flex-row justify-center items-center lg:items-start lg:justify-evenly
-                    gap-8">
-
-          {/* Left Section: Question and Image */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-2/5 xl:w-1/3 min-w-0 md:max-h-[500px]">
-            <span className="font-['Comic_Neue'] text-lg md:text-xl font-bold leading-tight text-[#10903e] mb-2">
-              Question : {state.currentIndex + 1}
-            </span>
-            <span className="font-['Comic_Neue'] text-lg md:text-xl font-bold leading-tight text-[rgba(75,75,75,0.8)] mb-4">
-              {currentQ.question}
-            </span>
-            <div
-              className="w-28 h-28 sm:w-42 sm:h-42 rounded-[25px] bg-cover bg-no-repeat shrink-0 mt-8 lg:mt-2 lg:self-center"
-              style={{ backgroundImage: "url(/environmentGameInfo/lithosphere.png)" }}
-            ></div>
-          </div>
-
-          {/* Right Section: Options */}
-          <div className="flex flex-col gap-4 md:gap-6 w-full lg:w-3/5 xl:w-1/2 max-w-lg lg:max-w-none ">
-            {options.map((opt) => (
-              <PickZoneOption
-                key={opt}
-                text={opt}
-                selected={state.selected === opt}
-                onClick={() => dispatch({ type: "SELECT", value: opt })}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Submit Button*/}
-        <div className="mt-8 mb-8 w-full flex justify-center">
-          <button
-            onClick={() => {
-              if (state.selected === null) return;
-              dispatch({ type: "SUBMIT" });
-              setTimeout(() => {
-                if (state.currentIndex < TOTAL_QUESTIONS - 1) {
-                  dispatch({ type: "NEXT" });
-                } else {
-                  dispatch({ type: "FINISH_GAME" });
-                }
-              }, 300);
-            }}
-            disabled={state.selected === null}
-            className={`flex justify-center items-center w-[200px] sm:w-[250px] h-[50px] sm:h-[60px] rounded-[10px] text-lg sm:text-xl font-semibold transition-all
-              ${state.selected === null
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#09BE43] text-white shadow-[0px_2px_5px_0px_rgba(9,190,67,0.90)] hover:bg-green-600"}
-            `}
-            style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}
-          >
-            Submit
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4 text-center">
-      <h1 className="text-3xl md:text-4xl font-bold mb-2 mt-8" style={{ fontFamily: 'Comic Neue, Comic Sans MS, cursive' }}>Pick the Zone</h1>
-      <p className="text-base md:text-lg text-gray-600 mb-6" style={{ fontFamily: 'Commissioner, Arial, sans-serif' }}>
-        Match each environment description to its correct zone
-      </p>
-      <div className="bg-white rounded-xl shadow-md p-6 max-w-md mb-6 text-left">
-        <p className="mb-2 text-sm md:text-base">You’ll be given <b>{TOTAL_QUESTIONS} questions</b>. Your job is to pick the correct zone for each:</p>
-        <ul className="mb-2 list-disc list-inside text-sm md:text-base">
-          <li><b>Lithosphere</b> (soil, rocks, land)</li>
-          <li><b>Atmosphere</b> (air, gases)</li>
-          <li><b>Hydrosphere</b> (water bodies)</li>
-          <li><b>Biosphere</b> (zone of life)</li>
-        </ul>
-        <p className="mb-2 text-sm md:text-base">✅ <b>Scoring:</b> +1 per correct match</p>
-        <p className="mb-2 text-sm md:text-base">⏱️ <b>Time Limit:</b> {TIME_LIMIT / 60} minutes</p>
-      </div>
-      <button
-        onClick={() => dispatch({ type: "START" })}
-        className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-lg md:text-xl font-semibold shadow-lg"
-      >
-        Start
-      </button>
-    </div>
-  );
+            <div className="w-full h-[12vh] bg-[#28343A] flex justify-center items-center px-[5vw] z-10 fixed bottom-0">
+                <div className="w-auto md:w-[12vw] h-[8vh]">
+                    <button
+                        className="relative w-full h-full cursor-pointer px-8"
+                        onClick={state.answerSubmitted ? handleNextQuestion : handleSubmit}
+                        disabled={!isButtonEnabled}
+                    >
+                        <Checknow topGradientColor={"#09be43"} bottomGradientColor={"#068F36"} width="100%" height="100%" />
+                        <span className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 lilita text-[2.5vh] text-white [text-shadow:0_3px_0_#000] ${!isButtonEnabled && "opacity-50"}`}>
+                            {buttonText}
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
-export default PickZone;
+export default PickTheZone;
