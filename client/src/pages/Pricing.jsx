@@ -280,16 +280,16 @@ const plans = [
       "Access to 1 free game/module",
       "Notes for the selected module",
       "Access to basic learning tools",
+      "No completion certificates",
       { text: "No access to premium modules", excluded: true },
       { text: "No AI powered personalized assessment", excluded: true },
-      { text: "No completion certificates", excluded: true },
     ],
     button: "Start Now",
   },
   {
     title: "SOLO PLAN",
     price: "₹199",
-    frequency: "Per member, per 3 Month",
+    frequency: "Per member, per Month",
     description: "Ideal for focused learning on a specific topic.",
     features: [
       "Access to 1 premium module of choice",
@@ -320,7 +320,7 @@ const plans = [
   {
     title: "INSTITUTIONAL PLAN",
     price: "Custom",
-    frequency: "Per member, per Month",
+    frequency: "",
     description: "Tailored for bulk use with flexibility.",
     features: [
       "Access for 30+ users",
@@ -345,7 +345,7 @@ const faqData = [
   {
     question: "What payment type do you accept?",
     answer:
-      "We accept all major credit and debit cards, PayPal, UPI, and crypto wallets.",
+      "We accept all major credit and debit cards, PayPal, UPI, crypto wallets, etc.",
     QbgColor: "bg-[#FEC6C7]", // Soft pink
     AbgColor: "bg-[#FFF1F2]", // 🌸 Ultra-light pink
   },
@@ -362,6 +362,69 @@ const faqData = [
       "Of course! Our team is available 24/7 via live chat and email to help you anytime.",
     QbgColor: "bg-[#DABFFF]", // Lavender
     AbgColor: "bg-[#F5EBFF]", // 🪻 Soft lavender haze
+  },
+  {
+    question: "What if I’m not satisfied with EduManiax after joining?",
+    answer:
+      "Don’t worry at all. EduManiax offers a refund as per the package bought, which you can get in your bank once your request is processed. Before enrolling, you will also get a full demo of the platform, personalized one-on-one interaction, and access to our support team to help you at every step.",
+    QbgColor: "bg-[#FFD966]", // Warm yellow
+    AbgColor: "bg-[#FFF8E5]", // 🍯 Soft cream yellow
+  },
+  {
+    question: "What is Edumaniax?",
+    answer:
+      "Edumaniax is a gamified learning platform for students in Classes 6 to 12 across India. It teaches essential 21st-century skills like AI, finance, law, communication, and entrepreneurship through interactive, story-based modules designed to make learning fun and practical.",
+    QbgColor: "bg-[#A7F3D0]", // Mint green
+    AbgColor: "bg-[#ECFDF5]", // 🌿 Light mint background
+  },
+  {
+    question: "Who is Edumaniax for?",
+    answer:
+      "Our programs are designed for school students (Classes 6–12), parents seeking skill-based education, and schools in cities like Delhi, Lucknow, Bengaluru, and Jaipur that want to integrate NEP 2020-aligned content into their curriculum.",
+    QbgColor: "bg-[#FBCFE8]", // Pink blush
+    AbgColor: "bg-[#FFF0F9]", // 🌸 Light pastel pink
+  },
+  {
+    question: "What will students learn?",
+    answer:
+      "Students gain hands-on skills in AI tools, prompt engineering, legal awareness, investing, entrepreneurship, and public speaking. Each course delivers clear learning outcomes that build creativity, confidence, and future career readiness.",
+    QbgColor: "bg-[#FDE68A]", // Soft gold
+    AbgColor: "bg-[#FFFBEB]", // 🌼 Light golden cream
+  },
+  {
+    question: "How does Edumaniax assess student progress?",
+    answer:
+      "We use AI-driven assessments that adapt to each learner’s pace, offer real-time feedback, and generate detailed performance reports for parents and schools. The focus is on applied learning, not just marks.",
+    QbgColor: "bg-[#BAE6FD]", // Sky blue
+    AbgColor: "bg-[#E0F7FF]", // ☁ Light cloud blue
+  },
+  {
+    question: "How is it different from regular edtech apps?",
+    answer:
+      "Unlike video-based apps, Edumaniax turns learning into games and quests. Students complete challenges, earn rewards, and build real-world skills through simulations—making learning immersive and unforgettable.",
+    QbgColor: "bg-[#C7D2FE]", // Soft lavender blue
+    AbgColor: "bg-[#EEF2FF]", // 🌌 Misty lavender
+  },
+  {
+    question: "Is Edumaniax aligned with the school curriculum?",
+    answer:
+      "Yes, our modules are mapped to NEP 2020 guidelines and complement school subjects like civics, coding, and economics, ensuring students stay ahead without adding academic pressure.",
+    QbgColor: "bg-[#FCA5A5]", // Coral pink
+    AbgColor: "bg-[#FFE5E5]", // 🌺 Soft coral cream
+  },
+  {
+    question: "Do students receive certificates?",
+    answer:
+      "Yes, learners receive digital certificates after completing modules, which are valuable for portfolios, internships, and college applications.",
+    QbgColor: "bg-[#FCD34D]", // Bright yellow
+    AbgColor: "bg-[#FFF9E6]", // 🍋 Lemon cream
+  },
+  {
+    question: "Can schools partner with Edumaniax?",
+    answer:
+      "Absolutely. Schools and institutes can integrate our programs during school hours or as weekend clubs. We offer dashboards, training, and ongoing support for seamless implementation.",
+    QbgColor: "bg-[#86EFAC]", // Light green
+    AbgColor: "bg-[#ECFDF5]", // 🌱 Soft pastel green
   },
 ];
 
@@ -490,7 +553,7 @@ const Pricing = () => {
             />
           </div>
           <p className="text-2xs mt-2 text-gray-400">
-            We accept Credit Cards, Debit Cards, Paypal and Crypto
+            We accept Credit Cards, Debit Cards, Paypal, Crypto, etc.
           </p>
         </div>
 
