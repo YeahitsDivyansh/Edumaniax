@@ -42,15 +42,32 @@ const InstructionOverlay = ({ onClose }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Main container */}
-      <div className="relative bg-[#0e341d] shadow-xl w-[95%] md:w-[1000px] text-white z-10 border border-gray-700">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center 
+             md:overflow-hidden overflow-y-auto" // ✅ scroll only on small screens
+    >
+      <div
+        className="relative bg-[#0e341d] shadow-xl w-[95%] md:w-[1000px] text-white z-10 
+               border border-gray-700 
+               max-h-[90vh] overflow-y-auto md:overflow-visible // ✅ only scroll inside on phone
+               p-4 sm:p-6"
+      >
         {/* Cancel button */}
         <button
           onClick={onClose}
-          className="absolute -top-8 -right-8 rounded-full shadow-md 
-             hover:scale-110 transition-transform z-50
-             w-[103px] h-[68px] sm:w-[90px] sm:h-[60px] md:w-[103px] md:h-[68px]"
+          className="
+    absolute 
+    top-2 right-2 
+    sm:top-4 sm:right-4 
+    md:top-[-20px] md:right-[-20px]    /* Push it out for desktop */
+    w-[50px] h-[35px] 
+    sm:w-[70px] sm:h-[50px] 
+    md:w-[103px] md:h-[68px] 
+    rounded-full shadow-md 
+    hover:scale-110 
+    transition-transform 
+    z-50
+  "
         >
           <img
             src={CancelIcon}
