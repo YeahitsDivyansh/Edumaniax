@@ -298,6 +298,7 @@ import InboxInsightGame from "./components/Games for 9-10/Communication/Level3/I
 import CarouselCampaign from "./components/Games for 9-10/Dig Mkting/Level1/CarouselCampaign/CarouselCampaign";
 import VideoAudioSyncIntro from "./components/VideoAudioSyncIntro";
 import PaymentRequired from "./pages/PaymentRequired";
+import Payment from "./pages/Payment";
 import LeanMachineGame from "./components/Games for 9-10/Entreprenurship/Level1/LeanMachineGame/LeanMachineGame";
 import PitchArenaGame from "./components/Games for 9-10/Entreprenurship/Level1/PitchArenaGame/PitchArenaGame";
 import StartupQuest from "./components/Games for 9-10/Entreprenurship/Level1/StartupQuest/StartupQuest";
@@ -554,6 +555,7 @@ function AppContent() {
           <Route path="/admin" element={<AdminLogin />} />
 
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/payment" element={<Payment />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/finance/games" element={<Finance />} />

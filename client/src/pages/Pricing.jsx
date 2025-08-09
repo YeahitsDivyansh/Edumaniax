@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import Hero from "@/PricingDesign/Hero";
@@ -8,44 +8,45 @@ const plans = [
   {
     title: "STARTER PLAN",
     price: "₹0",
-    frequency: "Per member, per Month",
+    frequency: "7 Days Free Trial",
     description: "Perfect to explore and get started.",
     features: [
       "Access to 1 free game/module",
       "Notes for the selected module",
       "Access to basic learning tools",
+      "7 days trial period",
       { text: "No access to premium modules", excluded: true },
       { text: "No AI powered personalized assessment", excluded: true },
       { text: "No completion certificates", excluded: true },
     ],
-    button: "Start Now",
+    button: "Start Free Trial",
   },
   {
     title: "SOLO PLAN",
     price: "₹199",
-    frequency: "Per member, per 3 Month",
+    frequency: "Per member, per 1 Month",
     description: "Ideal for focused learning on a specific topic.",
     features: [
       "Access to 1 premium module of choice",
       "Notes for the selected module",
       "Interactive activities and assessments",
+      "Completion certificates",
       { text: "No access to all premium modules", excluded: true },
       { text: "No AI powered personalized assessment", excluded: true },
-      { text: "No completion certificates", excluded: true },
     ],
     button: "Start Now",
   },
   {
     title: "PRO PLAN",
     price: "₹1433",
-    frequency: "Per member, per 3 Month",
+    frequency: "Per member, per 6 Month",
     description: "Full learning experience for committed users",
     features: [
       "Access to all premium modules",
       "Notes for every module",
       "All interactive games and assessments",
       "AI powered personalized assessment",
-      "Completion certificates",
+      "Completion certificates for all modules",
     ],
     button: "Start Now",
     tag: "Popular",
@@ -143,6 +144,8 @@ const faqData = [
 
 const Pricing = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
+  const navigate = useNavigate();
+  
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -232,12 +235,13 @@ const Pricing = () => {
               </ul>
 
               {/* Button */}
-              <Link
-                to="/payment-required"
-                className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
+              <button
+                onClick={() => navigate(`/payment?plan=${plan.title.replace(' PLAN', '')}`)}
+                className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center w-full"
+                disabled={plan.title === "STARTER PLAN"}
               >
-                {plan.button}
-              </Link>
+                {plan.title === "STARTER PLAN" ? "Free Forever" : plan.button}
+              </button>
             </div>
           ))}
         </div>

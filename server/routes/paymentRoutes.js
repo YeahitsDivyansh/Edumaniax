@@ -1,0 +1,500 @@
+import express from "express";
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import { PrismaClient } from "@prisma/client";
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const router = express.Router();
+const prisma = new PrismaClient();
+
+// Feature flag check middleware
+const checkPaymentFeature = (req, res, next) => {
+  if (process.env.PAYMENT_ENABLED !== 'true') {
+    return res.status(503).json({
+      error: 'Payment feature is currently disabled',
+      message: 'Payment functionality is not available at the moment'
+    });
+  }
+  next();
+};
+
+// Initialize Razorpay only if feature is enabled
+let razorpay = null;
+if (process.env.PAYMENT_ENABLED === 'true') {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_SECRET_KEY,
+  });
+}
+
+// Plan configurations - amounts in rupees
+const PLANS = {
+  STARTER: { amount: 0, duration: 7, name: "Starter Plan" }, // Free trial
+  SOLO: { amount: 199, duration: 30, name: "Solo Plan" }, // ₹199 for 1 month
+  PRO: { amount: 1433, duration: 180, name: "Pro Plan" }, // ₹1433 for 6 months
+  INSTITUTIONAL: { amount: 0, duration: 0, name: "Institutional Plan" } // Custom pricing
+};
+
+// Test endpoint to check users (for debugging)
+router.get("/test-users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phonenumber: true
+      },
+      take: 30
+    });
+    res.json({ users, count: users.length });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// Create Razorpay order
+router.post("/create-order", checkPaymentFeature, async (req, res) => {
+  try {
+    const { planType, userId, selectedModule } = req.body;
+
+    if (!planType || !userId) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Plan type and user ID are required" 
+      });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        error: "User not found" 
+      });
+    }
+
+    const plan = PLANS[planType];
+    if (!plan) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid plan type" 
+      });
+    }
+
+    if (planType === "STARTER") {
+      return res.status(400).json({ 
+        success: false,
+        error: "Starter plan is free" 
+      });
+    }
+
+    // Create Razorpay order
+    // Generate a short receipt (max 40 chars for Razorpay)
+    const timestamp = Date.now().toString().slice(-8); // Last 8 digits
+    const shortUserId = userId.toString().slice(-6); // Last 6 digits/chars
+    const receipt = `ord_${shortUserId}_${timestamp}`;
+    
+    const orderOptions = {
+      amount: plan.amount * 100, // Convert rupees to paisa for Razorpay
+      currency: "INR",
+      receipt: receipt,
+      notes: {
+        userId,
+        planType,
+        planName: plan.name,
+        country: "IN",
+        selectedModule: selectedModule || null
+      }
+    };
+
+    console.log('Creating Razorpay order with options:', orderOptions);
+
+    const order = await razorpay.orders.create(orderOptions);
+
+    // Save payment record in database - store amount in rupees
+    const payment = await prisma.payment.create({
+      data: {
+        userId,
+        razorpayOrderId: order.id,
+        amount: plan.amount, // Store in rupees
+        planType,
+        status: "PENDING",
+        notes: selectedModule ? JSON.stringify({ selectedModule }) : null
+      }
+    });
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount, // Amount in paisa for Razorpay frontend
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      paymentId: payment.id,
+      userId: userId,
+      planType: planType,
+      selectedModule: selectedModule || null,
+      amountInRupees: plan.amount // Amount in rupees for display
+    });
+
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to create order",
+      message: error.message 
+    });
+  }
+});
+
+// Verify payment
+router.post("/verify-payment", checkPaymentFeature, async (req, res) => {
+  try {
+    const { 
+      razorpay_order_id, 
+      razorpay_payment_id, 
+      razorpay_signature, 
+      userId 
+    } = req.body;
+
+    // Verify signature
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
+      .update(body.toString())
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ error: "Invalid payment signature" });
+    }
+
+    // Find payment record
+    const payment = await prisma.payment.findUnique({
+      where: { razorpayOrderId: razorpay_order_id },
+      select: {
+        id: true,
+        userId: true,
+        amount: true,
+        planType: true,
+        notes: true
+      }
+    });
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment record not found" });
+    }
+
+    // Update payment status
+    const updatedPayment = await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        razorpayPaymentId: razorpay_payment_id,
+        status: "COMPLETED"
+      }
+    });
+
+    // Create or update subscription
+    const plan = PLANS[payment.planType];
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + plan.duration);
+
+    // Get notes from payment for SOLO plans that have a selected module
+    let subscriptionNotes = null;
+    if (payment.planType === 'SOLO' && payment.notes) {
+      subscriptionNotes = payment.notes; // Pass through the JSON notes with selectedModule
+    }
+
+    const subscription = await prisma.subscription.upsert({
+      where: {
+        userId_planType: {
+          userId: payment.userId,
+          planType: payment.planType
+        }
+      },
+      update: {
+        status: "ACTIVE",
+        endDate,
+        amount: payment.amount,
+        notes: subscriptionNotes
+      },
+      create: {
+        userId: payment.userId,
+        planType: payment.planType,
+        status: "ACTIVE",
+        endDate,
+        amount: payment.amount,
+        notes: subscriptionNotes
+      }
+    });
+
+    // Link payment to subscription
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { subscriptionId: subscription.id }
+    });
+
+    res.json({ 
+      success: true, 
+      message: "Payment verified successfully",
+      subscription
+    });
+
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    res.status(500).json({ error: "Failed to verify payment" });
+  }
+});
+
+// Get user subscriptions
+router.get("/subscriptions/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const subscriptions = await prisma.subscription.findMany({
+      where: { userId },
+      include: {
+        payments: {
+          orderBy: { createdAt: "desc" }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(subscriptions);
+
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+});
+
+// Check if user has active subscription for a plan
+router.get("/check-subscription/:userId/:planType", async (req, res) => {
+  try {
+    const { userId, planType } = req.params;
+
+    const subscription = await prisma.subscription.findUnique({
+      where: {
+        userId_planType: {
+          userId,
+          planType
+        }
+      }
+    });
+
+    const isActive = subscription && 
+                    subscription.status === "ACTIVE" && 
+                    subscription.endDate > new Date();
+
+    res.json({ 
+      hasAccess: isActive || planType === "STARTER",
+      subscription: isActive ? subscription : null
+    });
+
+  } catch (error) {
+    console.error("Error checking subscription:", error);
+    res.status(500).json({ error: "Failed to check subscription" });
+  }
+});
+
+// Get payment history
+router.get("/payments/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const payments = await prisma.payment.findMany({
+      where: { userId },
+      include: {
+        subscription: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(payments);
+
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    res.status(500).json({ error: "Failed to fetch payments" });
+  }
+});
+
+// Webhook for Razorpay events
+router.post("/webhook", async (req, res) => {
+  try {
+    const signature = req.headers["x-razorpay-signature"];
+    const body = JSON.stringify(req.body);
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET || "")
+      .update(body)
+      .digest("hex");
+
+    if (signature === expectedSignature) {
+      const event = req.body;
+      
+      // Handle different webhook events
+      switch (event.event) {
+        case "payment.captured":
+          // Payment successful
+          console.log("Payment captured:", event.payload.payment.entity);
+          break;
+        case "payment.failed":
+          // Payment failed
+          console.log("Payment failed:", event.payload.payment.entity);
+          break;
+        default:
+          console.log("Unhandled webhook event:", event.event);
+      }
+    }
+
+    res.status(200).json({ status: "ok" });
+
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.status(500).json({ error: "Webhook processing failed" });
+  }
+});
+
+// Check feature availability
+router.get("/feature-status", (req, res) => {
+  res.json({
+    paymentEnabled: process.env.PAYMENT_ENABLED === 'true',
+    message: process.env.PAYMENT_ENABLED === 'true' 
+      ? 'Payment feature is enabled' 
+      : 'Payment feature is currently disabled'
+  });
+});
+
+// Delete test payments (for development/testing only)
+router.delete("/cleanup-test-payments/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Delete payments with PENDING status for the user
+    const deletedPayments = await prisma.payment.deleteMany({
+      where: {
+        userId: userId,
+        status: "PENDING"
+      }
+    });
+
+    // Also delete any related subscriptions that might be in testing state
+    const deletedSubscriptions = await prisma.subscription.deleteMany({
+      where: {
+        userId: userId,
+        payments: {
+          none: {} // Delete subscriptions with no associated payments
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Cleanup completed for user ${userId}`,
+      deletedPayments: deletedPayments.count,
+      deletedSubscriptions: deletedSubscriptions.count
+    });
+
+  } catch (error) {
+    console.error("Error cleaning up test payments:", error);
+    res.status(500).json({ error: "Failed to cleanup test payments" });
+  }
+});
+
+// Delete completed payments for a user
+router.delete("/delete-completed-payments/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Delete payments with COMPLETED status for the user
+    const deletedPayments = await prisma.payment.deleteMany({
+      where: {
+        userId: userId,
+        status: "COMPLETED"
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Deleted ${deletedPayments.count} completed payments for user ${userId}`,
+      deletedPayments: deletedPayments.count
+    });
+
+  } catch (error) {
+    console.error("Error deleting completed payments:", error);
+    res.status(500).json({ error: "Failed to delete completed payments" });
+  }
+});
+
+// Delete all payments for a user (regardless of status)
+router.delete("/delete-all-payments/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Delete all payments for the user
+    const deletedPayments = await prisma.payment.deleteMany({
+      where: {
+        userId: userId
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Deleted ${deletedPayments.count} payments for user ${userId}`,
+      deletedPayments: deletedPayments.count
+    });
+
+  } catch (error) {
+    console.error("Error deleting all payments:", error);
+    res.status(500).json({ error: "Failed to delete all payments" });
+  }
+});
+
+// Delete all payments and subscriptions for a user (complete cleanup)
+router.delete("/delete-all-user-data/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Use a transaction to ensure data consistency
+    const result = await prisma.$transaction(async (tx) => {
+      // First, delete all payments for the user
+      const deletedPayments = await tx.payment.deleteMany({
+        where: {
+          userId: userId
+        }
+      });
+
+      // Then, delete all subscriptions for the user
+      const deletedSubscriptions = await tx.subscription.deleteMany({
+        where: {
+          userId: userId
+        }
+      });
+
+      return {
+        deletedPayments: deletedPayments.count,
+        deletedSubscriptions: deletedSubscriptions.count
+      };
+    });
+
+    res.json({
+      success: true,
+      message: `Complete cleanup completed for user ${userId}`,
+      deletedPayments: result.deletedPayments,
+      deletedSubscriptions: result.deletedSubscriptions,
+      totalDeleted: result.deletedPayments + result.deletedSubscriptions
+    });
+
+  } catch (error) {
+    console.error("Error performing complete cleanup:", error);
+    res.status(500).json({ error: "Failed to perform complete cleanup" });
+  }
+});
+
+export default router;

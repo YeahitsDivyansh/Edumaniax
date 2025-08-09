@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useAnimation } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useAccessControl } from "../utils/accessControl";
+import { useAuth } from "../contexts/AuthContext";
 
 import {
   BookOpen,
@@ -160,8 +162,47 @@ const courses = [
 const categories = ["All", "Finance", "Technology", "Legal", "Soft Skills", "Business", "Marketing", "Leadership", "Environment", "Health"];
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
 
-const CourseCard = ({ course, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
+const CourseCard = ({ course, index, userSubscriptions, userSelectedModule }) => {
+  const { 
+    hasModuleAccess, 
+    hasGameAccess, 
+    currentPlan: cardCurrentPlan, 
+    getRemainingTrialDays: cardGetRemainingTrialDays,
+    shouldShowUpgradePrompt 
+  } = useAccessControl(userSubscriptions, userSelectedModule);
+  
+  // Complete module mapping for access control
+  const moduleMapping = {
+    'Fundamentals of Finance': 'finance',
+    'Computer Science': 'computers', 
+    'Fundamentals of Law': 'law',
+    'Communication Mastery': 'communication',
+    'Entrepreneurship Bootcamp': 'entrepreneurship',
+    'Digital Marketing Pro': 'digital-marketing',
+    'Leadership & Adaptability': 'leadership', 
+    'Environmental Sustainability': 'environment',
+    'Wellness & Mental Health': 'sel'
+  };
+
+  const moduleKey = moduleMapping[course.title] || course.category?.toLowerCase();
+  const hasAccess = hasModuleAccess(moduleKey);
+  const hasGamesAccess = hasGameAccess(moduleKey);
+  const needsUpgrade = shouldShowUpgradePrompt(moduleKey);
+  const remainingDays = cardGetRemainingTrialDays();
+  
+  // Debug logging for troubleshooting
+  if (course.title.includes('Leadership')) {
+    console.log('Leadership Course Debug:', {
+      courseTitle: course.title,
+      moduleKey,
+      hasAccess,
+      hasGamesAccess,
+      needsUpgrade,
+      currentPlan: cardCurrentPlan,
+      userSelectedModule,
+      remainingDays
+    });
+  }
 
   // Helper function to get level icon
   const getLevelIcon = (level) => {
@@ -192,8 +233,6 @@ const CourseCard = ({ course, index }) => {
         y: -8,
         transition: { duration: 0.3, ease: "easeOut" }
       }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
     >
       {/* Image Section */}
       <div className="relative h-32 sm:h-40 bg-gray-900 flex-shrink-0">
@@ -269,19 +308,39 @@ const CourseCard = ({ course, index }) => {
 
         {/* Buttons Row - Improved Spacing */}
         <div className="flex gap-2 mt-auto">
-          <Link
-            to={course.gamesLink}
-            className="flex-1"
-          >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+          {hasGamesAccess ? (
+            <Link
+              to={course.gamesLink}
+              className="flex-1"
             >
-              <img src="/game.png" alt="Game" className="w-5 h-5" />
-              Let's Play &gt;
-            </motion.button>
-          </Link>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+              >
+                <img src="/game.png" alt="Game" className="w-5 h-5" />
+                {cardCurrentPlan === 'STARTER' && remainingDays !== null 
+                  ? `Play (${remainingDays} days left)` 
+                  : 'Let\'s Play >'
+                }
+              </motion.button>
+            </Link>
+          ) : (
+            <Link
+              to="/pricing"
+              className="flex-1"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gray-400 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-gray-500 transition duration-300 text-sm flex items-center justify-center gap-2"
+                title="Upgrade to access games"
+              >
+                <img src="/game.png" alt="Game" className="w-5 h-5 opacity-70" />
+                {cardCurrentPlan === 'STARTER' ? 'Trial Expired' : 'Upgrade >'}
+              </motion.button>
+            </Link>
+          )}
 
           <Link
             to={course.notesLink}
@@ -363,16 +422,71 @@ const MobileFilterDropdown = ({
 };
 
 const Courses = () => {
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-  const [difficultyDropdownOpen, setDifficultyDropdownOpen] = useState(false);
-  const navigate = useNavigate();
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
   const coursesRef = useRef(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [hasAutoExpanded, setHasAutoExpanded] = useState(false);
   const filtersRef = useRef(null);
+
+  // Access control hook for trial banner
+  const { currentPlan, getRemainingTrialDays, isTrialValid } = useAccessControl(subscriptions, selectedModule);
+
+  // Fetch user subscription data
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Set selected module from active subscription
+          const activeSubscription = Array.isArray(subscriptionData) 
+            ? subscriptionData.find(sub => sub.status === 'ACTIVE') 
+            : null;
+          
+          if (activeSubscription && activeSubscription.notes) {
+            try {
+              const parsedNotes = JSON.parse(activeSubscription.notes);
+              const rawModule = parsedNotes.selectedModule;
+              
+              // Map the display name to the correct module key
+              const moduleMapping = {
+                'Leadership': 'leadership',
+                'Entrepreneurship': 'entrepreneurship',
+                'Finance': 'finance',
+                'Digital Marketing': 'digital-marketing',
+                'Communication': 'communication',
+                'Computer Science': 'computers',
+                'Environmental Science': 'environment',
+                'Legal Awareness': 'law',
+                'Social Emotional Learning': 'sel'
+              };
+              
+              setSelectedModule(moduleMapping[rawModule] || rawModule?.toLowerCase());
+            } catch {
+              setSelectedModule(activeSubscription.notes?.toLowerCase());
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error);
+        setSubscriptions([]);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
 
   const filteredCourses = courses.filter(course => {
     const matchesCategory = selectedCategory === "All" || course.category === selectedCategory;
@@ -392,19 +506,6 @@ const Courses = () => {
       coursesRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.dropdown-container')) {
-        setCategoryDropdownOpen(false);
-        setDifficultyDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -632,6 +733,40 @@ const Courses = () => {
 
       {/* Courses Grid */}
       <div ref={coursesRef} className="max-w-7xl mx-auto px-6 py-12 pb-28 sm:mb-8 mb-80">
+        {/* Trial Banner for STARTER Plan Users */}
+        {subscriptions.length > 0 && currentPlan === 'STARTER' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-8 p-4 rounded-xl text-white text-center ${
+              isTrialValid() 
+                ? 'bg-gradient-to-r from-green-500 to-blue-500' 
+                : 'bg-gradient-to-r from-red-500 to-orange-500'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-lg">🎯</span>
+              <h3 className="text-lg font-semibold">
+                {isTrialValid() ? 'Free Trial Active' : 'Trial Expired'}
+              </h3>
+            </div>
+            <p className="text-sm opacity-90">
+              {isTrialValid() 
+                ? `You have ${getRemainingTrialDays()} days left to explore ALL modules and level 1 games!`
+                : 'Your 7-day trial has ended. Upgrade to continue learning!'
+              }
+            </p>
+            {!isTrialValid() && (
+              <Link 
+                to="/pricing"
+                className="inline-block mt-3 bg-white text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Upgrade Now
+              </Link>
+            )}
+          </motion.div>
+        )}
+
         {filteredCourses.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -652,6 +787,8 @@ const Courses = () => {
                 key={course.id}
                 course={course}
                 index={index}
+                userSubscriptions={subscriptions}
+                userSelectedModule={selectedModule}
               />
             ))}
           </motion.div>

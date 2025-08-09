@@ -2,14 +2,33 @@ import React, { useState, useEffect, useRef } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAccessControl } from "../utils/accessControl";
 
 const Navbar = () => {
   const { user, role, logout } = useAuth();
+  const { accessStatus } = useAccessControl();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
+
+  // Check if user has a paid subscription (not STARTER)
+  const hasPaidSubscription = accessStatus?.subscription && 
+    accessStatus.subscription.plan !== 'STARTER' && 
+    accessStatus.subscription.status === 'active';
+  
+  // Check if user should see upgrade button (STARTER or PRO plan)
+  const shouldShowUpgrade = user && accessStatus?.subscription && 
+    (accessStatus.subscription.planType === 'STARTER' || accessStatus.subscription.planType === 'PRO') &&
+    accessStatus.subscription.status === 'active';
+  
+  // Get the next upgrade plan
+  const getUpgradePlan = () => {
+    if (accessStatus?.subscription?.planType === 'STARTER') return 'SOLO';
+    if (accessStatus?.subscription?.planType === 'PRO') return 'INSTITUTIONAL';
+    return 'PRO';
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -86,9 +105,18 @@ const Navbar = () => {
           <Link to="/courses" className={getNavLinkClasses("/courses")}>
             Courses
           </Link>
-          <Link to="/pricing" className={getNavLinkClasses("/pricing")}>
-            Pricing
-          </Link>
+          {shouldShowUpgrade ? (
+            <button
+              onClick={() => navigate(`/payment?plan=${getUpgradePlan()}`)}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+            >
+              ⬆️ Upgrade Plan
+            </button>
+          ) : !hasPaidSubscription && (
+            <Link to="/pricing" className={getNavLinkClasses("/pricing")}>
+              Pricing
+            </Link>
+          )}
           <Link to="/blogs" className={getNavLinkClasses("/blogs")}>
             Blogs
           </Link>
@@ -185,17 +213,29 @@ const Navbar = () => {
               >
                 Courses
               </Link>
-              <Link
-                to="/pricing"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/pricing")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
-                Pricing
-              </Link>
+              {shouldShowUpgrade ? (
+                <button
+                  onClick={() => {
+                    navigate(`/payment?plan=${getUpgradePlan()}`);
+                    handleItemClick();
+                  }}
+                  className="block w-full text-left bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-3 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300"
+                >
+                  ⬆️ Upgrade Plan
+                </button>
+              ) : !hasPaidSubscription && (
+                <Link
+                  to="/pricing"
+                  onClick={handleItemClick}
+                  className={`block text-lg font-medium transition duration-300 ${
+                    isActive("/pricing")
+                      ? "text-green-600"
+                      : "text-black hover:text-green-600"
+                  }`}
+                >
+                  Pricing
+                </Link>
+              )}
               <Link
                 to="/blogs"
                 onClick={handleItemClick}
