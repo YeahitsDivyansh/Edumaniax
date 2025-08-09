@@ -6,27 +6,149 @@ import { useAccessControl } from "../utils/accessControl";
 
 const Navbar = () => {
   const { user, role, logout } = useAuth();
-  const { accessStatus } = useAccessControl();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
   const sidebarRef = useRef(null);
 
-  // Check if user has a paid subscription (not STARTER)
-  const hasPaidSubscription = accessStatus?.subscription && 
-    accessStatus.subscription.plan !== 'STARTER' && 
-    accessStatus.subscription.status === 'active';
-  
+  // Access control with subscription data
+  const { currentPlan } = useAccessControl(subscriptions, selectedModule);
+
+  // Fetch user subscription data
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) {
+        setSubscriptionsLoading(false);
+        return;
+      }
+
+      try {
+        setSubscriptionsLoading(true);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions
+          for (const plan of planHierarchy.reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          // If we found a highest active subscription, handle module selection for SOLO plans
+          if (highestActiveSubscription && highestActiveSubscription.notes) {
+            // Parse notes to get selectedModule if it exists
+            let selectedModuleFromSub = null;
+            try {
+              const parsedNotes = JSON.parse(highestActiveSubscription.notes);
+              const rawModule = parsedNotes.selectedModule;
+              
+              // Map the display name to the correct module key
+              const moduleMapping = {
+                // Full display names from UI
+                'Finance Management': 'finance',
+                'Digital Marketing': 'digital-marketing',
+                'Communication Skills': 'communication',
+                'Computer Science': 'computers',
+                'Entrepreneurship': 'entrepreneurship',
+                'Environmental Science': 'environment',
+                'Legal Awareness': 'law',
+                'Leadership Skills': 'leadership',
+                'Social Emotional Learning': 'sel',
+                
+                // Short names (legacy support)
+                'Leadership': 'leadership',
+                'Finance': 'finance',
+                'Communication': 'communication',
+                
+                // Course-specific names from screenshots
+                'Fundamentals of Finance': 'finance',
+                'Fundamentals of Law': 'law',
+                'Communication Mastery': 'communication',
+                'Entrepreneurship Bootcamp': 'entrepreneurship',
+                'Digital Marketing Pro': 'digital-marketing',
+                'Leadership & Adaptability': 'leadership',
+                'Environmental Sustainability': 'environment'
+              };
+              
+              selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+            } catch {
+              // If notes is not JSON, treat as plain text and map it
+              const moduleMapping = {
+                // Full display names from UI
+                'Finance Management': 'finance',
+                'Digital Marketing': 'digital-marketing',
+                'Communication Skills': 'communication',
+                'Computer Science': 'computers',
+                'Entrepreneurship': 'entrepreneurship',
+                'Environmental Science': 'environment',
+                'Legal Awareness': 'law',
+                'Leadership Skills': 'leadership',
+                'Social Emotional Learning': 'sel',
+                
+                // Short names (legacy support)
+                'Leadership': 'leadership',
+                'Finance': 'finance',
+                'Communication': 'communication',
+                
+                // Course-specific names from screenshots
+                'Fundamentals of Finance': 'finance',
+                'Fundamentals of Law': 'law',
+                'Communication Mastery': 'communication',
+                'Entrepreneurship Bootcamp': 'entrepreneurship',
+                'Digital Marketing Pro': 'digital-marketing',
+                'Leadership & Adaptability': 'leadership',
+                'Environmental Sustainability': 'environment'
+              };
+              
+              selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+            }
+            
+            setSelectedModule(selectedModuleFromSub);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions in navbar:', error);
+        setSubscriptions([]);
+      } finally {
+        setSubscriptionsLoading(false);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
+
   // Check if user should see upgrade button (STARTER or PRO plan)
-  const shouldShowUpgrade = user && accessStatus?.subscription && 
-    (accessStatus.subscription.planType === 'STARTER' || accessStatus.subscription.planType === 'PRO') &&
-    accessStatus.subscription.status === 'active';
+  // Don't show upgrade button while subscriptions are loading
+  const shouldShowUpgrade = user && !subscriptionsLoading && 
+    (currentPlan === 'STARTER' || currentPlan === 'PRO');
   
   // Get the next upgrade plan
   const getUpgradePlan = () => {
-    if (accessStatus?.subscription?.planType === 'STARTER') return 'SOLO';
-    if (accessStatus?.subscription?.planType === 'PRO') return 'INSTITUTIONAL';
+    if (currentPlan === 'STARTER') return 'SOLO';
+    if (currentPlan === 'PRO') return 'INSTITUTIONAL';
     return 'PRO';
   };
 
@@ -108,15 +230,15 @@ const Navbar = () => {
           {shouldShowUpgrade ? (
             <button
               onClick={() => navigate(`/payment?plan=${getUpgradePlan()}`)}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+              className="font-medium transition duration-300 text-black hover:text-green-600"
             >
-              ⬆️ Upgrade Plan
+              Upgrade Plan
             </button>
-          ) : !hasPaidSubscription && (
+          ) : (!user || subscriptionsLoading || currentPlan === 'INSTITUTIONAL' || currentPlan === 'SOLO') ? (
             <Link to="/pricing" className={getNavLinkClasses("/pricing")}>
               Pricing
             </Link>
-          )}
+          ) : null}
           <Link to="/blogs" className={getNavLinkClasses("/blogs")}>
             Blogs
           </Link>
@@ -219,11 +341,11 @@ const Navbar = () => {
                     navigate(`/payment?plan=${getUpgradePlan()}`);
                     handleItemClick();
                   }}
-                  className="block w-full text-left bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-3 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300"
+                  className="block text-lg font-medium transition duration-300 text-black hover:text-green-600"
                 >
-                  ⬆️ Upgrade Plan
+                  Upgrade Plan
                 </button>
-              ) : !hasPaidSubscription && (
+              ) : (!user || subscriptionsLoading || currentPlan === 'INSTITUTIONAL' || currentPlan === 'SOLO') ? (
                 <Link
                   to="/pricing"
                   onClick={handleItemClick}
@@ -235,7 +357,7 @@ const Navbar = () => {
                 >
                   Pricing
                 </Link>
-              )}
+              ) : null}
               <Link
                 to="/blogs"
                 onClick={handleItemClick}

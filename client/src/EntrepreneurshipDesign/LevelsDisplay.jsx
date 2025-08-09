@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { useEntrepreneruship } from "@/contexts/EntreprenerushipContext";
+import { useEntrepreneruship } from "../contexts/EntreprenerushipContext";
 import CommonLevelsDisplay from "../components/CommonLevelsDisplay";
 
 const LevelsDisplay = ({ modules }) => {

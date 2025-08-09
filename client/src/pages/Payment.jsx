@@ -92,7 +92,22 @@ const Payment = () => {
     }
   }, []);
 
-  // Check if payment feature is disabled - moved after all hooks
+  // Show loading while payment configuration is being checked
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
+          <Loader2 className="w-16 h-16 text-green-500 mx-auto mb-4 animate-spin" />
+          <h1 className="text-2xl font-bold text-green-800 mb-2">Loading Payment...</h1>
+          <p className="text-green-700 mb-4">
+            Please wait while we prepare your payment options.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if payment feature is disabled - only after loading is complete
   if (!isPaymentEnabled) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 flex items-center justify-center px-4">
@@ -206,64 +221,17 @@ const Payment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4"
+            className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 mb-4"
           >
             <ArrowLeft size={20} />
             Back
           </button>
-          
-          <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">
-            Complete Your Purchase
-          </h1>
-          <p className="text-blue-700">Choose your plan and unlock premium features</p>
-        </div>
-
-        {/* Plan Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {Object.entries(PLAN_DETAILS).map(([planKey, plan]) => (
-            <div
-              key={planKey}
-              onClick={() => setSelectedPlan(planKey)}
-              className={`relative bg-white rounded-2xl p-6 cursor-pointer transition-all duration-300 border-2 ${
-                selectedPlan === planKey
-                  ? 'border-blue-500 shadow-lg scale-105'
-                  : 'border-gray-200 hover:border-blue-300'
-              } ${plan.popular ? 'ring-2 ring-yellow-400' : ''}`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">{plan.name}</h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-blue-600">
-                    {typeof plan.price === 'number' ? `₹${plan.price}` : plan.price}
-                  </span>
-                  <p className="text-sm text-gray-600">{plan.duration}</p>
-                </div>
-                
-                <ul className="text-sm space-y-2 text-left">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Payment Section */}
@@ -284,7 +252,7 @@ const Payment = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-blue-600">
+                    <span className="text-green-600">
                       {typeof currentPlan.price === 'number' ? `₹${currentPlan.price}` : currentPlan.price}
                     </span>
                   </div>
@@ -304,7 +272,7 @@ const Payment = () => {
             {/* Payment Button */}
             <div className="flex flex-col justify-center">
               <div className="text-center">
-                <CreditCard className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <CreditCard className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
                   Ready to unlock premium features?
                 </h3>
@@ -314,7 +282,7 @@ const Payment = () => {
 
                 {/* Module selection for SOLO plan */}
                 {selectedPlan === 'SOLO' && (
-                  <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-left">
+                  <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200 text-left">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       Select Your Module
                     </h3>
@@ -324,7 +292,7 @@ const Payment = () => {
                     <select
                       value={selectedModule}
                       onChange={(e) => setSelectedModule(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       required
                     >
                       <option value="">Select a module...</option>
@@ -340,7 +308,7 @@ const Payment = () => {
                 <button
                   onClick={handlePayment}
                   disabled={loading || paymentStatus === 'processing'}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {loading || paymentStatus === 'processing' ? (
                     <>

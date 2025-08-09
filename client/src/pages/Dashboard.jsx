@@ -74,57 +74,103 @@ const Dashboard = () => {
           const subscriptionData = await subscriptionResponse.json();
           setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
           
-          // Set the active subscription for access control
-          const activeSubscription = Array.isArray(subscriptionData) 
-            ? subscriptionData.find(sub => sub.status === 'ACTIVE') 
-            : null;
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
           
-          if (activeSubscription) {
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions
+          for (const plan of planHierarchy.reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          if (highestActiveSubscription) {
             // Parse notes to get selectedModule if it exists
             let selectedModuleFromSub = null;
-            if (activeSubscription.notes) {
+            if (highestActiveSubscription.notes) {
               try {
-                const parsedNotes = JSON.parse(activeSubscription.notes);
+                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
                 const rawModule = parsedNotes.selectedModule;
                 
                 // Map the display name to the correct module key
                 const moduleMapping = {
-                  'Leadership': 'leadership',
-                  'Entrepreneurship': 'entrepreneurship',
-                  'Finance': 'finance',
+                  // Full display names from UI
+                  'Finance Management': 'finance',
                   'Digital Marketing': 'digital-marketing',
-                  'Communication': 'communication',
+                  'Communication Skills': 'communication',
                   'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
                   'Environmental Science': 'environment',
                   'Legal Awareness': 'law',
-                  'Social Emotional Learning': 'sel'
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
                 };
                 
                 selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
               } catch {
                 // If notes is not JSON, treat as plain text and map it
                 const moduleMapping = {
-                  'Leadership': 'leadership',
-                  'Entrepreneurship': 'entrepreneurship',
-                  'Finance': 'finance',
+                  // Full display names from UI
+                  'Finance Management': 'finance',
                   'Digital Marketing': 'digital-marketing',
-                  'Communication': 'communication',
+                  'Communication Skills': 'communication',
                   'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
                   'Environmental Science': 'environment',
                   'Legal Awareness': 'law',
-                  'Social Emotional Learning': 'sel'
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
                 };
                 
-                selectedModuleFromSub = moduleMapping[activeSubscription.notes] || activeSubscription.notes?.toLowerCase();
+                selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
               }
             }
             
             setSelectedModule(selectedModuleFromSub);
             setUserSubscription({
-              plan: activeSubscription.planType,
-              status: activeSubscription.status,
-              startDate: activeSubscription.startDate,
-              endDate: activeSubscription.endDate,
+              plan: highestActiveSubscription.planType,
+              status: highestActiveSubscription.status,
+              startDate: highestActiveSubscription.startDate,
+              endDate: highestActiveSubscription.endDate,
               selectedModule: selectedModuleFromSub
             });
           }
@@ -482,13 +528,20 @@ const Dashboard = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[
-                          'Entrepreneurship', 'Leadership', 'Anger Management', 'Counseling',
-                          'Mathematics', 'Science', 'Language Arts', 'Social Studies'
+                          { key: 'finance', name: 'Finance Management' },
+                          { key: 'digital-marketing', name: 'Digital Marketing' },
+                          { key: 'communication', name: 'Communication Skills' },
+                          { key: 'computers', name: 'Computer Science' },
+                          { key: 'entrepreneurship', name: 'Entrepreneurship' },
+                          { key: 'environment', name: 'Environmental Science' },
+                          { key: 'law', name: 'Legal Awareness' },
+                          { key: 'leadership', name: 'Leadership Skills' },
+                          { key: 'sel', name: 'Social Emotional Learning' }
                         ].map((module) => {
-                          const hasAccess = hasModuleAccess(module);
+                          const hasAccess = hasModuleAccess(module.key);
                           return (
                             <div
-                              key={module}
+                              key={module.key}
                               className={`border rounded-lg p-4 transition-all duration-200 ${
                                 hasAccess
                                   ? 'border-green-200 bg-green-50 hover:shadow-md cursor-pointer'
@@ -496,7 +549,7 @@ const Dashboard = () => {
                               }`}
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-semibold text-gray-800">{module}</h4>
+                                <h4 className="font-semibold text-gray-800">{module.name}</h4>
                                 <span
                                   className={`w-4 h-4 rounded-full ${
                                     hasAccess ? 'bg-green-500' : 'bg-gray-400'
@@ -1070,7 +1123,7 @@ const Dashboard = () => {
                               onClick={() => navigate(`/payment?plan=${userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}`)}
                               className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
                             >
-                              ⬆️ Upgrade to {userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}
+                             Upgrade to {userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}
                             </button>
                           </div>
                         </div>
@@ -1373,7 +1426,7 @@ const Dashboard = () => {
                               }}
                               className="text-sm bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition-all"
                             >
-                              ⬆️ Upgrade Plan
+                             Upgrade Plan
                             </button>
                           </li>
                         )}

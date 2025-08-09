@@ -37,7 +37,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Budget Basics', minPlan: 'STARTER' },
       2: { name: 'Investment Fundamentals', minPlan: 'SOLO' },
-      3: { name: 'Advanced Portfolio', minPlan: 'PRO' }
+      3: { name: 'Advanced Portfolio', minPlan: 'PRO' },
+      4: { name: 'Finance Master', minPlan: 'PRO' }
     }
   },
   'digital-marketing': {
@@ -47,7 +48,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Social Media Basics', minPlan: 'STARTER' },
       2: { name: 'Content Strategy', minPlan: 'SOLO' },
-      3: { name: 'Analytics & ROI', minPlan: 'PRO' }
+      3: { name: 'Analytics & ROI', minPlan: 'PRO' },
+      4: { name: 'Marketing Guru', minPlan: 'PRO' }
     }
   },
   communication: {
@@ -57,7 +59,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Basic Speaking', minPlan: 'STARTER' },
       2: { name: 'Public Speaking', minPlan: 'SOLO' },
-      3: { name: 'Leadership Communication', minPlan: 'PRO' }
+      3: { name: 'Leadership Communication', minPlan: 'PRO' },
+      4: { name: 'Communication Expert', minPlan: 'PRO' }
     }
   },
   computers: {
@@ -67,7 +70,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Programming Basics', minPlan: 'STARTER' },
       2: { name: 'Web Development', minPlan: 'SOLO' },
-      3: { name: 'Advanced Algorithms', minPlan: 'PRO' }
+      3: { name: 'Advanced Algorithms', minPlan: 'PRO' },
+      4: { name: 'Tech Wizard', minPlan: 'PRO' }
     }
   },
   entrepreneurship: {
@@ -77,7 +81,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Innovation Explorer', minPlan: 'STARTER' },
       2: { name: 'Pitch Champion', minPlan: 'SOLO' },
-      3: { name: 'MVP Strategist', minPlan: 'PRO' }
+      3: { name: 'MVP Strategist', minPlan: 'PRO' },
+      4: { name: 'Business Tycoon', minPlan: 'PRO' }
     }
   },
   environment: {
@@ -87,7 +92,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Eco Awareness', minPlan: 'STARTER' },
       2: { name: 'Sustainability Projects', minPlan: 'SOLO' },
-      3: { name: 'Climate Solutions', minPlan: 'PRO' }
+      3: { name: 'Climate Solutions', minPlan: 'PRO' },
+      4: { name: 'Environmental Guardian', minPlan: 'PRO' }
     }
   },
   law: {
@@ -97,7 +103,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Basic Rights', minPlan: 'STARTER' },
       2: { name: 'Constitutional Law', minPlan: 'SOLO' },
-      3: { name: 'Legal Practice', minPlan: 'PRO' }
+      3: { name: 'Legal Practice', minPlan: 'PRO' },
+      4: { name: 'The Law Challenger', minPlan: 'PRO' }
     }
   },
   leadership: {
@@ -107,7 +114,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Team Basics', minPlan: 'STARTER' },
       2: { name: 'Management Skills', minPlan: 'SOLO' },
-      3: { name: 'Strategic Leadership', minPlan: 'PRO' }
+      3: { name: 'Strategic Leadership', minPlan: 'PRO' },
+      4: { name: 'Visionary Leader', minPlan: 'PRO' }
     }
   },
   sel: {
@@ -117,7 +125,8 @@ const MODULE_CONFIGS = {
     levels: {
       1: { name: 'Self Awareness', minPlan: 'STARTER' },
       2: { name: 'Social Skills', minPlan: 'SOLO' },
-      3: { name: 'Emotional Intelligence', minPlan: 'PRO' }
+      3: { name: 'Emotional Intelligence', minPlan: 'PRO' },
+      4: { name: 'Empathy Master', minPlan: 'PRO' }
     }
   }
 };
@@ -150,8 +159,8 @@ class AccessController {
       return 'STARTER';
     }
 
-    // Return the highest tier among active subscriptions
-    for (const plan of PLAN_HIERARCHY.reverse()) {
+    // Return the highest tier among active subscriptions (don't mutate original array)
+    for (const plan of [...PLAN_HIERARCHY].reverse()) {
       if (activeSubscriptions.some(sub => sub.planType === plan)) {
         return plan;
       }
@@ -239,21 +248,29 @@ class AccessController {
     const module = MODULE_CONFIGS[moduleKey];
     const level = module?.levels?.[levelNumber];
     
+    // PRO and INSTITUTIONAL plans have access to ALL levels of ALL modules
+    // (even if the level is not explicitly defined in MODULE_CONFIGS)
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return true;
+    }
+    
+    // SOLO plan users have access to ALL levels of their selected module
+    // (even if the level is not explicitly defined in MODULE_CONFIGS)
+    if (this.currentPlan === 'SOLO') {
+      return this.selectedModule === moduleKey;
+    }
+    
+    // For other plans, the level must exist in MODULE_CONFIGS
     if (!level) return false;
-
-    const currentPlanIndex = PLAN_HIERARCHY.indexOf(this.currentPlan);
-    const requiredPlanIndex = PLAN_HIERARCHY.indexOf(level.minPlan);
 
     // STARTER plan users can only access level 1 during trial period
     if (this.currentPlan === 'STARTER') {
       return levelNumber === 1 && this.isTrialValid();
     }
 
-    // SOLO plan users have access to ALL levels of their selected module
-    if (this.currentPlan === 'SOLO') {
-      return this.selectedModule === moduleKey;
-    }
-
+    // For any other plans, check individual level requirements
+    const currentPlanIndex = PLAN_HIERARCHY.indexOf(this.currentPlan);
+    const requiredPlanIndex = PLAN_HIERARCHY.indexOf(level.minPlan);
     return currentPlanIndex >= requiredPlanIndex;
   }
 
@@ -380,7 +397,20 @@ class AccessController {
         requiredPlan = module.minPlan;
       }
 
+      // For level-specific checks, consider SOLO and PRO plan special cases
       if (targetLevel && module?.levels?.[targetLevel]) {
+        // SOLO users have access to all levels of their selected module
+        if (this.currentPlan === 'SOLO' && this.selectedModule === targetModule) {
+          // No upgrade needed for SOLO users accessing their selected module
+          return null;
+        }
+        
+        // PRO and INSTITUTIONAL users have access to all levels of all modules
+        if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+          // No upgrade needed for PRO/INSTITUTIONAL users
+          return null;
+        }
+        
         const levelRequiredPlan = module.levels[targetLevel].minPlan;
         const currentIndex = PLAN_HIERARCHY.indexOf(requiredPlan);
         const levelIndex = PLAN_HIERARCHY.indexOf(levelRequiredPlan);
@@ -516,6 +546,16 @@ class AccessController {
   getRequiredPlan(moduleKey, levelNumber = null) {
     const module = MODULE_CONFIGS[moduleKey];
     if (!module) return 'PRO';
+
+    // For SOLO users accessing their selected module, SOLO plan is sufficient for all levels
+    if (levelNumber && this.currentPlan === 'SOLO' && this.selectedModule === moduleKey) {
+      return 'SOLO';
+    }
+
+    // For PRO/INSTITUTIONAL users, their current plan is always sufficient for any level
+    if (levelNumber && (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL')) {
+      return this.currentPlan;
+    }
 
     if (levelNumber && module.levels?.[levelNumber]) {
       return module.levels[levelNumber].minPlan;

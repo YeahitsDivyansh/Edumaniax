@@ -5,18 +5,21 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const usePayment = () => {
   const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState(null);
 
   // Check if payment feature is enabled
   useEffect(() => {
     const checkFeatureStatus = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/payment/feature-status`);
         setIsPaymentEnabled(response.data.paymentEnabled);
       } catch (err) {
         console.log('Payment feature check failed:', err.message);
         setIsPaymentEnabled(false);
+      } finally {
+        setLoading(false);
       }
     };
 

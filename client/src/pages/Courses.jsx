@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { Link } from "react-router-dom";
 import { useAccessControl } from "../utils/accessControl";
 import { useAuth } from "../contexts/AuthContext";
@@ -19,6 +19,28 @@ import {
   ChevronDown,
   ArrowRight
 } from "lucide-react";
+
+// Module mapping for access control - centralized to avoid duplication
+const MODULE_MAPPING = {
+  'Fundamentals of Finance': 'finance',
+  'Computer Science': 'computers', 
+  'Fundamentals of Law': 'law',
+  'Communication Mastery': 'communication',
+  'Entrepreneurship Bootcamp': 'entrepreneurship',
+  'Digital Marketing Pro': 'digital-marketing',
+  'Leadership & Adaptability': 'leadership', 
+  'Environmental Sustainability': 'environment',
+  'Wellness & Mental Health': 'sel',
+  // Display name mappings for subscription notes
+  'Finance Management': 'finance',
+  'Digital Marketing': 'digital-marketing',
+  'Communication Skills': 'communication',
+  'Entrepreneurship': 'entrepreneurship',
+  'Environmental Science': 'environment',
+  'Legal Awareness': 'law',
+  'Leadership Skills': 'leadership',
+  'Social Emotional Learning': 'sel'
+};
 
 const courses = [
   {
@@ -87,8 +109,8 @@ const courses = [
     title: "Entrepreneurship Bootcamp",
     description: "Turn innovative ideas into thriving businesses with strategic planning, leadership, and market insights.",
     image: "https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?w=600&auto=format&fit=crop&q=60",
-    notesLink: "/entreprenerurship/notes",
-    gamesLink: "/entreprenerurship/games",
+    notesLink: "/entrepreneurship/notes",
+    gamesLink: "/entrepreneurship/games",
     category: "Business",
     difficulty: "Advanced",
     duration: "10 weeks",
@@ -171,38 +193,12 @@ const CourseCard = ({ course, index, userSubscriptions, userSelectedModule }) =>
     shouldShowUpgradePrompt 
   } = useAccessControl(userSubscriptions, userSelectedModule);
   
-  // Complete module mapping for access control
-  const moduleMapping = {
-    'Fundamentals of Finance': 'finance',
-    'Computer Science': 'computers', 
-    'Fundamentals of Law': 'law',
-    'Communication Mastery': 'communication',
-    'Entrepreneurship Bootcamp': 'entrepreneurship',
-    'Digital Marketing Pro': 'digital-marketing',
-    'Leadership & Adaptability': 'leadership', 
-    'Environmental Sustainability': 'environment',
-    'Wellness & Mental Health': 'sel'
-  };
-
-  const moduleKey = moduleMapping[course.title] || course.category?.toLowerCase();
-  const hasAccess = hasModuleAccess(moduleKey);
+  const moduleKey = MODULE_MAPPING[course.title] || course.category?.toLowerCase();
+  // Access control calculations
+  const hasAccess = hasModuleAccess(moduleKey); // eslint-disable-line no-unused-vars
   const hasGamesAccess = hasGameAccess(moduleKey);
-  const needsUpgrade = shouldShowUpgradePrompt(moduleKey);
+  const needsUpgrade = shouldShowUpgradePrompt(moduleKey); // eslint-disable-line no-unused-vars
   const remainingDays = cardGetRemainingTrialDays();
-  
-  // Debug logging for troubleshooting
-  if (course.title.includes('Leadership')) {
-    console.log('Leadership Course Debug:', {
-      courseTitle: course.title,
-      moduleKey,
-      hasAccess,
-      hasGamesAccess,
-      needsUpgrade,
-      currentPlan: cardCurrentPlan,
-      userSelectedModule,
-      remainingDays
-    });
-  }
 
   // Helper function to get level icon
   const getLevelIcon = (level) => {
@@ -450,32 +446,36 @@ const Courses = () => {
           const subscriptionData = await response.json();
           setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
           
-          // Set selected module from active subscription
-          const activeSubscription = Array.isArray(subscriptionData) 
-            ? subscriptionData.find(sub => sub.status === 'ACTIVE') 
-            : null;
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
           
-          if (activeSubscription && activeSubscription.notes) {
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions (don't mutate original array)
+          for (const plan of [...planHierarchy].reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          if (highestActiveSubscription && highestActiveSubscription.notes) {
             try {
-              const parsedNotes = JSON.parse(activeSubscription.notes);
+              const parsedNotes = JSON.parse(highestActiveSubscription.notes);
               const rawModule = parsedNotes.selectedModule;
               
-              // Map the display name to the correct module key
-              const moduleMapping = {
-                'Leadership': 'leadership',
-                'Entrepreneurship': 'entrepreneurship',
-                'Finance': 'finance',
-                'Digital Marketing': 'digital-marketing',
-                'Communication': 'communication',
-                'Computer Science': 'computers',
-                'Environmental Science': 'environment',
-                'Legal Awareness': 'law',
-                'Social Emotional Learning': 'sel'
-              };
-              
-              setSelectedModule(moduleMapping[rawModule] || rawModule?.toLowerCase());
+              // Use the centralized module mapping
+              setSelectedModule(MODULE_MAPPING[rawModule] || rawModule?.toLowerCase());
             } catch {
-              setSelectedModule(activeSubscription.notes?.toLowerCase());
+              setSelectedModule(highestActiveSubscription.notes?.toLowerCase());
             }
           }
         }
