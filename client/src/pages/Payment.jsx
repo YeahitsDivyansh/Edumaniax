@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CreditCard, CheckCircle, XCircle, Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { CreditCard, CheckCircle, XCircle, Loader2, ArrowLeft, Shield, Building, Users } from 'lucide-react';
 import usePayment from '../hooks/usePayment';
 
 const PLAN_DETAILS = {
@@ -81,6 +81,12 @@ const Payment = () => {
     const planFromUrl = urlParams.get('plan');
     if (planFromUrl && PLAN_DETAILS[planFromUrl]) {
       setSelectedPlan(planFromUrl);
+      
+      // If the user is coming for an institutional plan, prepare the contact form
+      if (planFromUrl === 'INSTITUTIONAL') {
+        // We'll show the contact form instead of the payment form
+        console.log('Institutional plan selected - showing contact form');
+      }
     }
   }, [location]);
 
@@ -141,9 +147,10 @@ const Payment = () => {
       return;
     }
 
+    // INSTITUTIONAL plan users are directed to the contact form which is already displayed
+    // instead of showing the payment form when selectedPlan === 'INSTITUTIONAL'
     if (selectedPlan === 'INSTITUTIONAL') {
-      alert('Please contact us for institutional pricing');
-      return;
+      return; // Don't continue with payment processing
     }
     
     // Require module selection for SOLO plan
@@ -220,6 +227,296 @@ const Payment = () => {
     );
   }
 
+  // Contact Form component for Institutional Plan
+  const InstitutionalContactForm = () => {
+    const [formData, setFormData] = useState({
+      name: userInfo.name || '',
+      email: userInfo.email || '',
+      organizationalEmail: '',  // Added field for organizational email
+      organization: '',
+      phone: '',
+      employees: '',
+      message: ''
+    });
+    const [formStatus, setFormStatus] = useState(null); // null, 'sending', 'success', 'error'
+
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prevData => ({
+        ...prevData,
+        [name]: value
+      }));
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      
+      // Basic validation for the organizational email
+      if (!formData.organizationalEmail) {
+        alert("Please provide your organization's email address");
+        return;
+      }
+      
+      // Validate if organization name is provided
+      if (!formData.organization) {
+        alert("Please provide your organization name");
+        return;
+      }
+      
+      setFormStatus('sending');
+      
+      // Simulate form submission (replace with actual API call)
+      setTimeout(() => {
+        // In a real application, you would make an API call to your backend here
+        console.log('Institutional plan inquiry:', formData);
+        setFormStatus('success');
+        // Optionally redirect after a delay
+        setTimeout(() => navigate('/dashboard'), 3000);
+      }, 1500);
+    };
+
+    if (formStatus === 'success') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-green-800 mb-2">Request Sent Successfully!</h1>
+            <p className="text-green-700 mb-4">
+              Thank you for your interest in our Institutional Plan for <strong>{formData.organization}</strong>.
+            </p>
+            <p className="text-gray-700 mb-4">
+              Our team will contact you shortly at <strong>{formData.organizationalEmail}</strong> to discuss your requirements and provide a customized solution.
+            </p>
+            <p className="text-sm text-gray-600">Redirecting to dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 mb-4"
+            >
+              <ArrowLeft size={20} />
+              Back
+            </button>
+          </div>
+
+          {/* Contact Form Section */}
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Institutional Plan Info */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Institutional Plan</h2>
+                
+                <div className="bg-gray-50 rounded-2xl p-6">
+                  <h3 className="text-xl font-semibold text-green-700 mb-4">Perfect for:</h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                      <span>Schools and educational institutions</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                      <span>Corporate training programs</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Users size={20} className="text-green-600 mt-1 shrink-0" />
+                      <span>Organizations with 30+ users</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle size={20} className="text-green-500 mt-1 shrink-0" />
+                      <span>Custom learning requirements</span>
+                    </li>
+                  </ul>
+                  
+                  <div className="mt-4 bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-800">
+                      <strong>Note:</strong> This plan requires verification of your organizational status. Our team will review your application and contact you for further details.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-green-50 p-6 rounded-2xl border border-green-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Institutional Benefits:</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    {PLAN_DETAILS.INSTITUTIONAL.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle size={16} className="text-green-500 mt-1 shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+                <p className="text-gray-600 mb-6">
+                  Please fill out this form to get a custom quote for your organization. Our team will contact you shortly.
+                </p>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Name*
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      readOnly={!!userInfo.name}
+                      className={`w-full p-3 border ${userInfo.name ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!userInfo.name ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                      placeholder="Your name"
+                    />
+                    {userInfo.name && (
+                      <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email*
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      readOnly={!!userInfo.email}
+                      className={`w-full p-3 border ${userInfo.email ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!userInfo.email ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                      placeholder="Your email"
+                    />
+                    {userInfo.email && (
+                      <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="organizationalEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                      Organizational Email*
+                    </label>
+                    <input
+                      type="email"
+                      id="organizationalEmail"
+                      name="organizationalEmail"
+                      value={formData.organizationalEmail}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Your organization's email (e.g., info@yourschool.edu)"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-1">
+                      Organization Name*
+                    </label>
+                    <input
+                      type="text"
+                      id="organization"
+                      name="organization"
+                      value={formData.organization}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Your organization"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Your phone number"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-1">
+                      Number of Users/Students
+                    </label>
+                    <select
+                      id="employees"
+                      name="employees"
+                      value={formData.employees}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    >
+                      <option value="">Select an option</option>
+                      <option value="30-50">30-50 users</option>
+                      <option value="51-100">51-100 users</option>
+                      <option value="101-500">101-500 users</option>
+                      <option value="500+">500+ users</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows="4"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Tell us about your specific requirements..."
+                    ></textarea>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={formStatus === 'sending'}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  >
+                    {formStatus === 'sending' ? (
+                      <>
+                        <Loader2 className="animate-spin" size={20} />
+                        Sending...
+                      </>
+                    ) : (
+                      'Request Information'
+                    )}
+                  </button>
+                  
+                  <p className="text-xs text-gray-500 mt-4">
+                    By submitting this form, you agree to our Terms of Service and Privacy Policy
+                  </p>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render the appropriate component based on the selected plan
+  if (selectedPlan === 'INSTITUTIONAL') {
+    return <InstitutionalContactForm />;
+  }
+
+  // Regular payment form for non-institutional plans
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 py-8 px-4">
       <div className="max-w-4xl mx-auto">
