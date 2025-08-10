@@ -1,317 +1,54 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import Hero from "@/PricingDesign/Hero";
-import emailjs from "@emailjs/browser";
-
-// Trial Booking Modal Component - Copied from Home.jsx
-const TrialBookingModal = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    schoolName: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [error, setError] = useState("");
-
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setFormData({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        class: "",
-      });
-      setShowSuccess(false);
-      setError("");
-    }
-  }, [isOpen]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
-
-    try {
-      // EmailJS configuration - Same as Home.jsx
-      const serviceId = "service_52co609";
-      const templateId = "template_h7uvb49";
-      const publicKey = "zgnJuM3MRywVUxjcR";
-
-      const templateParams = {
-        to_email: "anujyelve3074@gmail.com",
-        subject: "New Institutional Plan Inquiry - Contact Us",
-        name: formData.fullName,
-        email: formData.email,
-        phone: formData.phoneNumber,
-        schoolName: formData.schoolName,
-        message: `A new user wants to contact us:
-        Name: ${formData.fullName}
-        Email: ${formData.email}
-        Phone Number: ${formData.phoneNumber}
-        Organization/Institution: ${formData.schoolName}
-        Plan: Institutional Plan`,
-      };
-
-      await emailjs.send(serviceId, templateId, templateParams, publicKey);
-
-      setShowSuccess(true);
-
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    } catch (error) {
-      console.error("Error sending email:", error);
-      setError("Failed to send request. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        {/* Backdrop with blur */}
-        <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        />
-
-        {/* Modal */}
-        <motion.div
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", duration: 0.3 }}
-        >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-          >
-            <X className="w-4 h-4 text-gray-500" />
-          </button>
-
-          {/* Modal content */}
-          <div className="p-6 sm:p-8">
-            {!showSuccess ? (
-              <>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Contact US
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  Fill out the form below and we'll contact you soon for your
-                  Institutional Plan!
-                </p>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Full Name */}
-                  <div>
-                    <label
-                      htmlFor="fullName"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
-                      placeholder="Enter your email address"
-                    />
-                  </div>
-
-                  {/* Phone Number */}
-                  <div>
-                    <label
-                      htmlFor="phoneNumber"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
-
-                  {/* Organization/Class */}
-                  <div>
-                    <label
-                      htmlFor="class"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Organization/Institution *
-                    </label>
-                    <input
-                      type="text"
-                      id="class"
-                      name="class"
-                      value={formData.class}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
-                      placeholder="Enter your organization/institution name"
-                    />
-                  </div>
-
-                  {/* Error message */}
-                  {error && (
-                    <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Submit button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                  >
-                    {isSubmitting ? "Sending Request..." : "Contact Us"}
-                  </button>
-                </form>
-              </>
-            ) : (
-              /* Success message */
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Request Sent Successfully!
-                </h3>
-                <p className="text-gray-600">
-                  Thank you! We'll contact you soon to discuss your
-                  Institutional Plan needs.
-                </p>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { useAccessControl } from "../utils/accessControl";
 
 const plans = [
   {
     title: "STARTER PLAN",
     price: "₹0",
-    frequency: "Per member, per Month",
+    frequency: "7 Days Free Trial",
     description: "Perfect to explore and get started.",
     features: [
       "Access to 1 free game/module",
       "Notes for the selected module",
       "Access to basic learning tools",
-      "No completion certificates",
+      "7 days trial period",
       { text: "No access to premium modules", excluded: true },
       { text: "No AI powered personalized assessment", excluded: true },
+      { text: "No completion certificates", excluded: true },
     ],
-    button: "Start Now",
+    button: "Start Free Trial",
   },
   {
     title: "SOLO PLAN",
     price: "₹199",
-    frequency: "Per member, per Month",
+    frequency: "Per member, per 1 Month",
     description: "Ideal for focused learning on a specific topic.",
     features: [
       "Access to 1 premium module of choice",
       "Notes for the selected module",
       "Interactive activities and assessments",
+      "Completion certificates",
       { text: "No access to all premium modules", excluded: true },
       { text: "No AI powered personalized assessment", excluded: true },
-      { text: "No completion certificates", excluded: true },
     ],
     button: "Start Now",
   },
   {
     title: "PRO PLAN",
     price: "₹1433",
-    frequency: "Per member, per 3 Month",
+    frequency: "Per member, per 6 Month",
     description: "Full learning experience for committed users",
     features: [
       "Access to all premium modules",
       "Notes for every module",
       "All interactive games and assessments",
       "AI powered personalized assessment",
-      "Completion certificates",
+      "Completion certificates for all modules",
     ],
     button: "Start Now",
     tag: "Popular",
@@ -320,7 +57,7 @@ const plans = [
   {
     title: "INSTITUTIONAL PLAN",
     price: "Custom",
-    frequency: "",
+    frequency: "Per member, per Month",
     description: "Tailored for bulk use with flexibility.",
     features: [
       "Access for 30+ users",
@@ -336,114 +73,259 @@ const plans = [
 
 const faqData = [
   {
-    question: "Is there a free trial available?",
+    question: "What if I’m not satisfied with EduManiax after joining?",
     answer:
-      "Yes! All users get a 7-day free trial with access to all premium features. No card required.",
+      "Don’t worry at all. EduManiax offers a refund as per the package bought, which you can get in your bank once your request is processed. Before enrolling, you will also get a full demo of the platform, personalized one-on-one interaction, and access to our support team to help you at every step.",
     QbgColor: "bg-[#6DEE0E]", // Vivid green
     AbgColor: "bg-[#E9FCD4]", // 🍏 Light green pastel
   },
   {
-    question: "What payment type do you accept?",
+    question: "Is there a free trial available?",
     answer:
-      "We accept all major credit and debit cards, PayPal, UPI, crypto wallets, etc.",
-    QbgColor: "bg-[#FEC6C7]", // Soft pink
-    AbgColor: "bg-[#FFF1F2]", // 🌸 Ultra-light pink
+      "Yes! EduManiax currently offers a free trial of one module of a course of your choice that grants access to all premium features.",
+    QbgColor: "bg-[#FFE7A1]", // Soft yellow
+    AbgColor: "bg-[#FFFBE5]", // ☀️ Pale yellow pastel
   },
   {
-    question: "Can I cancel my subscription anytime?",
+    question: "What is EduManiax?",
     answer:
-      "Absolutely! You can cancel anytime from your dashboard with just a click. No hidden conditions.",
+      "EduManiax is a gamified learning platform for students in Classes 6 to 12 across India. It teaches essential 21st-century skills like AI, finance, law, communication, and entrepreneurship through interactive, story-based modules designed to make learning fun and practical.",
     QbgColor: "bg-[#DBEDFB]", // Light blue
-    AbgColor: "bg-[#F0F9FF]", // ❄ Icy sky blue
+    AbgColor: "bg-[#F0F9FF]", // ❄️ Icy sky blue
   },
   {
-    question: "Do I get customer support?",
-    answer:
-      "Of course! Our team is available 24/7 via live chat and email to help you anytime.",
-    QbgColor: "bg-[#DABFFF]", // Lavender
-    AbgColor: "bg-[#F5EBFF]", // 🪻 Soft lavender haze
-  },
-  {
-    question: "What if I’m not satisfied with EduManiax after joining?",
-    answer:
-      "Don’t worry at all. EduManiax offers a refund as per the package bought, which you can get in your bank once your request is processed. Before enrolling, you will also get a full demo of the platform, personalized one-on-one interaction, and access to our support team to help you at every step.",
-    QbgColor: "bg-[#FFD966]", // Warm yellow
-    AbgColor: "bg-[#FFF8E5]", // 🍯 Soft cream yellow
-  },
-  {
-    question: "What is Edumaniax?",
-    answer:
-      "Edumaniax is a gamified learning platform for students in Classes 6 to 12 across India. It teaches essential 21st-century skills like AI, finance, law, communication, and entrepreneurship through interactive, story-based modules designed to make learning fun and practical.",
-    QbgColor: "bg-[#A7F3D0]", // Mint green
-    AbgColor: "bg-[#ECFDF5]", // 🌿 Light mint background
-  },
-  {
-    question: "Who is Edumaniax for?",
+    question: "Who is EduManiax for?",
     answer:
       "Our programs are designed for school students (Classes 6–12), parents seeking skill-based education, and schools in cities like Delhi, Lucknow, Bengaluru, and Jaipur that want to integrate NEP 2020-aligned content into their curriculum.",
-    QbgColor: "bg-[#FBCFE8]", // Pink blush
-    AbgColor: "bg-[#FFF0F9]", // 🌸 Light pastel pink
+    QbgColor: "bg-[#DABFFF]", // Lavender
+    AbgColor: "bg-[#F5EBFF]", // 🪻 Soft lavender haze
   },
   {
     question: "What will students learn?",
     answer:
       "Students gain hands-on skills in AI tools, prompt engineering, legal awareness, investing, entrepreneurship, and public speaking. Each course delivers clear learning outcomes that build creativity, confidence, and future career readiness.",
-    QbgColor: "bg-[#FDE68A]", // Soft gold
-    AbgColor: "bg-[#FFFBEB]", // 🌼 Light golden cream
+    QbgColor: "bg-[#FEC6C7]", // Soft pink
+    AbgColor: "bg-[#FFF1F2]", // 🌸 Ultra-light pink
   },
   {
-    question: "How does Edumaniax assess student progress?",
+    question: "How does EduManiax assess student progress?",
     answer:
       "We use AI-driven assessments that adapt to each learner’s pace, offer real-time feedback, and generate detailed performance reports for parents and schools. The focus is on applied learning, not just marks.",
-    QbgColor: "bg-[#BAE6FD]", // Sky blue
-    AbgColor: "bg-[#E0F7FF]", // ☁ Light cloud blue
+    QbgColor: "bg-[#A8E6CF]", // Mint green
+    AbgColor: "bg-[#EAFBF3]", // 🌿 Pale mint pastel
   },
   {
-    question: "How is it different from regular edtech apps?",
+    question: "How is EduManiax different from regular edtech apps?",
     answer:
-      "Unlike video-based apps, Edumaniax turns learning into games and quests. Students complete challenges, earn rewards, and build real-world skills through simulations—making learning immersive and unforgettable.",
-    QbgColor: "bg-[#C7D2FE]", // Soft lavender blue
-    AbgColor: "bg-[#EEF2FF]", // 🌌 Misty lavender
+      "Unlike video-based apps, EduManiax turns learning into games and quests. Students complete challenges, earn rewards, and build real-world skills through simulations—making learning immersive and unforgettable.",
+    QbgColor: "bg-[#FFD6A5]", // Peach
+    AbgColor: "bg-[#FFF4E6]", // 🍑 Light peach pastel
   },
   {
-    question: "Is Edumaniax aligned with the school curriculum?",
+    question: "Is EduManiax aligned with the school curriculum?",
     answer:
       "Yes, our modules are mapped to NEP 2020 guidelines and complement school subjects like civics, coding, and economics, ensuring students stay ahead without adding academic pressure.",
-    QbgColor: "bg-[#FCA5A5]", // Coral pink
-    AbgColor: "bg-[#FFE5E5]", // 🌺 Soft coral cream
+    QbgColor: "bg-[#B5EAEA]", // Aqua
+    AbgColor: "bg-[#E6FAFA]", // 🌊 Light aqua pastel
   },
   {
     question: "Do students receive certificates?",
     answer:
       "Yes, learners receive digital certificates after completing modules, which are valuable for portfolios, internships, and college applications.",
-    QbgColor: "bg-[#FCD34D]", // Bright yellow
-    AbgColor: "bg-[#FFF9E6]", // 🍋 Lemon cream
+    QbgColor: "bg-[#FFB7B2]", // Coral pink
+    AbgColor: "bg-[#FFEDEC]", // 🌷 Light coral pastel
   },
   {
-    question: "Can schools partner with Edumaniax?",
+    question: "Can schools partner with EduManiax?",
     answer:
       "Absolutely. Schools and institutes can integrate our programs during school hours or as weekend clubs. We offer dashboards, training, and ongoing support for seamless implementation.",
-    QbgColor: "bg-[#86EFAC]", // Light green
-    AbgColor: "bg-[#ECFDF5]", // 🌱 Soft pastel green
+    QbgColor: "bg-[#C7CEEA]", // Periwinkle
+    AbgColor: "bg-[#F2F4FF]", // 🌌 Soft periwinkle pastel
   },
 ];
 
 const Pricing = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
-  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false); // Added for modal state
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { currentPlan } = useAccessControl(subscriptions, selectedModule);
 
+  // Fetch user subscription data
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions
+          for (const plan of planHierarchy.reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          // If we found a highest active subscription, handle module selection for SOLO plans
+          if (highestActiveSubscription && highestActiveSubscription.notes) {
+            // Parse notes to get selectedModule if it exists
+            let selectedModuleFromSub = null;
+            try {
+              const parsedNotes = JSON.parse(highestActiveSubscription.notes);
+              const rawModule = parsedNotes.selectedModule;
+              
+              // Map the display name to the correct module key
+              const moduleMapping = {
+                // Full display names from UI
+                'Finance Management': 'finance',
+                'Digital Marketing': 'digital-marketing',
+                'Communication Skills': 'communication',
+                'Computer Science': 'computers',
+                'Entrepreneurship': 'entrepreneurship',
+                'Environmental Science': 'environment',
+                'Legal Awareness': 'law',
+                'Leadership Skills': 'leadership',
+                'Social Emotional Learning': 'sel',
+                
+                // Short names (legacy support)
+                'Leadership': 'leadership',
+                'Finance': 'finance',
+                'Communication': 'communication',
+                
+                // Course-specific names from screenshots
+                'Fundamentals of Finance': 'finance',
+                'Fundamentals of Law': 'law',
+                'Communication Mastery': 'communication',
+                'Entrepreneurship Bootcamp': 'entrepreneurship',
+                'Digital Marketing Pro': 'digital-marketing',
+                'Leadership & Adaptability': 'leadership',
+                'Environmental Sustainability': 'environment'
+              };
+              
+              selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+            } catch {
+              // If notes is not JSON, treat as plain text and map it
+              const moduleMapping = {
+                // Full display names from UI
+                'Finance Management': 'finance',
+                'Digital Marketing': 'digital-marketing',
+                'Communication Skills': 'communication',
+                'Computer Science': 'computers',
+                'Entrepreneurship': 'entrepreneurship',
+                'Environmental Science': 'environment',
+                'Legal Awareness': 'law',
+                'Leadership Skills': 'leadership',
+                'Social Emotional Learning': 'sel',
+                
+                // Short names (legacy support)
+                'Leadership': 'leadership',
+                'Finance': 'finance',
+                'Communication': 'communication',
+                
+                // Course-specific names from screenshots
+                'Fundamentals of Finance': 'finance',
+                'Fundamentals of Law': 'law',
+                'Communication Mastery': 'communication',
+                'Entrepreneurship Bootcamp': 'entrepreneurship',
+                'Digital Marketing Pro': 'digital-marketing',
+                'Leadership & Adaptability': 'leadership',
+                'Environmental Sustainability': 'environment'
+              };
+              
+              selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+            }
+            
+            setSelectedModule(selectedModuleFromSub);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions in pricing:', error);
+        setSubscriptions([]);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
+  
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
 
+  // Function to check if a plan is the user's current plan
+  const isCurrentPlan = (planTitle) => {
+    if (!user || !currentPlan) return false;
+    
+    const planType = planTitle.replace(' PLAN', '');
+    return currentPlan === planType;
+  };
+
+  // Function to check if a plan should be grayed out (already purchased or lower tier)
+  const shouldGrayOut = (planTitle) => {
+    if (!user || !currentPlan) return false;
+    
+    const targetPlanType = planTitle.replace(' PLAN', '');
+    
+    // Define plan hierarchy
+    const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+    const currentIndex = planHierarchy.indexOf(currentPlan);
+    const targetIndex = planHierarchy.indexOf(targetPlanType);
+    
+    // Gray out current plan and all lower tier plans
+    return targetIndex <= currentIndex;
+  };
+
+  // Function to get button text based on plan status
+  const getButtonText = (plan) => {
+    if (plan.title === "STARTER PLAN") return "Free Forever";
+    if (isCurrentPlan(plan.title)) return "Current Plan";
+    if (shouldGrayOut(plan.title)) return "Already Owned";
+    return plan.button;
+  };
+
+  // Function to check if button should be disabled
+  const isButtonDisabled = (plan) => {
+    return plan.title === "STARTER PLAN" || shouldGrayOut(plan.title);
+  };
+
+  // Function to get upgrade suggestion for current plan users
+  const getUpgradeSuggestion = (plan) => {
+    if (!isCurrentPlan(plan.title)) return null;
+    
+    if (plan.title === "STARTER PLAN") {
+      return "Upgrade to SOLO for premium access";
+    }
+    if (plan.title === "SOLO PLAN") {
+      return "Upgrade to PRO for all modules";
+    }
+    if (plan.title === "PRO PLAN") {
+      return "Upgrade to INSTITUTIONAL for live sessions";
+    }
+    return null;
+  };
+
   return (
     <div className="relative">
-      {/* Trial Booking Modal */}
-      <TrialBookingModal
-        isOpen={isTrialModalOpen}
-        onClose={() => setIsTrialModalOpen(false)}
-      />
-
       {/* Hero Section */}
       <div className="relative z-0">
         <Hero />
@@ -455,18 +337,36 @@ const Pricing = () => {
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className="bg-white shadow-xl rounded-3xl p-6 border border-gray-200 hover:border-[#068F36] transition-all duration-300 flex flex-col justify-between relative"
+              className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${
+                isCurrentPlan(plan.title)
+                  ? "border-green-500 ring-2 ring-green-200 bg-green-50"
+                  : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
+                  ? "border-gray-400 bg-gray-50"
+                  : plan.title === "PRO PLAN"
+                  ? "border-[#068F36]"
+                  : "border-gray-200 hover:border-[#068F36]"
+              }`}
             >
               {/* Tags */}
               <div className="relative mb-4">
-                {plan.title === "PRO PLAN" && (
+                {isCurrentPlan(plan.title) && (
+                  <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                    ✓ Current Plan
+                  </div>
+                )}
+                {shouldGrayOut(plan.title) && !isCurrentPlan(plan.title) && (
+                  <div className="absolute -top-3 -right-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                    ✓ Owned
+                  </div>
+                )}
+                {plan.title === "PRO PLAN" && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
                   <img
                     src="/pricingDesign/save20.svg"
                     alt="Save 20%"
-                    className="absolute -mt-9 -mr-7 -top-0 right-0.5 w-[113px] h-[49px] z-10"
+                    className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
                   />
                 )}
-                {plan.tag && (
+                {plan.tag && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
                   <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
                     {plan.tag}
                   </span>
@@ -509,7 +409,9 @@ const Pricing = () => {
                               : "/pricingDesign/tick.svg"
                           }
                           alt={excluded ? "Not included" : "Included"}
-                          className="w-full h-full object-contain"
+                          className={`w-full h-full object-contain ${
+                            excluded ? "" : "p-[1px]"
+                          }`}
                         />
                       </span>
                       <span className={excluded ? "text-red-600" : ""}>
@@ -520,21 +422,38 @@ const Pricing = () => {
                 })}
               </ul>
 
-              {/* Button - Modified to handle Contact Us differently */}
-              {plan.button === "Contact Us" ? (
-                <button
-                  onClick={() => setIsTrialModalOpen(true)}
-                  className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center w-full"
-                >
-                  {plan.button}
-                </button>
-              ) : (
-                <Link
-                  to="/payment-required"
-                  className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
-                >
-                  {plan.button}
-                </Link>
+              {/* Button */}
+              <button
+                onClick={() => !isButtonDisabled(plan) && navigate(`/payment?plan=${plan.title.replace(' PLAN', '')}`)}
+                className={`font-semibold py-2 px-4 rounded-md transition mt-4 inline-block text-center w-full ${
+                  isCurrentPlan(plan.title)
+                    ? "bg-green-500 text-white cursor-default"
+                    : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
+                    ? "bg-gray-500 text-white cursor-not-allowed"
+                    : isButtonDisabled(plan)
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#068F36] text-white hover:brightness-110"
+                }`}
+                disabled={isButtonDisabled(plan)}
+              >
+                {getButtonText(plan)}
+              </button>
+
+              {/* Upgrade suggestion for current plan users */}
+              {isCurrentPlan(plan.title) && getUpgradeSuggestion(plan) && (
+                <div className="mt-3 text-center">
+                  <p className="text-xs text-gray-600 mb-2">{getUpgradeSuggestion(plan)}</p>
+                  <button
+                    onClick={() => navigate(`/payment?plan=${
+                      plan.title === "STARTER PLAN" ? "SOLO" :
+                      plan.title === "SOLO PLAN" ? "PRO" :
+                      plan.title === "PRO PLAN" ? "INSTITUTIONAL" : ""
+                    }`)}
+                    className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                  >
+                   Upgrade Now
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -551,9 +470,16 @@ const Pricing = () => {
               alt="Payment Methods"
               className="h-6 object-contain"
             />
+            <img
+              src="/pricingDesign/UPI-Logo-vector.svg"
+              alt="UPI"
+              className="h-6 object-contain -ml-2"
+            />
           </div>
           <p className="text-2xs mt-2 text-gray-400">
-            We accept Credit Cards, Debit Cards, Paypal, Crypto, etc.
+            We accept Visa, American Express, Mastercard,
+            <br className="block sm:hidden" />
+            Paypal, UPI and more.
           </p>
         </div>
 
@@ -570,53 +496,75 @@ const Pricing = () => {
               Everything you need to know before getting started
             </p>
 
+            {/* Split FAQs into two equal columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {faqData.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  onClick={() => toggleFAQ(index)}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl"
-                >
-                  {/* Wrapper for Question + Answer */}
-                  <div className="rounded-2xl overflow-hidden">
-                    {/* Question Section */}
-                    <div
-                      className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
-                    >
-                      <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
-                        {faq.question}
-                      </h3>
-                      <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                        <ChevronDown
-                          className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
-                            openFAQ === index ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </div>
+              {faqData
+                .reduce((result, item, index) => {
+                  const colIndex =
+                    index < Math.ceil(faqData.length / 2) ? 0 : 1;
+                  if (!result[colIndex]) result[colIndex] = [];
+                  result[colIndex].push(item);
+                  return result;
+                }, [])
+                .map((column, colIndex) => (
+                  <div key={colIndex} className="flex flex-col gap-4">
+                    {column.map((faq, index) => (
+                      <motion.div
+                        key={index}
+                        onClick={() =>
+                          toggleFAQ(
+                            index + colIndex * Math.ceil(faqData.length / 2)
+                          )
+                        }
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl"
+                      >
+                        {/* Wrapper for Question + Answer */}
+                        <div className="rounded-2xl overflow-hidden">
+                          {/* Question Section */}
+                          <div
+                            className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
+                          >
+                            <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
+                              {faq.question}
+                            </h3>
+                            <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                              <ChevronDown
+                                className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                                  openFAQ ===
+                                  index +
+                                    colIndex * Math.ceil(faqData.length / 2)
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </div>
+                          </div>
 
-                    {/* Answer Section */}
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={
-                        openFAQ === index
-                          ? { height: "auto", opacity: 1 }
-                          : { height: 0, opacity: 0 }
-                      }
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className={`overflow-hidden ${faq.AbgColor}`}
-                    >
-                      <div className="p-4 pt-6 text-sm text-black">
-                        {faq.answer}
-                      </div>
-                    </motion.div>
+                          {/* Answer Section */}
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={
+                              openFAQ ===
+                              index + colIndex * Math.ceil(faqData.length / 2)
+                                ? { height: "auto", opacity: 1 }
+                                : { height: 0, opacity: 0 }
+                            }
+                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                            className={`overflow-hidden ${faq.AbgColor}`}
+                          >
+                            <div className="p-4 pt-6 text-sm text-black text-left">
+                              {faq.answer}
+                            </div>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </motion.div>
-              ))}
+                ))}
             </div>
           </div>
         </section>
