@@ -27,6 +27,7 @@ import FinanceNotes from "./pages/FinanceNotes.jsx";
 import FAQ from "./FinanceDesign/FAQ.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import SalesLogin from "./pages/SalesLogin.jsx";
 import Section1 from "./pages/sections/Section1.jsx";
 import Section2 from "./pages/sections/Section2.jsx";
 import Section3 from "./pages/sections/Section3.jsx";
@@ -299,6 +300,7 @@ import CarouselCampaign from "./components/Games for 9-10/Dig Mkting/Level1/Caro
 import VideoAudioSyncIntro from "./components/VideoAudioSyncIntro";
 import PaymentRequired from "./pages/PaymentRequired";
 import Payment from "./pages/Payment";
+import SalesDashboard from "./pages/SalesDashboard";
 import LeanMachineGame from "./components/Games for 9-10/Entreprenurship/Level1/LeanMachineGame/LeanMachineGame";
 import PitchArenaGame from "./components/Games for 9-10/Entreprenurship/Level1/PitchArenaGame/PitchArenaGame";
 import StartupQuest from "./components/Games for 9-10/Entreprenurship/Level1/StartupQuest/StartupQuest";
@@ -553,6 +555,8 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/sales" element={<SalesLogin />} />
+          <Route path="/sales/dashboard" element={<SalesDashboard />} />
 
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/payment" element={<Payment />} />

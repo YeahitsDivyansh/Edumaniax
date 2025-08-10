@@ -236,8 +236,17 @@ const Dashboard = () => {
   }, [user?.id, user?.name, getUserComments]);
 
   useEffect(() => {
-    if (!user && role !== "admin") {
+    if (!user && role !== "admin" && role !== "ADMIN" && role !== "SALES") {
       navigate("/login");
+    }
+    
+    // If user is a sales team member, update the page title
+    if (role === "SALES") {
+      document.title = "Sales Team Dashboard | Edumaniax";
+    } else if (role === "admin" || role === "ADMIN") {
+      document.title = "Admin Dashboard | Edumaniax";
+    } else {
+      document.title = "User Dashboard | Edumaniax";
     }
   }, [user, role, navigate]);
 
@@ -425,7 +434,7 @@ const Dashboard = () => {
             </button>
 
             {/* My Modules Button - Only if NOT Admin */}
-            {role !== "admin" && (
+            {role !== "admin" && role !== "ADMIN" && role !== "SALES" && (
               <button
                 className={`flex items-center gap-3 hover:text-green-700 ${
                   selectedSection === "modules"
@@ -445,6 +454,19 @@ const Dashboard = () => {
                 />
                 <span className="font-bold">My Modules</span>
               </button>
+            )}
+            
+            {/* Sales Dashboard Link - Only for SALES role */}
+            {(role === "SALES") && (
+              <Link
+                to="/sales/dashboard"
+                className="flex items-center gap-3 text-blue-500 hover:text-blue-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span className="font-bold">Sales Dashboard</span>
+              </Link>
             )}
 
             {/* My Subscriptions Button - Only if NOT Admin */}
@@ -615,6 +637,43 @@ const Dashboard = () => {
                     DASHBOARD
                   </span>
                 </div>
+
+                {/* ROLE INFO BANNER - Only visible for ADMIN and SALES roles */}
+                {(role === "admin" || role === "ADMIN" || role === "SALES") && (
+                  <div className={`mb-6 p-4 rounded-lg shadow-md ${role === "admin" || role === "ADMIN" ? "bg-purple-100 border-l-4 border-purple-500" : "bg-blue-100 border-l-4 border-blue-500"}`}>
+                    <div className="flex items-center">
+                      <div className={`p-2 rounded-full ${role === "admin" || role === "ADMIN" ? "bg-purple-200" : "bg-blue-200"} mr-4`}>
+                        {role === "admin" || role === "ADMIN" ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <h2 className={`text-lg font-semibold ${role === "admin" || role === "ADMIN" ? "text-purple-800" : "text-blue-800"}`}>
+                          {role === "admin" || role === "ADMIN" ? "Administrator Account" : "Sales Team Account"}
+                        </h2>
+                        <p className={`text-sm ${role === "admin" || role === "ADMIN" ? "text-purple-600" : "text-blue-600"}`}>
+                          {role === "admin" || role === "ADMIN" 
+                            ? "You have administrative privileges and can access all system features."
+                            : "You have sales team privileges and can access sales dashboard and related features."}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <a 
+                        href={role === "admin" || role === "ADMIN" ? "/" : "/sales/dashboard"} 
+                        className={`text-sm px-4 py-1 rounded ${role === "admin" || role === "ADMIN" ? "bg-purple-500 hover:bg-purple-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+                      >
+                        {role === "admin" || role === "ADMIN" ? "Admin Portal" : "Sales Dashboard"}
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* PROFILE + CHARACTER */}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-8 mb-10">
@@ -950,7 +1009,7 @@ const Dashboard = () => {
                         Your Character
                       </h3>
                       <p className="text-2xl font-bold text-gray-900 mb-4 text-left ml-4">
-                        {user.characterName}
+                        {user?.characterName}
                       </p>
                     </div>
 
@@ -988,7 +1047,7 @@ const Dashboard = () => {
                         </div>
 
                         {/* Traits */}
-                        {user.characterTraits.map((trait, index) => (
+                        {user?.characterTraits && user.characterTraits.map((trait, index) => (
                           <div
                             key={index}
                             className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm"
@@ -1011,8 +1070,8 @@ const Dashboard = () => {
                         <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
                           <p className="text-xs text-gray-400 mb-1">Fact</p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Meet <strong>“{user.characterName}”</strong> who is{" "}
-                            {user.characterTraits.map((trait, index) => {
+                            Meet <strong>“{user?.characterName}”</strong> who is{" "}
+                            {user?.characterTraits && user.characterTraits.map((trait, index) => {
                               const percentages = [40, 30, 20, 10];
                               const isLast =
                                 index === user.characterTraits.length - 1;
