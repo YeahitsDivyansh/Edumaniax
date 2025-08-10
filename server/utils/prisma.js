@@ -43,7 +43,7 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-// Middleware to close only very long idle connections - export this to use in your main app
+// Middleware to close only very long idle connections
 export const prismaMiddleware = async (req, res, next) => {
   try {
     await next();
@@ -64,4 +64,6 @@ export const prismaMiddleware = async (req, res, next) => {
   }
 };
 
+// Export both named and default exports for compatibility
+export { prisma };
 export default prisma;

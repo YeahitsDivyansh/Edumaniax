@@ -1,5 +1,5 @@
 // connectionManager.js
-import prisma from './utils/prisma.js';
+import { prisma } from './utils/prisma.js';
 
 class ConnectionManager {
   constructor() {
