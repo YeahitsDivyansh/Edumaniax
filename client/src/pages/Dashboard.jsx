@@ -3,6 +3,7 @@ import { useNavigate, NavLink, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
+import { useAccessControl } from "../utils/accessControl";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,7 +14,14 @@ const Dashboard = () => {
   const [userComments, setUserComments] = useState([]);
   const [editingField, setEditingField] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [userSubscription, setUserSubscription] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null);
   const { getUserComments } = useBlog();
+  const { accessStatus, hasModuleAccess } = useAccessControl(subscriptions, selectedModule);
 
   useEffect(() => {
     const fetchUserComments = async () => {
@@ -47,6 +55,155 @@ const Dashboard = () => {
 
     fetchUserComments();
   }, [user?.id, user?.name, getUserComments]);
+
+  // Fetch user subscription and payment data
+  useEffect(() => {
+    const fetchUserSubscriptionData = async () => {
+      if (!user?.id) return;
+
+      try {
+        setLoadingSubscriptions(true);
+        setLoadingPayments(true);
+
+        // Fetch user subscriptions
+        const subscriptionResponse = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (subscriptionResponse.ok) {
+          const subscriptionData = await subscriptionResponse.json();
+          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions
+          for (const plan of planHierarchy.reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          if (highestActiveSubscription) {
+            // Parse notes to get selectedModule if it exists
+            let selectedModuleFromSub = null;
+            if (highestActiveSubscription.notes) {
+              try {
+                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
+                const rawModule = parsedNotes.selectedModule;
+                
+                // Map the display name to the correct module key
+                const moduleMapping = {
+                  // Full display names from UI
+                  'Finance Management': 'finance',
+                  'Digital Marketing': 'digital-marketing',
+                  'Communication Skills': 'communication',
+                  'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
+                  'Environmental Science': 'environment',
+                  'Legal Awareness': 'law',
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
+                };
+                
+                selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+              } catch {
+                // If notes is not JSON, treat as plain text and map it
+                const moduleMapping = {
+                  // Full display names from UI
+                  'Finance Management': 'finance',
+                  'Digital Marketing': 'digital-marketing',
+                  'Communication Skills': 'communication',
+                  'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
+                  'Environmental Science': 'environment',
+                  'Legal Awareness': 'law',
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
+                };
+                
+                selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+              }
+            }
+            
+            setSelectedModule(selectedModuleFromSub);
+            setUserSubscription({
+              plan: highestActiveSubscription.planType,
+              status: highestActiveSubscription.status,
+              startDate: highestActiveSubscription.startDate,
+              endDate: highestActiveSubscription.endDate,
+              selectedModule: selectedModuleFromSub
+            });
+          }
+        } else {
+          console.log('Failed to fetch subscriptions:', subscriptionResponse.statusText);
+          setSubscriptions([]);
+        }
+
+        // Fetch user payments
+        const paymentResponse = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`
+        );
+        
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setPayments(Array.isArray(paymentData) ? paymentData : []);
+        } else {
+          console.log('Failed to fetch payments:', paymentResponse.statusText);
+          setPayments([]);
+        }
+
+      } catch (error) {
+        console.error('Error fetching subscription/payment data:', error);
+        setSubscriptions([]);
+        setPayments([]);
+      } finally {
+        setLoadingSubscriptions(false);
+        setLoadingPayments(false);
+      }
+    };
+
+    fetchUserSubscriptionData();
+  }, [user?.id]);
 
   // Refresh comments when user returns to the dashboard (page focus)
   useEffect(() => {
@@ -290,6 +447,31 @@ const Dashboard = () => {
               </button>
             )}
 
+            {/* My Subscriptions Button - Only if NOT Admin */}
+            {role !== "admin" && (
+              <button
+                className={`flex items-center gap-3 hover:text-green-700 ${
+                  selectedSection === "subscriptions"
+                    ? "text-green-600"
+                    : "text-gray-400"
+                }`}
+                onClick={() => setSelectedSection("subscriptions")}
+              >
+                <img
+                  src="/dashboardDesign/profile.svg"
+                  alt="Subscriptions"
+                  className="w-5 h-5"
+                  style={{
+                    filter:
+                      selectedSection === "subscriptions"
+                        ? "grayscale(0%)"
+                        : "grayscale(100%)",
+                  }}
+                />
+                <span className="font-bold">My Subscriptions</span>
+              </button>
+            )}
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 text-red-500 hover:text-red-600"
@@ -337,25 +519,90 @@ const Dashboard = () => {
                   </h2>
                 </div>
 
-                {/* Empty State Box */}
-                <div className="bg-white w-full max-w-6xl rounded-lg shadow-md flex flex-col items-center justify-center p-10">
-                  <img
-                    src="/blogDesign/notfound.svg"
-                    alt="No Modules"
-                    className="w-64 h-auto mb-6"
-                  />
-                  <h3 className="text-xl font-bold text-gray-800 -mt-18">
-                    No Modules Available
-                  </h3>
-                  <p className="text-gray-600 mb-4 text-sm mt-2">
-                    Upgrade your plan to learn via modules
-                  </p>
-                  <Link
-                    to="/pricing"
-                    className="bg-[#068F36] hover:bg-green-700 text-white px-5 py-2 rounded-lg inline-block text-center"
-                  >
-                    Upgrade Now
-                  </Link>
+                {/* Modules Grid */}
+                <div className="bg-white w-full max-w-6xl rounded-lg shadow-md p-6">
+                  {accessStatus?.subscription ? (
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">
+                        Available Modules ({accessStatus.subscription.plan.toUpperCase()} Plan)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { key: 'finance', name: 'Finance Management' },
+                          { key: 'digital-marketing', name: 'Digital Marketing' },
+                          { key: 'communication', name: 'Communication Skills' },
+                          { key: 'computers', name: 'Computer Science' },
+                          { key: 'entrepreneurship', name: 'Entrepreneurship' },
+                          { key: 'environment', name: 'Environmental Science' },
+                          { key: 'law', name: 'Legal Awareness' },
+                          { key: 'leadership', name: 'Leadership Skills' },
+                          { key: 'sel', name: 'Social Emotional Learning' }
+                        ].map((module) => {
+                          const hasAccess = hasModuleAccess(module.key);
+                          return (
+                            <div
+                              key={module.key}
+                              className={`border rounded-lg p-4 transition-all duration-200 ${
+                                hasAccess
+                                  ? 'border-green-200 bg-green-50 hover:shadow-md cursor-pointer'
+                                  : 'border-gray-200 bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-semibold text-gray-800">{module.name}</h4>
+                                <span
+                                  className={`w-4 h-4 rounded-full ${
+                                    hasAccess ? 'bg-green-500' : 'bg-gray-400'
+                                  }`}
+                                />
+                              </div>
+                              <p className={`text-sm mb-3 ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
+                                {hasAccess ? 'Ready to Learn' : 'Premium Required'}
+                              </p>
+                              {hasAccess && (
+                                <Link
+                                  to={`/courses?module=${module.toLowerCase().replace(' ', '-')}`}
+                                  className="bg-[#068F36] hover:bg-green-700 text-white px-3 py-1 rounded text-sm inline-block"
+                                >
+                                  Start Learning
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Special message for SOLO plan */}
+                      {accessStatus.subscription.plan === 'SOLO' && accessStatus.subscription.selectedModule && (
+                        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <h4 className="font-semibold text-blue-800 mb-2">Your Selected Module</h4>
+                          <p className="text-blue-600 text-sm">
+                            With your SOLO plan, you have access to: <strong>{accessStatus.subscription.selectedModule}</strong>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-10">
+                      <img
+                        src="/blogDesign/notfound.svg"
+                        alt="No Modules"
+                        className="w-64 h-auto mb-6"
+                      />
+                      <h3 className="text-xl font-bold text-gray-800 -mt-18">
+                        No Premium Modules Available
+                      </h3>
+                      <p className="text-gray-600 mb-4 text-sm mt-2">
+                        Upgrade your plan to unlock premium learning modules
+                      </p>
+                      <Link
+                        to="/pricing"
+                        className="bg-[#068F36] hover:bg-green-700 text-white px-5 py-2 rounded-lg inline-block text-center"
+                      >
+                        View Pricing Plans
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -799,6 +1046,223 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Subscriptions Section */}
+            {selectedSection === "subscriptions" && (
+              <div className="max-w-6xl mx-auto px-6 pt-6">
+                {/* DASHBOARD HEADER */}
+                <div className="bg-[#068F36] text-5xl font-bold text-center px-10 py-4 rounded-md shadow-sm mb-8">
+                  <span className="text-white" style={{ opacity: 0.72 }}>
+                    MY SUBSCRIPTIONS
+                  </span>
+                </div>
+
+                {/* Current Plan Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Current Plan</h3>
+                  {loadingSubscriptions ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                      <span className="ml-2 text-gray-600">Loading subscription data...</span>
+                    </div>
+                  ) : userSubscription ? (
+                    <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-xl font-semibold text-green-800">
+                            {userSubscription.plan.toUpperCase()} PLAN
+                          </h4>
+                          <p className="text-gray-600 text-sm">
+                            Subscribed on: {new Date(userSubscription.startDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            userSubscription.status === 'ACTIVE' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {userSubscription.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500">Valid Until:</p>
+                          <p className="font-semibold">
+                            {new Date(userSubscription.endDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Plan Type:</p>
+                          <p className="font-semibold">{userSubscription.plan}</p>
+                        </div>
+                        {userSubscription.selectedModule && (
+                          <div className="md:col-span-2">
+                            <p className="text-gray-500">Selected Module:</p>
+                            <p className="font-semibold">{userSubscription.selectedModule}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Add upgrade button for STARTER and PRO plans */}
+                      {(userSubscription.plan === 'STARTER' || userSubscription.plan === 'PRO') && (
+                        <div className="mt-4 pt-4 border-t border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">
+                                {userSubscription.plan === 'STARTER' 
+                                  ? 'Unlock premium modules and certificates' 
+                                  : 'Get institutional features and live sessions'}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => navigate(`/payment?plan=${userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}`)}
+                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+                            >
+                             Upgrade to {userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
+                      <p className="text-gray-600 mb-4">You don't have any active subscriptions yet.</p>
+                      <Link 
+                        to="/courses" 
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Browse Plans
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Accessible Modules Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Accessible Modules</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { name: 'Finance Management', key: 'finance' },
+                      { name: 'Digital Marketing', key: 'digital-marketing' },
+                      { name: 'Communication Skills', key: 'communication' },
+                      { name: 'Computer Science', key: 'computers' },
+                      { name: 'Entrepreneurship', key: 'entrepreneurship' },
+                      { name: 'Environmental Science', key: 'environment' },
+                      { name: 'Legal Awareness', key: 'law' },
+                      { name: 'Leadership Skills', key: 'leadership' },
+                      { name: 'Social Emotional Learning', key: 'sel' }
+                    ].map((module) => {
+                      const hasAccess = hasModuleAccess(module.key);
+                      return (
+                        <div
+                          key={module.key}
+                          className={`border rounded-lg p-4 ${
+                            hasAccess
+                              ? 'border-green-200 bg-green-50'
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-gray-800">{module.name}</h4>
+                            <span
+                              className={`w-3 h-3 rounded-full ${
+                                hasAccess ? 'bg-green-500' : 'bg-gray-400'
+                              }`}
+                            />
+                          </div>
+                          <p className={`text-sm ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
+                            {hasAccess ? 'Accessible' : 'Premium Required'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment History Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Payment History</h3>
+                  {loadingPayments ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                      <span className="ml-2 text-gray-600">Loading payment history...</span>
+                    </div>
+                  ) : payments.length > 0 ? (
+                    <div className="space-y-4">
+                      {payments.slice(0, 5).map((payment) => (
+                        <div key={payment.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-semibold text-gray-800">
+                                {payment.planType} Plan - ₹{payment.amount}
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                {new Date(payment.createdAt).toLocaleDateString()} at {new Date(payment.createdAt).toLocaleTimeString()}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              payment.status === 'COMPLETED' 
+                                ? 'bg-green-100 text-green-800' 
+                                : payment.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {payment.status}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-500">Payment ID:</p>
+                              <p className="font-mono text-xs">{payment.razorpayPaymentId || 'Pending'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Order ID:</p>
+                              <p className="font-mono text-xs">{payment.razorpayOrderId}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Currency:</p>
+                              <p>{payment.currency}</p>
+                            </div>
+                          </div>
+                          {payment.notes && (
+                            <div className="mt-2 pt-2 border-t border-gray-100">
+                              <p className="text-gray-500 text-sm">Selected Module:</p>
+                              <p className="text-sm font-medium">
+                                {(() => {
+                                  try {
+                                    const parsedNotes = JSON.parse(payment.notes);
+                                    return parsedNotes.selectedModule || 'All Modules';
+                                  } catch {
+                                    return payment.notes || 'All Modules';
+                                  }
+                                })()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {payments.length > 5 && (
+                        <div className="text-center">
+                          <p className="text-gray-500 text-sm">Showing latest 5 payments</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">No payment history found.</p>
+                      <Link 
+                        to="/courses" 
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Make Your First Purchase
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import { prismaMiddleware } from "./utils/prisma.js";
+import { prisma, prismaMiddleware } from "./utils/prisma.js";
 import userRoutes from "./routes/userRoutes.js";
 import financeRoutes from "./routes/financeRoutes.js";
 import DMRoutes from "./routes/DMRoutes.js";
@@ -15,6 +15,8 @@ import leadershipRoutes from "./routes/leadershipRoutes.js";
 import SELRoutes from "./routes/SELRoutes.js";
 import performanceRoutes from './routes/performanceRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import accessRoutes from './routes/accessRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -25,26 +27,7 @@ app.use(cors());
 app.use(express.json());
 
 // Add Prisma middleware to manage database connections
-app.use(async (req, res, next) => {
-  try {
-    await next();
-  } catch (error) {
-    console.error("Error in request:", error);
-    
-    // Check if it's a database connection error
-    if (error.message?.includes('connection') || error.message?.includes('FATAL')) {
-      res.status(503).json({ 
-        error: "Database temporarily unavailable. Please try again in a moment.",
-        message: "Service temporarily unavailable"
-      });
-    } else {
-      res.status(500).json({ 
-        error: "An internal server error occurred",
-        message: process.env.NODE_ENV === "production" ? null : error.message
-      });
-    }
-  }
-});
+app.use(prismaMiddleware);
 
 app.use("/", userRoutes);
 app.use("/finance", financeRoutes);
@@ -58,6 +41,29 @@ app.use("/leadership", leadershipRoutes);
 app.use("/sel", SELRoutes);
 app.use("/performance", performanceRoutes);
 app.use("/blogs", blogRoutes);
+app.use("/payment", paymentRoutes);
+app.use("/access", accessRoutes);
+
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    // Basic connection test to DB
+    const dbStatus = await prisma.$queryRaw`SELECT 1 as result`;
+    res.json({ 
+      status: 'ok', 
+      message: 'Server is running',
+      database: dbStatus && dbStatus.length > 0 ? 'connected' : 'disconnected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Server running but database connection failed',
+      error: process.env.NODE_ENV === 'production' ? null : error.message
+    });
+  }
+});
 
 // Global error handler
 app.use((err, req, res, next) => {

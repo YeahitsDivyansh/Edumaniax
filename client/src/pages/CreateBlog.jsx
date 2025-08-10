@@ -98,8 +98,18 @@ const CreateBlog = () => {
   };
 
   const checkForLinks = (text, index, explanationIndex = null) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const match = text.match(urlRegex);
+    // Only check if space was pressed (text ends with space)
+    if (!text.endsWith(' ')) {
+      return false;
+    }
+    
+    // Get the word before the space
+    const words = text.trim().split(' ');
+    const lastWord = words[words.length - 1];
+    
+    // Check if last word is a URL
+    const urlRegex = /^(https?:\/\/[^\s]+)$/;
+    const match = lastWord.match(urlRegex);
     
     if (match) {
       const url = match[0];
