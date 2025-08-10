@@ -32,7 +32,7 @@ const Hero = () => {
                   alt="Home Icon"
                   className="w-4 h-4"
                 />
-                <span>Home</span>
+                <span className="ml-1 mr-2 md:mx-0">Home</span>
               </Link>
 
               <span className="text-white/60">&gt;</span>
@@ -44,7 +44,7 @@ const Hero = () => {
               <span className="text-white">Digital Marketing</span>
 
               <span className="text-white/60">&gt;</span>
-              <span className="font-semibold text-white whitespace-nowrap">
+              <span className="font-semibold text-white md:whitespace-nowrap">
                 Gaming Lessons
               </span>
             </div>
@@ -71,7 +71,7 @@ const Hero = () => {
 
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
             <span className="block md:inline sigmar-font">Master Your</span>{" "}
-            <span className="sigmar-font inline-flex items-center gap-0 whitespace-nowrap">
+            <span className="sigmar-font inline-flex items-center gap-0 md:whitespace-nowrap">
               Digital Marketing Skills
               <img
                 src="/imageForDesign/Levelup-2-unscreen.gif"

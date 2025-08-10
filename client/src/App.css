@@ -1,7 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Sigmar&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&display=swap");
 body {
   margin: 0;
   padding: 0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 html {
@@ -10,6 +19,12 @@ html {
 
 .sigmar-font {
   font-family: "Sigmar", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.lilita-one-regular {
+  font-family: "Lilita One", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
@@ -102,4 +117,13 @@ html {
       transform: translateY(-6px);
     }
   }
+  .lilita {
+    font-family: "Lilita One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+}
+
+.main-content {
+  min-height: calc(100vh - 96px); /* 96px is footer height */
 }

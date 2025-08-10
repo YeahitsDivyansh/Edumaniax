@@ -16,6 +16,8 @@ const Login = () => {
   const [otpInputs, setOtpInputs] = useState(["", "", "", "", "", ""]);
   const [rememberMe, setRememberMe] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [resendTimer, setResendTimer] = useState(30); // 30 seconds cooldown
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     const savedPhone = Cookies.get("rememberedPhone");
@@ -24,6 +26,14 @@ const Login = () => {
       setRememberMe(true);
     }
   }, []);
+
+  useEffect(() => {
+    let timer;
+    if (step === 2 && resendTimer > 0) {
+      timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [step, resendTimer]);
 
   const handlePhoneChange = (e) => {
     setPhone(e.target.value);
@@ -91,6 +101,20 @@ const Login = () => {
       setError("Verification failed.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resending || resendTimer > 0) return;
+    setResending(true);
+    setError("");
+    try {
+      await sendOtpForLogin(phone);
+      setResendTimer(30); // reset timer
+    } catch {
+      setError("Failed to resend OTP. Please try again.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -248,7 +272,7 @@ const Login = () => {
                     OTP Verification
                   </h2>
                   <p className="text-sm text-gray-600">
-                    We sent a code to +91-
+                    We have sent a 6-digit code to +91-
                     {phone.replace(/(\d{5})(\d{5})/, "$1-$2")}
                   </p>
                 </div>
@@ -278,6 +302,25 @@ const Login = () => {
                 >
                   {loading ? "Verifying..." : "Verify OTP"}
                 </button>
+
+                {/* ✅ Add resend OTP section here */}
+                <p className="text-center text-sm text-gray-600 mt-2">
+                  Haven't received any OTP yet?{" "}
+                  {resendTimer > 0 ? (
+                    <span className="text-gray-500">
+                      Resend in {resendTimer}s
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      className="text-[#448BD1] font-medium hover:underline disabled:opacity-50"
+                      disabled={resending}
+                    >
+                      {resending ? "Resending..." : "Resend it"}
+                    </button>
+                  )}
+                </p>
               </form>
             )}
           </div>

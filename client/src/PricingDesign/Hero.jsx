@@ -15,7 +15,7 @@ const Hero = () => {
 
       <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10">
         {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold sigmar-font leading-tight">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight">
           <div>Pick the plan that powers</div>
           <div className="inline-flex items-center justify-center">
             your progress
@@ -28,7 +28,7 @@ const Hero = () => {
         </h1>
 
         {/* Subtext */}
-        <p className="text-gray-100 text-sm sm:text-lg -mt-2 text-center">
+        <p className="text-white text-sm sm:text-lg -mt-2 text-center">
           Affordable and scalable plans packed with features,
           <br className="block sm:hidden" />
           notes, and learning tools.

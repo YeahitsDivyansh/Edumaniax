@@ -25,13 +25,102 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+// List of Indian states
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
+  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Lakshadweep", "Puducherry"
+];
+
+// Custom State Combobox Component with filtering
+const StateCombobox = ({ value, onChange, label, placeholder, name }) => {
+  const [inputValue, setInputValue] = useState(value);
+  const [filteredStates, setFilteredStates] = useState(indianStates);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange({ target: { name, value: newValue } });
+
+    // Filter the states based on input
+    const newFilteredStates = indianStates.filter(state =>
+      state.toLowerCase().includes(newValue.toLowerCase())
+    );
+    setFilteredStates(newFilteredStates);
+    setIsOpen(true);
+  };
+
+  const handleSelectState = (state) => {
+    setInputValue(state);
+    onChange({ target: { name, value: state } });
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        type="text"
+        id={name}
+        name={name}
+        value={inputValue}
+        onChange={handleInputChange}
+        onFocus={() => {
+          setIsOpen(true);
+          setFilteredStates(indianStates); // Show all options on focus
+        }}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
+        placeholder={placeholder}
+      />
+      {isOpen && filteredStates.length > 0 && (
+        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+          {filteredStates.map((state) => (
+            <li
+              key={state}
+              className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSelectState(state)}
+            >
+              {state}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 // Trial Booking Modal Component
 const TrialBookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    class: "",
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    class: '',
+    state: '',
+    city: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -54,10 +143,12 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        class: "",
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        class: '',
+        state: '',
+        city: ''
       });
       setShowSuccess(false);
       setError("");
@@ -78,10 +169,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      // EmailJS configuration - You need to set these up in your EmailJS account
-      const serviceId = "service_52co609"; // Replace with your EmailJS service ID
-      const templateId = "template_50ibn0n"; // Replace with your EmailJS template ID
-      const publicKey = "zgnJuM3MRywVUxjcR"; // Replace with your EmailJS public key
+
+      const serviceId = 'service_52co609';
+      const templateId = 'template_50ibn0n';
+      const publicKey = 'zgnJuM3MRywVUxjcR';
 
       const templateParams = {
         to_email: "anujyelve3074@gmail.com",
@@ -90,18 +181,21 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
         email: formData.email,
         phone: formData.phoneNumber,
         class: formData.class,
+        state: formData.state,
+        city: formData.city,
         message: `A new user wants to book a free trial:
         Name: ${formData.fullName}
         Email: ${formData.email}
         Phone Number: ${formData.phoneNumber}
-        Class: ${formData.class}`,
+        Class: ${formData.class}
+        State: ${formData.state}
+        City: ${formData.city}`
       };
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
 
       setShowSuccess(true);
 
-      // Close modal after 2 seconds
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -131,7 +225,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto"
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto mt-[10vh]" 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
@@ -146,13 +240,13 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
           </button>
 
           {/* Modal content */}
-          <div className="p-6 sm:p-8">
+          <div className="py-6 px-7">
             {!showSuccess ? (
               <>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">
                   Book Your Free Trial
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-5 text-sm">
                   Fill out the form below and we'll contact you soon!
                 </p>
 
@@ -172,7 +266,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.fullName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -192,7 +286,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your email address"
                     />
                   </div>
@@ -212,7 +306,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.phoneNumber}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                       placeholder="Enter your phone number"
                     />
                   </div>
@@ -231,18 +325,41 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                       value={formData.class}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
                     >
                       <option value="">Select your class</option>
-
                       <option value="Class 6">Class 6</option>
                       <option value="Class 7">Class 7</option>
                       <option value="Class 8">Class 8</option>
                       <option value="Class 9">Class 9</option>
                       <option value="Class 10">Class 10</option>
-                      <option value="Class 11">Class 11</option>
-                      <option value="Class 12">Class 12</option>
+                      <option value="Class 11">Class 11 and above</option>
                     </select>
+                  </div>
+
+                  {/* State and City Fields  */}
+                  <div>
+                    <StateCombobox
+                      label="State"
+                      name="state"
+                      placeholder="Enter your state, e.g., Delhi"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200 text-sm"
+                      placeholder="Enter your city, e.g., New Delhi"
+                    />
                   </div>
 
                   {/* Error message */}
@@ -1833,7 +1950,7 @@ const Home = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-10 sm:py-20">
+      <section className="py-10 sm:py-20 mb-20" style={{background: "linear-gradient(180deg, #FFF 0%, #FFFEF7 29.73%, #FFFBDE 57.47%, #FFF49A 100%)"}} >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="relative flex justify-center items-center mb-8 sm:mb-16">
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
@@ -1842,20 +1959,15 @@ const Home = () => {
 
             <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10 text-center">
               {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold sigmar-font leading-tight text-black">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight text-[#111827]">
                 <div>Pick the plan that powers</div>
                 <div className="inline-flex items-center justify-center">
                   your progress
-                  <img
-                    src="/pricingDesign/runwk899FVEasw-ar-11-video-1-d-unscreen.gif"
-                    alt="Run animation"
-                    className="inline-block w-10 h-10 sm:w-11 sm:h-11 ml-2 mt-1 align-middle"
-                  />
                 </div>
               </h1>
 
               {/* Subtext */}
-              <p className="text-gray-600 text-sm sm:text-lg -mt-2">
+              <p className="text-sm sm:text-lg -mt-2 text-[#111827] inter-font">
                 Affordable and scalable plans packed with features,
                 <br className="block sm:hidden" />
                 notes, and learning tools.
@@ -1863,42 +1975,39 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 inter-font" >
             {plans.map((plan, idx) => (
               <div
                 key={idx}
-                className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${
-                  plan.title === "PRO PLAN"
-                    ? "border-[#068F36]"
-                    : "border-gray-200 hover:border-[#068F36]"
-                }`}
+                className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
               >
                 <div className="relative mb-4">
                   {plan.title === "PRO PLAN" && (
                     <img
                       src="/pricingDesign/save20.svg"
                       alt="Save 20%"
-                      className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
+                      className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                     />
                   )}
                   {plan.tag && (
-                    <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
+                    <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
                       {plan.tag}
                     </span>
                   )}
                 </div>
 
-                <div className="flex justify-start">
+                <div className="flex justify-start -mx-[1px]">
                   <h3
-                    className="text-xs font-bold uppercase text-[#007127] px-3 py-1 rounded"
+                    className="text-xs font-extrabold uppercase text-[#007127] px-3 py-1 rounded"
                     style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
                   >
                     {plan.title}
                   </h3>
                 </div>
-                <p className="text-sm text-black mt-2">{plan.description}</p>
+                <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
                 <hr className="my-3 border-gray-300" />
-                <p className="text-4xl font-extrabold text-[#042038] mt-1">
+                <p className="text-4xl font-extrabold text-[#000B33] mt-1">
                   {plan.price}
                 </p>
                 <p className="text-xs text-black font-semibold mt-1">
@@ -1906,7 +2015,7 @@ const Home = () => {
                 </p>
                 <hr className="my-3 border-gray-300 mt-5" />
 
-                <ul className="text-sm space-y-2 flex-1 mt-2">
+                <ul className="text-xs space-y-2 flex-1 mt-2">
                   {plan.features.map((feat, i) => {
                     const text = typeof feat === "string" ? feat : feat.text;
                     const excluded =
@@ -1927,7 +2036,7 @@ const Home = () => {
                             }`}
                           />
                         </span>
-                        <span className={excluded ? "text-red-600" : ""}>
+                        <span className="text-black font-normal text-xs">
                           {text}
                         </span>
                       </li>
@@ -1963,6 +2072,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {pricingFaqData.map((faq, index) => (
               <motion.div
+
                 key={index}
                 onClick={() => toggleFAQ(index)}
                 initial={{ opacity: 0, y: 20 }}
