@@ -15,7 +15,7 @@ const LevelsDisplay = ({ modules }) => {
       modules={modules}
       moduleKey="leadership"
       progress={progress}
-      showDebug={true} // Set to false in production gaurav
+      showDebug={false} // Set to false in production gaurav
     />
   );
 };

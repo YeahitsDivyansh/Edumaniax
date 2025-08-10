@@ -15,7 +15,7 @@ const LevelsDisplay = ({ modules }) => {
       modules={modules}
       moduleKey="computers"
       progress={progress}
-      showDebug={true} // Set to false in production
+      showDebug={false} // Set to false in production
     />
   );
 };
