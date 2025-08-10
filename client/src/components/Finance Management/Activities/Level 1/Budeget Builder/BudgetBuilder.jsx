@@ -440,12 +440,16 @@ Constraints -
       <div
         className={`flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8 ${
           showInstructions ? "brightness-50" : ""
-        }`}
+        } pb-28`} // <-- add padding bottom here
       >
         {/* Dark Theme Weekly Budget Builder */}
         <div
-          className="w-full bg-[#0A160E] font-sans"
-          style={{ fontFamily: "'Inter', sans-serif" }}
+          className="w-full main-content bg-[#0A160E] font-sans"
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            paddingBottom:
+              document.body.scrollHeight > window.innerHeight ? "8rem" : "0rem",
+          }}
         >
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex flex-col lg:flex-row justify-center items-stretch gap-12 lg:gap-16 px-4 lg:px-8">
@@ -642,7 +646,7 @@ Constraints -
           )}
 
           {/* Footer with Total Wallet and Check Now Button */}
-          <div className="relative mt-20 left-1/2 right-1/2 -mx-[50vw] w-screen bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center">
+          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center z-40">
             {/* Kid Celebration Gif + Speech Bubble */}
             {showGif && (
               <div className="absolute -top-28 left-[83%] transform -translate-x-1/2 z-50 flex items-start">
@@ -672,11 +676,11 @@ Constraints -
                       className="w-8 h-8 object-contain"
                     />
                   </div>
-                  <div className="text-white">
-                    <span className="text-md sm:text-lg font-medium text-yellow-400">
+                  <div className="text-white flex flex-col">
+                    <span className="text-md lilita-one-regular sm:text-lg font-medium text-yellow-400">
                       Total Wallet:
                     </span>
-                    <span className="text-white text-xl font-bold ml-2">
+                    <span className="text-white lilita-one-regular text-xl font-bold">
                       ₹{wallet}
                     </span>
                   </div>
@@ -787,6 +791,7 @@ Constraints -
           <ToastContainer />
         </div>
       </div>
+
       {/* Instructions overlay */}
       {showInstructions && (
         <InstructionOverlay onClose={() => setShowInstructions(false)} />

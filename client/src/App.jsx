@@ -5,17 +5,10 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Outlet, // Import Outlet for layout routes
+  useLocation,
 } from "react-router-dom";
-
-// Helper/Wrapper Components
-import ScrollToTop from "./ScrollToTop";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import VideoAudioSyncIntro from "./components/VideoAudioSyncIntro";
-
-// --- Import ALL Your Page and Game Components ---
-// (Your original list of imports is preserved here)
 import Home from "./pages/Home";
 import PickABank from "./components/Finance Management/Activities/Level 1/Pick A Bank/PickABank";
 import OverspendTrap from "./components/Finance Management/Activities/Level 1/OverspendTrap.jsx";
@@ -40,7 +33,7 @@ import Section3 from "./pages/sections/Section3.jsx";
 import Section4 from "./pages/sections/Section4.jsx";
 import Section5 from "./pages/sections/Section5.jsx";
 import Section6 from "./pages/sections/Section6.jsx";
-import DigitalMarketingNotes from "./pages/DigitalMarketingNotes.jsx";
+import DigitalMarketingNotes from "./pages/DigitalMarketingNotes.jsx"; // Importing the Digital Marketing Notes page
 import Section1dm from "./pages/DMsections/Section1dm";
 import Section2dm from "./pages/DMsections/Section2dm";
 import Section3dm from "./pages/DMsections/Section3dm";
@@ -52,13 +45,16 @@ import Section8dm from "./pages/DMsections/Section8dm";
 import IntroPageAdDetective from "./components/Digital Marketing/Level 1/AdDetective/IntroPageAdDetective";
 import MissionCompleteAdDetective from "./components/Digital Marketing/Level 1/AdDetective/MissionCompleteAdDetective";
 import AdDetectiveGamePage from "./components/Digital Marketing/Level 1/AdDetective/AdDetectiveGamePage";
+
 import PrivacyPolicy from "./Footer-Routes/PrivacyPolicy";
 import RefundPolicy from "./Footer-Routes/RefundPolicy";
 import TermsAndConditions from "./Footer-Routes/TermsAndConditions";
+
 import BrandCreatorGame from "./components/Digital Marketing/Level 1/BrandCreator/BrandCreatorGame";
 import BrandBrandExplorerGameSelect from "./components/Digital Marketing/Level 1/BrandExplorer/BrandExplorerSelect";
 import IntroPageBrandExplorer from "./components/Digital Marketing/Level 1/BrandExplorer/IntroPageBrandExplorer";
 import BrandExplorerGameComplete from "./components/Digital Marketing/Level 1/BrandExplorer/BrandExplorerGameComplete";
+import ScrollToTop from "./ScrollToTop";
 import AdminLogin from "./pages/AdminLogin";
 import DigitalMarketing from "./pages/DigitalMarketing";
 import CaptionCraze from "./components/Digital Marketing/Level 2/Caption Craze/CaptionCraze";
@@ -142,8 +138,10 @@ import BrandVoiceResult from "./components/Games for 9-10/Dig Mkting/Level1/Bran
 import BrandVoiceGame from "./components/Games for 9-10/Dig Mkting/Level1/BrandVoice/BrandVoiceGame";
 import DigitalExplorer from "./components/Games for 9-10/Dig Mkting/Level1/Dig Explorer/DigitalExplorer";
 import DigitalExplorerResult from "./components/Games for 9-10/Dig Mkting/Level1/Dig Explorer/DigitalExplorerResult";
+
 import FutureMeInAI from "./components/Games for 9-10/AI/Level3/FutureMeInAI/FutureMeInAI";
 import ThinkBeforeYouTechGame from "./components/Games for 9-10/AI/Level3/ThinkBeforeYouTechGame/ThinkBeforeYouTechGame";
+
 import Courses from "./pages/Courses";
 import MissionGoalTracker from "./components/SEL/Level-3/MissionGoalTracker/MissionGoalTracker";
 import HelpHub from "./components/SEL/Level-3/HelpHub/HelpHub";
@@ -298,7 +296,9 @@ import ConflictCommanderGame from "./components/Games for 9-10/Communication/Lev
 import TheBigSpeech from "./components/Games for 9-10/Communication/Level3/TheBigSpeech/TheBigSpeech";
 import InboxInsightGame from "./components/Games for 9-10/Communication/Level3/InboxInsight/InboxInsight";
 import CarouselCampaign from "./components/Games for 9-10/Dig Mkting/Level1/CarouselCampaign/CarouselCampaign";
+import VideoAudioSyncIntro from "./components/VideoAudioSyncIntro";
 import PaymentRequired from "./pages/PaymentRequired";
+import Payment from "./pages/Payment";
 import LeanMachineGame from "./components/Games for 9-10/Entreprenurship/Level1/LeanMachineGame/LeanMachineGame";
 import PitchArenaGame from "./components/Games for 9-10/Entreprenurship/Level1/PitchArenaGame/PitchArenaGame";
 import StartupQuest from "./components/Games for 9-10/Entreprenurship/Level1/StartupQuest/StartupQuest";
@@ -311,41 +311,1048 @@ import CreateBlog from "./pages/CreateBlog";
 import Pricing from "./pages/Pricing";
 import Register from "./pages/Register";
 
-//-----------------------------------------------------------------------
+const INTRO_EXPIRY_HOURS = 0.5; // Change this to 1 for 1 hour, 0.1 for 6 minutes, etc.
 
-/**
- * Helper Layout Component:
- * It defines the shared structure (Navbar/Footer) for your main pages.
- * The <Outlet /> renders the specific child route component.
- */
-const MainLayout = () => {
+// Wrapper component to use useLocation hook
+function AppContent() {
+  const location = useLocation();
+
+  // Define game routes where both Navbar and Footer should not appear
+  const gameRoutes = [
+    "/pick-a-bank",
+    "/budget-activity",
+    "/budget-builder",
+    "/overspend-trap",
+    "/credit-card-simulator",
+    "/investment-simulator",
+    "/quiz",
+    "/emi-vs-lumpsum",
+    "/newsflash",
+    "/riskometer",
+    "/challenge3",
+    "/my_purchase_plan",
+    "/intro-ad-detective-game",
+    "/ad-detective-game",
+    "/ad-detective-mission-complete",
+    "/brand-creator-game",
+    "/brand-explorer-intro",
+    "/brand-explorer-game",
+    "/brand-explorer-game-complete",
+    "/caption-craze",
+    "/matching-game",
+    "/matching-game-result",
+    "/reel-planner-game",
+    "/intro-budget-battle",
+    "/budget-battle-game-complete",
+    "/ad-campaigner-game-complete",
+    "/ad-campaigner-intro",
+    "/ad-campaigner-game",
+    "/analytics-adventure",
+    "/maze-of-choices",
+    "/case-hear",
+    "/catch-your-rights",
+    "/puzzle-match",
+    "/sort-it-out",
+    "/legal-quiz",
+    "/listen-up",
+    "/say-it-like-you-mean-it",
+    "/pick-your-persuasion",
+    "/interrupt-game",
+    "/feel-it-find-it-game",
+    "/nvc-game",
+    "/tone-fixer",
+    "/speak-up-without-blowing-up",
+    "/compliment-quest",
+    "/window-seat-war",
+    "/pitch-it-like-a-pro",
+    "/cool-the-conflict",
+    "/mood-mirror",
+    "/friendship-fixer",
+    "/kindness-clicks",
+    "/stress-buster-lab",
+    "/conflict-quest",
+    "/mind-body-match-up",
+    "/influence-explorer",
+    "/help-hub",
+    "/mission-goal-tracker",
+    "/my-circle-mission",
+    "/leader-type",
+    "/vision-builder",
+    "/communication-lab",
+    "/empathy-radar",
+    "/decision-room",
+    "/team-architect",
+    "/innovation-sprint",
+    "/integrity-quest",
+    "/innovation-explorer",
+    "/ai-startup-builder",
+    "/ethics-and-impact",
+    "/pitch-champion",
+    "/user-persona-detective",
+    "/mvp-test",
+    "/classify-it",
+    "/pick-zone",
+    "/chain-reaction",
+    "/green-budget",
+    "/match-fallout",
+    "/climate-pledge",
+    "/cause-scanner",
+    "/melt-down-tracker",
+    "/dilemma-cards",
+    "/AI-challenge",
+    "/meet-ai-types",
+    "/build-a-bot",
+    "/train-the-brain",
+    "/smart-or-not",
+    "/ai-problem-solver",
+    "/ai-ethics-detective",
+    "/future-ai-architect",
+    "/ai-career-explorer",
+    "/spy-the-smart-tech",
+    "/which-ai-does-what",
+    "/smart-city-game",
+    "/TrainAIModelGame",
+    "/AIOopsGame",
+    "/RateTheIntelligenceGame",
+    "/justice-for-all",
+    "/design-a-bot",
+    "/FutureMeInAI",
+    "/ThinkBeforeYouTechGame",
+    "/LeanMachineGame",
+    "/PitchArenaGame",
+    "/StartupQuest",
+    "/EthicsEscapeRoomGame",
+    "/MarketPulseChallenge",
+    "/StartupFinanceFunGame",
+    "/brand-voice-result",
+    "/brand-voice",
+    "/carousel-campaign",
+    "/digital-explorer-result",
+    "/digital-explorer",
+    "/reel-architect",
+    "/StoryboardSprintGame",
+    "/BrandVoiceChallengeGame",
+    "/CampaignCaptainGame",
+    "/budget-boss-game",
+    "/mini-market-master",
+    "/wealth-quest-game",
+    "/leadership-identity-mixer",
+    "/vision-blueprint-builder",
+    "/conflict-simulator",
+    "/eq-tracker",
+    "/ethical-logical-maze",
+    "/team-architect-mission",
+    "/innovation-launchpad",
+    "/bias-detective",
+    "/emotion-decoder",
+    "/respond-dont-react",
+    "/spot-the-strength",
+    "/stress-response-builder",
+    "/conflict-choices",
+    "/body-signal-matchup",
+    "/smart-goal-lab",
+    "/help-network-builder",
+    "/influence-journal",
+    "/fin-fest-game",
+    "/stock-trader-game",
+    "/invest-quest-pro",
+    "/ad-spotter-game",
+    "/audience-match-up-game",
+    "/persona-builder-game",
+    "/caption-clinic-game",
+    "/platform-picker-game",
+    "/campaign-puzzle-game",
+    "/boost-or-post-game",
+    "/campaign-builder-game",
+    "/metric-match-up-game",
+    "/BodyLanguageGame",
+    "/ActiveListeningGame",
+    "/ToneSimulatorGame",
+    "/PersuasionGame",
+    "/DigitalDilemmaGame",
+    "/ResolveItRight",
+    "/LeadershipGame",
+    "/PRCrisisGame",
+    "/FeedbackLoop",
+    "/ethics-firewall-game",
+    "/startup-simulation-game",
+    "/problem-solution-game",
+    "/PitchArenaPro",
+    "/SimulatedMarketGame",
+    "/SDGStartupQuest",
+    "/BrandYouSimulator",
+    "/StrategicFrameworkGame",
+    "/CommunicationGame",
+    "/EQGame",
+    "/EthicsLabyrinth",
+    "/TeamLeadershipGame",
+    "/BiasDetectiveGame",
+    "/InnovationLaunchpad-Game",
+    "/ThoughtReframerDrag",
+    "/BoundaryBuilder",
+    "/BurnoutBarometer",
+    "/FocusTracker",
+    "/EthicalSimulator",
+    "/LegacyBuilder",
+    "/IdentityShifter",
+    "/SocialMediaDetective",
+    "/SmartGPSChallenge",
+    "/EvolutionLabSimulator",
+    "/ChessMasterTrainer",
+    "/MedicalDiagnosisAssistant",
+    "/SmartEmailGuardian",
+    "/recommender",
+    "/AutonomousCarVision",
+    "/ChatbotBuilder",
+    "/SchoolSocialMediaManager",
+    "/PersonalStudyBuddy",
+    "/CarbonCycleVault",
+    "/NitrogenReactor",
+    "/PhosphorusLockdown",
+    "/WaterGridCrisis",
+    "/UrbanFloodFlashpoint",
+    "/DayZero",
+    "/UreaAddiction",
+    "/PeakPhosphorusPanic",
+    "/TortLawGame1",
+    "/TortLawGame2",
+    "/TortLawGame3",
+    "/CrimeCivilGame",
+    "/LandmarkCasesGame",
+    "/LandmarkCasesResult",
+    "/LegalConceptsGame",
+    "/LegalConceptsResult",
+    "/DecodetheMessage",
+    "/ListenerLensGame",
+    "/WhatWentWrongGame",
+    "/PitchPerfectGame",
+    "/DigitalDilemma",
+    "/ToneTranslatorGame",
+    "/ConflictCommanderGame",
+    "/TheBigSpeech",
+    "/InboxInsightGame",
+    "/CauseEffectGame",
+    "/FeedbackLoopGame",
+    "/MeasureCompareQuiz",
+    "/ExternalityDetectiveGame",
+    "/SustainabilityGames1",
+    "/SustainabilityGames2",
+    "/MatchTermsGame",
+    "/match-terms-game-result",
+    "/JusticeThroneGame",
+    "/LegalQuizQuestLevel3",
+  ];
+
+  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname);
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="flex-grow">
-        <Outlet />
+      {shouldShowNavbarAndFooter && <Navbar />}
+      <main className="flex-grow ">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* <Route path="/login" element={<Login />} /> */}
+          <Route path="/admin" element={<AdminLogin />} />
+
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/finance/games" element={<Finance />} />
+          <Route path="/finance/notes" element={<FinanceNotes />} />
+          <Route path="/finance/notes/section-1" element={<Section1 />} />
+          <Route path="/finance/notes/section-2" element={<Section2 />} />
+          <Route path="/finance/notes/section-3" element={<Section3 />} />
+          <Route path="/finance/notes/section-4" element={<Section4 />} />
+          <Route path="/finance/notes/section-5" element={<Section5 />} />
+          <Route path="/finance/notes/section-6" element={<Section6 />} />
+          {/* Finance Management Games 6th-8th */}
+          <Route path="/pick-a-bank" element={<PickABank />} />
+          <Route path="/budget-activity" element={<BudgetActivity />} />
+          <Route path="/budget-builder" element={<BudgetBuilder />} />
+          <Route path="/overspend-trap" element={<OverspendTrap />} />
+          <Route
+            path="/credit-card-simulator"
+            element={<CreditCardSimulator />}
+          />
+          <Route
+            path="/investment-simulator"
+            element={<InvestmentSimulator />}
+          />
+          <Route path="/quiz" element={<Adaptive_Learning_Quiz />} />
+          <Route path="/emi-vs-lumpsum" element={<EmiVsLumpSum />} />
+          <Route path="/newsflash" element={<NewsFlash />} />
+          <Route path="/riskometer" element={<RiskOMeter />} />
+          <Route path="/challenge3" element={<Challenge3 />} />
+          <Route path="/my_purchase_plan" element={<My_Purchase_Plan />} />
+
+          {/* Digital Marketing Routes */}
+
+          {/* Games of digital marketing */}
+
+          {/* Level 1 games of digital marketing */}
+          <Route
+            path="/digital-marketing/games"
+            element={<DigitalMarketing />}
+          />
+
+          <Route
+            path="/intro-ad-detective-game"
+            element={<IntroPageAdDetective />}
+          />
+          <Route path="/ad-detective-game" element={<AdDetectiveGamePage />} />
+          <Route
+            path="/ad-detective-mission-complete"
+            element={<MissionCompleteAdDetective />}
+          />
+          <Route path="/brand-creator-game" element={<BrandCreatorGame />} />
+
+          <Route
+            path="/brand-explorer-intro"
+            element={<IntroPageBrandExplorer />}
+          />
+          <Route
+            path="/brand-explorer-game"
+            element={<BrandBrandExplorerGameSelect />}
+          />
+          <Route
+            path="/brand-explorer-game-complete"
+            element={<BrandExplorerGameComplete />}
+          />
+
+          {/* Level 2 games of digital marketing */}
+
+          <Route path="/caption-craze" element={<CaptionCraze />} />
+          <Route path="/matching-game" element={<MatchingGame />} />
+          <Route
+            path="/matching-game-result"
+            element={<MatchingGameResult />}
+          />
+
+          <Route path="/reel-planner-game" element={<ReelPlannerGame />} />
+
+          {/* Level 3 games of digital marketing */}
+
+          <Route path="/intro-budget-battle" element={<IntroBudgetBattle />} />
+          <Route
+            path="/budget-battle-game-complete"
+            element={<BudgetBattleGameComplete />}
+          />
+          <Route
+            path="/ad-campaigner-game-complete"
+            element={<AdCampaignComplete />}
+          />
+          <Route path="/ad-campaigner-intro" element={<AdCampaignerIntro />} />
+          <Route path="/ad-campaigner-game" element={<AdCampaignerGame />} />
+
+          <Route path="/analytics-adventure" element={<AnalyticsDashboard />} />
+
+          {/*End of Games of digital marketing */}
+
+          {/* Notes Page of digital marketing */}
+          <Route
+            path="/digital-marketing/notes"
+            element={<DigitalMarketingNotes />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-1"
+            element={<Section1dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-2"
+            element={<Section2dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-3"
+            element={<Section3dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-4"
+            element={<Section4dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-5"
+            element={<Section5dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-6"
+            element={<Section6dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-7"
+            element={<Section7dm />}
+          />
+          <Route
+            path="/digitalmarketing/notes/section-8"
+            element={<Section8dm />}
+          />
+
+          {/* Legal Awareness  */}
+          <Route path="/law/games" element={<Law />} />
+
+          {/* Legal Awareness Games */}
+
+          {/* Level 4 */}
+          <Route path="/maze-of-choices" element={<MazeOfChoices />} />
+          {/* Level 3 */}
+          <Route path="/case-hear" element={<CaseHear />} />
+
+          {/* Level 2 */}
+          <Route path="/catch-your-rights" element={<CatchYourRightsGame />} />
+          <Route path="/puzzle-match" element={<PuzzleMatch />} />
+
+          {/* Level 1 */}
+          <Route path="/sort-it-out" element={<SortItOut />} />
+          <Route path="/legal-quiz" element={<LegalQuiz />} />
+
+          {/* Legal Awareness Games Finish */}
+
+          {/* Legal Awareness Notes Page */}
+          <Route path="/law/notes" element={<LegalAwarenessNotes />} />
+          <Route path="/law/notes/module-1" element={<Module1 />} />
+          <Route path="/law/notes/module-2" element={<Module2 />} />
+          <Route path="/law/notes/module-3" element={<Module3 />} />
+          <Route path="/law/notes/module-4" element={<Module4 />} />
+          <Route path="/law/notes/module-5" element={<Module5 />} />
+          <Route path="/law/notes/module-6" element={<Module6 />} />
+          {/* Legal Awareness Notes Finish */}
+
+          {/* Communication Games */}
+          <Route path="/communications/games" element={<Communication />} />
+          {/* Level -1*/}
+          <Route path="/listen-up" element={<ListenUp />} />
+          <Route
+            path="/say-it-like-you-mean-it"
+            element={<SayItLikeUMeanIt />}
+          />
+          <Route
+            path="/pick-your-persuasion"
+            element={<PickYourPersuasion />}
+          />
+
+          {/* Level 2 */}
+          <Route path="/interrupt-game" element={<InterruptGame />} />
+          <Route path="/feel-it-find-it-game" element={<FeelItFindItGame />} />
+          <Route path="/nvc-game" element={<NVCGame />} />
+
+          {/* Level - 3*/}
+          <Route path="/tone-fixer" element={<ToneFixer />} />
+          <Route
+            path="/speak-up-without-blowing-up"
+            element={<SpeakUpGame />}
+          />
+          <Route path="/compliment-quest" element={<ComplimentQuest />} />
+
+          {/*Level 4*/}
+          <Route path="/window-seat-war" element={<WindowSeatWar />} />
+          <Route path="/pitch-it-like-a-pro" element={<PitchItLikePro />} />
+          <Route path="/cool-the-conflict" element={<CoolTheConflict />} />
+
+          {/*Communication Notes Page */}
+          <Route
+            path="/communications/notes"
+            element={<CommunicationsNotes />}
+          />
+          <Route
+            path="/communications/notes/listen-to-understand"
+            element={<Mod1 />}
+          />
+          <Route
+            path="/communications/notes/feelings-explorer"
+            element={<Mod2 />}
+          />
+          <Route
+            path="/communications/notes/speak-with-purpose"
+            element={<Mod3 />}
+          />
+          <Route
+            path="/communications/notes/conflict-resolution"
+            element={<Mod4 />}
+          />
+          <Route
+            path="/communications/notes/online-vs-real"
+            element={<Mod5 />}
+          />
+
+          {/* Social Learning Games for 6th-8th */}
+          <Route path="/social-learning/games" element={<SocialLearning />} />
+          {/* Level 1 */}
+          <Route path="/mood-mirror" element={<MoodMirror />} />
+          <Route path="/friendship-fixer" element={<FriendshipFixer />} />
+          <Route path="/kindness-clicks" element={<KindnessClicks />} />
+          {/* Level 2 */}
+          <Route path="/stress-buster-lab" element={<StressBusterLab />} />
+          <Route path="/conflict-quest" element={<ConflictQuest />} />
+          <Route path="/mind-body-match-up" element={<MindBodyMatchUp />} />
+          <Route path="/influence-explorer" element={<InfluenceExplorer />} />
+          {/* Level 3 */}
+          <Route path="/help-hub" element={<HelpHub />} />
+          <Route
+            path="/mission-goal-tracker"
+            element={<MissionGoalTracker />}
+          />
+          <Route path="/my-circle-mission" element={<MyCircleMission />} />
+
+          {/* Social Learning Notes */}
+          <Route
+            path="/social-learning/notes"
+            element={<SocialLearningNotes />}
+          />
+          <Route path="/social-learning/module-1" element={<KnowingMyself />} />
+          <Route
+            path="/social-learning/module-2"
+            element={<BuildPositiveRel />}
+          />
+          <Route
+            path="/social-learning/module-3"
+            element={<HandlingStress />}
+          />
+          <Route
+            path="/social-learning/module-4"
+            element={<SelfDiscipline />}
+          />
+          <Route
+            path="/social-learning/module-5"
+            element={<DecisionMaking />}
+          />
+
+          {/* Leadership Notes*/}
+          <Route path="/leadership/notes" element={<LeadershipNotes />} />
+          {/* Leadership Games 6-8*/}
+          <Route path="/leadership/games" element={<Leadership />} />
+          {/* level 1*/}
+          <Route path="/leader-type" element={<LeaderTypeMatch />} />
+          <Route path="/vision-builder" element={<VisionBuilderGame />} />
+
+          {/* level 2*/}
+          <Route path="/communication-lab" element={<CommunicationLab />} />
+          <Route path="/empathy-radar" element={<EmpathyRadarGame />} />
+
+          {/* level 3*/}
+          <Route path="/decision-room" element={<DecisionRoom />} />
+          <Route path="/team-architect" element={<TeamArchitect />} />
+
+          {/* level 4*/}
+          <Route path="/innovation-sprint" element={<InnovationSprint />} />
+          <Route path="/integrity-quest" element={<IntegrityQuest />} />
+
+          {/* Finish  Leadership Games 6-8*/}
+
+          {/* Entrepreneurship Notes*/}
+          <Route
+            path="/entrepreneurship/notes"
+            element={<EntrepreneurshipNotes />}
+          />
+          {/* Entrepreneurship Games for 6th-8th */}
+          <Route
+            path="/entrepreneurship/games"
+            element={<Entrepreneurship />}
+          />
+          {/* Level 1 */}
+          <Route path="/innovation-explorer" element={<InnovationExplorer />} />
+          <Route path="/ai-startup-builder" element={<AIStartupBuilder />} />
+          {/*Level 2 */}
+          <Route path="/ethics-and-impact" element={<EthicsAndImpact />} />
+          <Route path="/pitch-champion" element={<PitchChampion />} />
+          {/*Level 3 */}
+          <Route
+            path="/user-persona-detective"
+            element={<UserPersonaDetective />}
+          />
+          <Route path="/mvp-test" element={<MVPTest />} />
+
+          {/* Environmental Notes*/}
+          <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
+          {/* Environmental Games for 6th-8th */}
+          <Route path="/environmental/games" element={<Environment />} />
+          {/* Level 1 */}
+          <Route path="/classify-it" element={<ClassifyIt />} />
+          <Route path="/pick-zone" element={<PickZone />} />
+          <Route path="/chain-reaction" element={<ChainReaction />} />
+          {/* Level 2 */}
+          <Route path="/green-budget" element={<GreenBudget />} />
+          <Route path="/match-fallout" element={<MatchFallOut />} />
+          <Route path="/climate-pledge" element={<ClimatePledge />} />
+          {/* Level 3 */}
+          <Route path="/cause-scanner" element={<CauseScanner />} />
+          <Route path="/melt-down-tracker" element={<MeltDownTracker />} />
+          <Route path="/dilemma-cards" element={<DilemmaCards />} />
+
+          {/* Computer Notes*/}
+          <Route path="/computer/notes" element={<ComputerNotes />} />
+          <Route path="/computer/notes/module-1" element={<WhatIsAi />} />
+          <Route path="/computer/notes/module-2" element={<WorkOfAi />} />
+          <Route
+            path="/computer/notes/module-3"
+            element={<TypesAndUseOfAi />}
+          />
+          <Route path="/computer/notes/module-4" element={<WhatCantAiDo />} />
+          <Route path="/computer/notes/module-5" element={<ImpAIWords />} />
+          <Route path="/computer/notes/module-6" element={<BuildAi />} />
+          <Route path="/computer/notes/module-7" element={<TestUrSkills />} />
+          <Route path="/computer/notes/module-8" element={<ImportanceOfAi />} />
+
+          {/* Games of Computers */}
+          <Route path="/computer/games" element={<Computer />} />
+          {/* Level 1 games of Computers */}
+          <Route path="/AI-challenge" element={<AIChallengeGame />} />
+          <Route path="/meet-ai-types" element={<MeetAITypeGame />} />
+          <Route path="/build-a-bot" element={<BuildABotChallenge />} />
+          {/* Level 2 games of Computers */}
+          <Route path="/train-the-brain" element={<TrainTheBrainGame />} />
+          <Route path="/smart-or-not" element={<SmartOrNotGame />} />
+          <Route path="/ai-problem-solver" element={<AIProblemSolverGame />} />
+
+          {/* Level 3 games of Computers */}
+          <Route path="/ai-ethics-detective" element={<AIEthicsDetective />} />
+          <Route path="/future-ai-architect" element={<FutureAIArchitect />} />
+          <Route
+            path="/ai-career-explorer"
+            element={<AICareerExplorerGame />}
+          />
+
+          {/* Games of AI Class 9-10 */}
+          {/* Level 1 */}
+          <Route path="/spy-the-smart-tech" element={<SpyTheSmartTech />} />
+          <Route path="/which-ai-does-what" element={<WhichAIDoesWhat />} />
+          <Route path="/smart-city-game" element={<SmartCityGame />} />
+
+          {/* Level 2 */}
+          <Route path="/TrainAIModelGame" element={<TrainAIModelGame />} />
+          <Route path="/AIOopsGame" element={<AIOopsGame />} />
+          <Route
+            path="/RateTheIntelligenceGame"
+            element={<RateTheIntelligenceGame />}
+          />
+
+          {/* Level 3 */}
+          <Route path="/justice-for-all" element={<JusticeForAll />} />
+          <Route path="/design-a-bot" element={<DesignAbot />} />
+          <Route path="/FutureMeInAI" element={<FutureMeInAI />} />
+          <Route
+            path="/ThinkBeforeYouTechGame"
+            element={<ThinkBeforeYouTechGame />}
+          />
+
+          {/* Finish Games of AI Class 9-10 */}
+
+          {/* Games of entrepreneurship Class 9-10 */}
+          {/* Level 1 */}
+          <Route path="/LeanMachineGame" element={<LeanMachineGame />} />
+          <Route path="/PitchArenaGame" element={<PitchArenaGame />} />
+          <Route path="/StartupQuest" element={<StartupQuest />} />
+
+          {/* Level 2 */}
+          <Route
+            path="/EthicsEscapeRoomGame"
+            element={<EthicsEscapeRoomGame />}
+          />
+          <Route
+            path="/MarketPulseChallenge"
+            element={<MarketPulseChallenge />}
+          />
+          <Route
+            path="/StartupFinanceFunGame"
+            element={<StartupFinanceFunGame />}
+          />
+          {/* Finish Games of entrepreneurship Class 9-10 */}
+
+          {/* Games of Dig Mkting Class 9-10 */}
+          {/* Level 1 */}
+
+          <Route path="/brand-voice-result" element={<BrandVoiceResult />} />
+          <Route path="/brand-voice" element={<BrandVoiceGame />} />
+          <Route path="/carousel-campaign" element={<CarouselCampaign />} />
+          <Route
+            path="/digital-explorer-result"
+            element={<DigitalExplorerResult />}
+          />
+          <Route path="/digital-explorer" element={<DigitalExplorer />} />
+
+          {/* Level 2 */}
+          <Route path="/reel-architect" element={<ReelArchitectGame />} />
+
+          <Route
+            path="/StoryboardSprintGame"
+            element={<StoryboardSprintGame />}
+          />
+
+          <Route
+            path="/BrandVoiceChallengeGame"
+            element={<BrandVoiceChallenge />}
+          />
+
+          {/* Level 3 */}
+
+          <Route path="/CampaignCaptainGame" element={<LevelController />} />
+
+          {/* Finish Games of Dig Mkting Class 9-10 */}
+
+          {/* 9-10 Finance games */}
+          <Route path="/budget-boss-game" element={<BudgetBossGame />} />
+          <Route path="/mini-market-master" element={<MiniMarketMaster />} />
+          <Route path="/wealth-quest-game" element={<WealthQuestGame />} />
+          {/* Finished 9-10 Finance games */}
+
+          {/*Leadership Games for 9-10*/}
+          {/* Level 1 */}
+          <Route
+            path="/leadership-identity-mixer"
+            element={<LeadershipIdentityMixer />}
+          />
+          <Route
+            path="/vision-blueprint-builder"
+            element={<VisionBlueprintBuilder />}
+          />
+          {/* Level 2 */}
+          <Route path="/conflict-simulator" element={<ConflictSimulator />} />
+          <Route path="/eq-tracker" element={<EQTracker />} />
+          {/*Level 3 */}
+          <Route path="/ethical-logical-maze" element={<EthicalLogicMaze />} />
+          <Route
+            path="/team-architect-mission"
+            element={<TeamArchitectMission />}
+          />
+          {/*Level 4 */}
+          <Route
+            path="/innovation-launchpad"
+            element={<InnovationLaunchpad />}
+          />
+          <Route path="/bias-detective" element={<BiasDetective />} />
+
+          {/*Games of SEL Class 9-10*/}
+          {/* Level 1 */}
+          <Route path="/emotion-decoder" element={<EmotionDecoder />} />
+          <Route path="/respond-dont-react" element={<RespondDontReact />} />
+          <Route path="/spot-the-strength" element={<SpotTheStrength />} />
+          {/* Level 2 */}
+          <Route
+            path="/stress-response-builder"
+            element={<StressResponseBuilder />}
+          />
+          <Route path="/conflict-choices" element={<ConflictChoices />} />
+          <Route path="/body-signal-matchup" element={<BodySignalMatchup />} />
+          {/*Level 3 */}
+          <Route path="/smart-goal-lab" element={<SmartGoalLab />} />
+          <Route
+            path="/help-network-builder"
+            element={<HelpNetworkBuilder />}
+          />
+          <Route path="/influence-journal" element={<InfluenceJournal />} />
+
+          {/*11-12 Finance games */}
+          <Route path="/fin-fest-game" element={<FinFestGame />} />
+          <Route path="/stock-trader-game" element={<StockTraderGame />} />
+          <Route path="/invest-quest-pro" element={<InvestoQuestPro />} />
+          {/* 11-12 Finance games */}
+
+          {/*11-12 DM games */}
+          {/*Level 1 games */}
+          <Route path="/ad-spotter-game" element={<AdSpotterGame />} />
+          <Route
+            path="/audience-match-up-game"
+            element={<AudienceMatchUpGame />}
+          />
+          <Route
+            path="/persona-builder-game"
+            element={<PersonaBuilderGame />}
+          />
+
+          {/*Level 2  games */}
+          <Route path="/caption-clinic-game" element={<CaptionClinicGame />} />
+          <Route
+            path="/platform-picker-game"
+            element={<PlatformPickerGame />}
+          />
+          <Route
+            path="/campaign-puzzle-game"
+            element={<CampaignPuzzleGame />}
+          />
+
+          {/*Level 3 games */}
+          <Route path="/boost-or-post-game" element={<BoostOrPostGame />} />
+          <Route
+            path="/campaign-builder-game"
+            element={<CampaignBuilderGame />}
+          />
+          <Route path="/metric-match-up-game" element={<MetricMatchUpGame />} />
+
+          {/*11-12 DM games finish*/}
+
+          {/* Games of Communication Class 11-12 */}
+
+          {/* Level 1 */}
+          <Route path="/BodyLanguageGame" element={<BodyLanguageGame />} />
+
+          <Route
+            path="/ActiveListeningGame"
+            element={<ActiveListeningGame />}
+          />
+
+          <Route path="/ToneSimulatorGame" element={<ToneSimulatorGame />} />
+
+          {/* Level 2 */}
+          <Route path="/PersuasionGame" element={<PersuadeWithPurpose />} />
+
+          <Route path="/DigitalDilemmaGame" element={<DigitalDilemmaGame />} />
+
+          <Route path="/ResolveItRight" element={<ResolveItRight />} />
+
+          {/* Level 3 */}
+          <Route path="/LeadershipGame" element={<LeadershipGame />} />
+
+          <Route path="/PRCrisisGame" element={<PRCrisisGame />} />
+
+          <Route path="/FeedbackLoop" element={<FeedbackLoop />} />
+
+          {/* Finish Games of Communication Class 11-12 */}
+
+          {/* 11-12 Entrepreneurship games start*/}
+
+          <Route
+            path="/ethics-firewall-game"
+            element={<EthicsFirewallGame />}
+          />
+          <Route
+            path="/startup-simulation-game"
+            element={<StartupSimulationGame />}
+          />
+          <Route
+            path="/problem-solution-game"
+            element={<ProblemSolutionGame />}
+          />
+          <Route path="/PitchArenaPro" element={<PitchArenaPro />} />
+          <Route
+            path="/SimulatedMarketGame"
+            element={<SimulatedMarketGame />}
+          />
+          <Route path="/SDGStartupQuest" element={<SDGStartupQuest />} />
+
+          {/*11-12 Entrepreneurship games finish*/}
+
+          {/* Games of Leadership Class 11-12 */}
+
+          <Route path="/BrandYouSimulator" element={<BrandYouSimulator />} />
+          <Route
+            path="/StrategicFrameworkGame"
+            element={<StrategicFrameworkGame />}
+          />
+          <Route path="/CommunicationGame" element={<CommunicationGame />} />
+          <Route path="/EQGame" element={<EQGame />} />
+          <Route path="/EthicsLabyrinth" element={<EthicsLabyrinth />} />
+          <Route path="/TeamLeadershipGame" element={<TeamLeadershipGame />} />
+          <Route path="/BiasDetectiveGame" element={<BiasDetectiveGame />} />
+          <Route
+            path="/InnovationLaunchpad-Game"
+            element={<InnovationLaunchpadGame />}
+          />
+
+          {/* Finish Games of Leadership Class 11-12 */}
+
+          {/* Games of SEL Class 11-12 */}
+          <Route path="/ThoughtReframerDrag" element={<ThoughtReframer />} />
+
+          <Route path="/BoundaryBuilder" element={<BoundaryBuilder />} />
+
+          <Route path="/BurnoutBarometer" element={<BurnoutBarometer />} />
+          <Route path="/FocusTracker" element={<FocusTracker />} />
+
+          <Route path="/EthicalSimulator" element={<EthicalSimulator />} />
+
+          <Route path="/LegacyBuilder" element={<LegacyBuilder />} />
+
+          <Route path="/IdentityShifter" element={<IdentityShifter />} />
+          {/* Finish Games of SEL Class 11-12 */}
+
+          {/* Games of Computers Class 11-12 */}
+
+          {/* level1 */}
+          <Route
+            path="/SocialMediaDetective"
+            element={<SocialMediaDetective />}
+          />
+          <Route path="/SmartGPSChallenge" element={<SmartGPSChallenge />} />
+          <Route
+            path="/EvolutionLabSimulator"
+            element={<EvolutionLabSimulator />}
+          />
+          <Route path="/ChessMasterTrainer" element={<ChessMasterTrainer />} />
+          {/* level2 */}
+          <Route
+            path="/MedicalDiagnosisAssistant"
+            element={<MedicalDiagnosisAssistant />}
+          />
+          <Route path="/SmartEmailGuardian" element={<SmartEmailGuardian />} />
+          <Route path="/recommender" element={<NetflixRecommendationGame />} />
+          <Route
+            path="/AutonomousCarVision"
+            element={<AutonomousCarVision />}
+          />
+          {/* level3 */}
+          <Route
+            path="/ChatbotBuilder"
+            element={<CustomerServiceChatbotBuilder />}
+          />
+
+          <Route
+            path="/SchoolSocialMediaManager"
+            element={<SchoolSocialMediaManager />}
+          />
+          <Route path="/PersonalStudyBuddy" element={<PersonalStudyBuddy />} />
+
+          {/* Finish Games of Computers Class 11-12 */}
+
+          {/* Games of Enviroment Class 11-12 */}
+
+          {/* level1 */}
+
+          <Route path="/CarbonCycleVault" element={<CarbonCycleVault />} />
+          <Route path="/NitrogenReactor" element={<NitrogenReactor />} />
+          <Route path="/PhosphorusLockdown" element={<PhosphorusLockdown />} />
+          <Route path="/WaterGridCrisis" element={<WaterGridCrisis />} />
+
+          {/* level2 */}
+
+          <Route
+            path="/UrbanFloodFlashpoint"
+            element={<UrbanFloodFlashpoint />}
+          />
+
+          <Route path="/DayZero" element={<DayZero />} />
+
+          {/* level3 */}
+          <Route path="/UreaAddiction" element={<UreaAddiction />} />
+          <Route
+            path="/PeakPhosphorusPanic"
+            element={<PeakPhosphorusPanic />}
+          />
+
+          {/* Finish Games of Enviroment Class 11-12 */}
+
+          {/* Games of Legal awareness Class 11-12 */}
+          {/* level1 */}
+          <Route path="/TortLawGame1" element={<TortLawGame1 />} />
+          <Route path="/TortLawGame2" element={<TortLawGame2 />} />
+          <Route path="/TortLawGame3" element={<TortLawGame3 />} />
+          {/* level2 */}
+          <Route path="/CrimeCivilGame" element={<CrimeCivilGame />} />
+
+          {/* level3 */}
+          <Route path="/LandmarkCasesGame" element={<LandmarkCasesGame />} />
+          <Route
+            path="/LandmarkCasesResult"
+            element={<LandmarkCasesResult />}
+          />
+          <Route path="/LegalConceptsGame" element={<LegalConceptsGame />} />
+          <Route
+            path="/LegalConceptsResult"
+            element={<LegalConceptsResult />}
+          />
+
+          {/* Finish Games of Legal awareness Class 11-12 */}
+
+          {/* Games of Communication Class 9-10 */}
+
+          {/* Level 1 */}
+          <Route path="/DecodetheMessage" element={<DecodetheMessage />} />
+
+          <Route path="/ListenerLensGame" element={<ListenerLensGame />} />
+
+          <Route path="/WhatWentWrongGame" element={<WhatWentWrongGame />} />
+
+          {/* Level 2 */}
+          <Route path="/PitchPerfectGame" element={<PitchPerfectGame />} />
+
+          <Route path="/DigitalDilemma" element={<DigitalDilemma />} />
+
+          <Route path="/ToneTranslatorGame" element={<ToneTranslatorGame />} />
+
+          {/* Level 3 */}
+          <Route
+            path="/ConflictCommanderGame"
+            element={<ConflictCommanderGame />}
+          />
+
+          <Route path="/TheBigSpeech" element={<TheBigSpeech />} />
+
+          <Route path="/InboxInsightGame" element={<InboxInsightGame />} />
+
+          {/* Finish Games of Communication Class 9-10 */}
+
+          {/* Games of Enviroment Class 9-10 */}
+          {/* level1 */}
+          <Route path="/CauseEffectGame" element={<CauseEffectGame />} />
+          <Route path="/FeedbackLoopGame" element={<FeedbackLoopGame />} />
+
+          {/* level2 */}
+          <Route path="/MeasureCompareQuiz" element={<MeasureCompareQuiz />} />
+          <Route
+            path="/ExternalityDetectiveGame"
+            element={<ExternalityDetectiveGame />}
+          />
+          {/* level3 */}
+          <Route
+            path="/SustainabilityGames1"
+            element={<SustainabilityGames1 />}
+          />
+          <Route
+            path="/SustainabilityGames2"
+            element={<SustainabilityGames2 />}
+          />
+
+          {/* Finish Games of Enviroment Class 9-10*/}
+
+          {/* Games of legal awareness Class 9-10 */}
+          {/* level1 */}
+          <Route path="/MatchTermsGame" element={<MatchTermsGame />} />
+          <Route
+            path="/match-terms-game-result"
+            element={<MatchTermsGameResult />}
+          />
+
+          {/* level2 */}
+          <Route path="/JusticeThroneGame" element={<JusticeThroneGame />} />
+          {/* level3 */}
+          <Route
+            path="/LegalQuizQuestLevel3"
+            element={<LegalQuizQuestLevel3 />}
+          />
+
+          {/* Finish Games of legal awareness Class 9-10*/}
+
+          {/* Other Routes */}
+
+          <Route path="/blogs" element={<AllBlogs />} />
+          <Route path="/blog/:id" element={<SingleBlog />} />
+          <Route path="/create-blog" element={<CreateBlog />} />
+          <Route path="/payment-required" element={<PaymentRequired />} />
+          <Route path="/faq's" element={<FAQ />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/terms-conditions" element={<TermsAndConditions />} />
+        </Routes>
       </main>
-      <Footer />
+      {shouldShowNavbarAndFooter && <Footer />}
     </div>
   );
-};
-
-//-----------------------------------------------------------------------
-
-const INTRO_EXPIRY_HOURS = 0.5;
+}
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     const introSeenAt = localStorage.getItem("introSeenAt");
+
     if (!introSeenAt) {
+      // First visit ever
       setShowIntro(true);
     } else {
       const seenTime = new Date(parseInt(introSeenAt));
       const now = new Date();
       const hoursPassed = (now - seenTime) / (1000 * 60 * 60);
+
       if (hoursPassed >= INTRO_EXPIRY_HOURS) {
+        // Time expired — show intro again
         setShowIntro(true);
       } else {
         setShowIntro(false);
@@ -366,327 +1373,10 @@ function App() {
         <Router>
           <ScrollToTop />
           <Routes>
-            {/* ================================================================= */}
-            {/* == Routes WITHOUT Navbar/Footer (Your Games & Auth Pages)      == */}
-            {/* ================================================================= */}
-
             <Route path="/login" element={<Login />} />
+            <Route path="*" element={<AppContent />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/payment-required" element={<PaymentRequired />} />
-
-            {/* --- ALL GAME ROUTES --- */}
-            <Route path="/pick-a-bank" element={<PickABank />} />
-            <Route path="/budget-activity" element={<BudgetActivity />} />
-            <Route path="/budget-builder" element={<BudgetBuilder />} />
-            <Route path="/overspend-trap" element={<OverspendTrap />} />
-            <Route path="/credit-card-simulator" element={<CreditCardSimulator />} />
-            <Route path="/investment-simulator" element={<InvestmentSimulator />} />
-            <Route path="/quiz" element={<Adaptive_Learning_Quiz />} />
-            <Route path="/emi-vs-lumpsum" element={<EmiVsLumpSum />} />
-            <Route path="/newsflash" element={<NewsFlash />} />
-            <Route path="/riskometer" element={<RiskOMeter />} />
-            <Route path="/challenge3" element={<Challenge3 />} />
-            <Route path="/my_purchase_plan" element={<My_Purchase_Plan />} />
-            <Route path="/intro-ad-detective-game" element={<IntroPageAdDetective />} />
-            <Route path="/ad-detective-game" element={<AdDetectiveGamePage />} />
-            <Route path="/ad-detective-mission-complete" element={<MissionCompleteAdDetective />} />
-            <Route path="/brand-creator-game" element={<BrandCreatorGame />} />
-            <Route path="/brand-explorer-intro" element={<IntroPageBrandExplorer />} />
-            <Route path="/brand-explorer-game" element={<BrandBrandExplorerGameSelect />} />
-            <Route path="/brand-explorer-game-complete" element={<BrandExplorerGameComplete />} />
-            <Route path="/caption-craze" element={<CaptionCraze />} />
-            <Route path="/matching-game" element={<MatchingGame />} />
-            <Route path="/matching-game-result" element={<MatchingGameResult />} />
-            <Route path="/reel-planner-game" element={<ReelPlannerGame />} />
-            <Route path="/intro-budget-battle" element={<IntroBudgetBattle />} />
-            <Route path="/budget-battle-game-complete" element={<BudgetBattleGameComplete />} />
-            <Route path="/ad-campaigner-game-complete" element={<AdCampaignComplete />} />
-            <Route path="/ad-campaigner-intro" element={<AdCampaignerIntro />} />
-            <Route path="/ad-campaigner-game" element={<AdCampaignerGame />} />
-            <Route path="/analytics-adventure" element={<AnalyticsDashboard />} />
-            <Route path="/maze-of-choices" element={<MazeOfChoices />} />
-            <Route path="/case-hear" element={<CaseHear />} />
-            <Route path="/catch-your-rights" element={<CatchYourRightsGame />} />
-            <Route path="/puzzle-match" element={<PuzzleMatch />} />
-            <Route path="/sort-it-out" element={<SortItOut />} />
-            <Route path="/legal-quiz" element={<LegalQuiz />} />
-            <Route path="/listen-up" element={<ListenUp />} />
-            <Route path="/say-it-like-you-mean-it" element={<SayItLikeUMeanIt />} />
-            <Route path="/pick-your-persuasion" element={<PickYourPersuasion />} />
-            <Route path="/interrupt-game" element={<InterruptGame />} />
-            <Route path="/feel-it-find-it-game" element={<FeelItFindItGame />} />
-            <Route path="/nvc-game" element={<NVCGame />} />
-            <Route path="/tone-fixer" element={<ToneFixer />} />
-            <Route path="/speak-up-without-blowing-up" element={<SpeakUpGame />} />
-            <Route path="/compliment-quest" element={<ComplimentQuest />} />
-            <Route path="/window-seat-war" element={<WindowSeatWar />} />
-            <Route path="/pitch-it-like-a-pro" element={<PitchItLikePro />} />
-            <Route path="/cool-the-conflict" element={<CoolTheConflict />} />
-            <Route path="/mood-mirror" element={<MoodMirror />} />
-            <Route path="/friendship-fixer" element={<FriendshipFixer />} />
-            <Route path="/kindness-clicks" element={<KindnessClicks />} />
-            <Route path="/stress-buster-lab" element={<StressBusterLab />} />
-            <Route path="/conflict-quest" element={<ConflictQuest />} />
-            <Route path="/mind-body-match-up" element={<MindBodyMatchUp />} />
-            <Route path="/influence-explorer" element={<InfluenceExplorer />} />
-            <Route path="/help-hub" element={<HelpHub />} />
-            <Route path="/mission-goal-tracker" element={<MissionGoalTracker />} />
-            <Route path="/my-circle-mission" element={<MyCircleMission />} />
-            <Route path="/leader-type" element={<LeaderTypeMatch />} />
-            <Route path="/vision-builder" element={<VisionBuilderGame />} />
-            <Route path="/communication-lab" element={<CommunicationLab />} />
-            <Route path="/empathy-radar" element={<EmpathyRadarGame />} />
-            <Route path="/decision-room" element={<DecisionRoom />} />
-            <Route path="/team-architect" element={<TeamArchitect />} />
-            <Route path="/innovation-sprint" element={<InnovationSprint />} />
-            <Route path="/integrity-quest" element={<IntegrityQuest />} />
-            <Route path="/innovation-explorer" element={<InnovationExplorer />} />
-            <Route path="/ai-startup-builder" element={<AIStartupBuilder />} />
-            <Route path="/ethics-and-impact" element={<EthicsAndImpact />} />
-            <Route path="/pitch-champion" element={<PitchChampion />} />
-            <Route path="/user-persona-detective" element={<UserPersonaDetective />} />
-            <Route path="/mvp-test" element={<MVPTest />} />
-            <Route path="/classify-it" element={<ClassifyIt />} />
-            <Route path="/pick-zone" element={<PickZone />} />
-            <Route path="/chain-reaction" element={<ChainReaction />} />
-            <Route path="/green-budget" element={<GreenBudget />} />
-            <Route path="/match-fallout" element={<MatchFallOut />} />
-            <Route path="/climate-pledge" element={<ClimatePledge />} />
-            <Route path="/cause-scanner" element={<CauseScanner />} />
-            <Route path="/melt-down-tracker" element={<MeltDownTracker />} />
-            <Route path="/dilemma-cards" element={<DilemmaCards />} />
-            <Route path="/AI-challenge" element={<AIChallengeGame />} />
-            <Route path="/meet-ai-types" element={<MeetAITypeGame />} />
-            <Route path="/build-a-bot" element={<BuildABotChallenge />} />
-            <Route path="/train-the-brain" element={<TrainTheBrainGame />} />
-            <Route path="/smart-or-not" element={<SmartOrNotGame />} />
-            <Route path="/ai-problem-solver" element={<AIProblemSolverGame />} />
-            <Route path="/ai-ethics-detective" element={<AIEthicsDetective />} />
-            <Route path="/future-ai-architect" element={<FutureAIArchitect />} />
-            <Route path="/ai-career-explorer" element={<AICareerExplorerGame />} />
-            <Route path="/spy-the-smart-tech" element={<SpyTheSmartTech />} />
-            <Route path="/which-ai-does-what" element={<WhichAIDoesWhat />} />
-            <Route path="/smart-city-game" element={<SmartCityGame />} />
-            <Route path="/TrainAIModelGame" element={<TrainAIModelGame />} />
-            <Route path="/AIOopsGame" element={<AIOopsGame />} />
-            <Route path="/RateTheIntelligenceGame" element={<RateTheIntelligenceGame />} />
-            <Route path="/justice-for-all" element={<JusticeForAll />} />
-            <Route path="/design-a-bot" element={<DesignAbot />} />
-            <Route path="/FutureMeInAI" element={<FutureMeInAI />} />
-            <Route path="/ThinkBeforeYouTechGame" element={<ThinkBeforeYouTechGame />} />
-            <Route path="/LeanMachineGame" element={<LeanMachineGame />} />
-            <Route path="/PitchArenaGame" element={<PitchArenaGame />} />
-            <Route path="/StartupQuest" element={<StartupQuest />} />
-            <Route path="/EthicsEscapeRoomGame" element={<EthicsEscapeRoomGame />} />
-            <Route path="/MarketPulseChallenge" element={<MarketPulseChallenge />} />
-            <Route path="/StartupFinanceFunGame" element={<StartupFinanceFunGame />} />
-            <Route path="/brand-voice-result" element={<BrandVoiceResult />} />
-            <Route path="/brand-voice" element={<BrandVoiceGame />} />
-            <Route path="/carousel-campaign" element={<CarouselCampaign />} />
-            <Route path="/digital-explorer-result" element={<DigitalExplorerResult />} />
-            <Route path="/digital-explorer" element={<DigitalExplorer />} />
-            <Route path="/reel-architect" element={<ReelArchitectGame />} />
-            <Route path="/StoryboardSprintGame" element={<StoryboardSprintGame />} />
-            <Route path="/BrandVoiceChallengeGame" element={<BrandVoiceChallenge />} />
-            <Route path="/CampaignCaptainGame" element={<LevelController />} />
-            <Route path="/budget-boss-game" element={<BudgetBossGame />} />
-            <Route path="/mini-market-master" element={<MiniMarketMaster />} />
-            <Route path="/wealth-quest-game" element={<WealthQuestGame />} />
-            <Route path="/leadership-identity-mixer" element={<LeadershipIdentityMixer />} />
-            <Route path="/vision-blueprint-builder" element={<VisionBlueprintBuilder />} />
-            <Route path="/conflict-simulator" element={<ConflictSimulator />} />
-            <Route path="/eq-tracker" element={<EQTracker />} />
-            <Route path="/ethical-logical-maze" element={<EthicalLogicMaze />} />
-            <Route path="/team-architect-mission" element={<TeamArchitectMission />} />
-            <Route path="/innovation-launchpad" element={<InnovationLaunchpad />} />
-            <Route path="/bias-detective" element={<BiasDetective />} />
-            <Route path="/emotion-decoder" element={<EmotionDecoder />} />
-            <Route path="/respond-dont-react" element={<RespondDontReact />} />
-            <Route path="/spot-the-strength" element={<SpotTheStrength />} />
-            <Route path="/stress-response-builder" element={<StressResponseBuilder />} />
-            <Route path="/conflict-choices" element={<ConflictChoices />} />
-            <Route path="/body-signal-matchup" element={<BodySignalMatchup />} />
-            <Route path="/smart-goal-lab" element={<SmartGoalLab />} />
-            <Route path="/help-network-builder" element={<HelpNetworkBuilder />} />
-            <Route path="/influence-journal" element={<InfluenceJournal />} />
-            <Route path="/fin-fest-game" element={<FinFestGame />} />
-            <Route path="/stock-trader-game" element={<StockTraderGame />} />
-            <Route path="/invest-quest-pro" element={<InvestoQuestPro />} />
-            <Route path="/ad-spotter-game" element={<AdSpotterGame />} />
-            <Route path="/audience-match-up-game" element={<AudienceMatchUpGame />} />
-            <Route path="/persona-builder-game" element={<PersonaBuilderGame />} />
-            <Route path="/caption-clinic-game" element={<CaptionClinicGame />} />
-            <Route path="/platform-picker-game" element={<PlatformPickerGame />} />
-            <Route path="/campaign-puzzle-game" element={<CampaignPuzzleGame />} />
-            <Route path="/boost-or-post-game" element={<BoostOrPostGame />} />
-            <Route path="/campaign-builder-game" element={<CampaignBuilderGame />} />
-            <Route path="/metric-match-up-game" element={<MetricMatchUpGame />} />
-            <Route path="/BodyLanguageGame" element={<BodyLanguageGame />} />
-            <Route path="/ActiveListeningGame" element={<ActiveListeningGame />} />
-            <Route path="/ToneSimulatorGame" element={<ToneSimulatorGame />} />
-            <Route path="/PersuasionGame" element={<PersuadeWithPurpose />} />
-            <Route path="/DigitalDilemmaGame" element={<DigitalDilemmaGame />} />
-            <Route path="/ResolveItRight" element={<ResolveItRight />} />
-            <Route path="/LeadershipGame" element={<LeadershipGame />} />
-            <Route path="/PRCrisisGame" element={<PRCrisisGame />} />
-            <Route path="/FeedbackLoop" element={<FeedbackLoop />} />
-            <Route path="/ethics-firewall-game" element={<EthicsFirewallGame />} />
-            <Route path="/startup-simulation-game" element={<StartupSimulationGame />} />
-            <Route path="/problem-solution-game" element={<ProblemSolutionGame />} />
-            <Route path="/PitchArenaPro" element={<PitchArenaPro />} />
-            <Route path="/SimulatedMarketGame" element={<SimulatedMarketGame />} />
-            <Route path="/SDGStartupQuest" element={<SDGStartupQuest />} />
-            <Route path="/BrandYouSimulator" element={<BrandYouSimulator />} />
-            <Route path="/StrategicFrameworkGame" element={<StrategicFrameworkGame />} />
-            <Route path="/CommunicationGame" element={<CommunicationGame />} />
-            <Route path="/EQGame" element={<EQGame />} />
-            <Route path="/EthicsLabyrinth" element={<EthicsLabyrinth />} />
-            <Route path="/TeamLeadershipGame" element={<TeamLeadershipGame />} />
-            <Route path="/BiasDetectiveGame" element={<BiasDetectiveGame />} />
-            <Route path="/InnovationLaunchpad-Game" element={<InnovationLaunchpadGame />} />
-            <Route path="/ThoughtReframerDrag" element={<ThoughtReframer />} />
-            <Route path="/BoundaryBuilder" element={<BoundaryBuilder />} />
-            <Route path="/BurnoutBarometer" element={<BurnoutBarometer />} />
-            <Route path="/FocusTracker" element={<FocusTracker />} />
-            <Route path="/EthicalSimulator" element={<EthicalSimulator />} />
-            <Route path="/LegacyBuilder" element={<LegacyBuilder />} />
-            <Route path="/IdentityShifter" element={<IdentityShifter />} />
-            <Route path="/SocialMediaDetective" element={<SocialMediaDetective />} />
-            <Route path="/SmartGPSChallenge" element={<SmartGPSChallenge />} />
-            <Route path="/EvolutionLabSimulator" element={<EvolutionLabSimulator />} />
-            <Route path="/ChessMasterTrainer" element={<ChessMasterTrainer />} />
-            <Route path="/MedicalDiagnosisAssistant" element={<MedicalDiagnosisAssistant />} />
-            <Route path="/SmartEmailGuardian" element={<SmartEmailGuardian />} />
-            <Route path="/recommender" element={<NetflixRecommendationGame />} />
-            <Route path="/AutonomousCarVision" element={<AutonomousCarVision />} />
-            <Route path="/ChatbotBuilder" element={<CustomerServiceChatbotBuilder />} />
-            <Route path="/SchoolSocialMediaManager" element={<SchoolSocialMediaManager />} />
-            <Route path="/PersonalStudyBuddy" element={<PersonalStudyBuddy />} />
-            <Route path="/CarbonCycleVault" element={<CarbonCycleVault />} />
-            <Route path="/NitrogenReactor" element={<NitrogenReactor />} />
-            <Route path="/PhosphorusLockdown" element={<PhosphorusLockdown />} />
-            <Route path="/WaterGridCrisis" element={<WaterGridCrisis />} />
-            <Route path="/UrbanFloodFlashpoint" element={<UrbanFloodFlashpoint />} />
-            <Route path="/DayZero" element={<DayZero />} />
-            <Route path="/UreaAddiction" element={<UreaAddiction />} />
-            <Route path="/PeakPhosphorusPanic" element={<PeakPhosphorusPanic />} />
-            <Route path="/TortLawGame1" element={<TortLawGame1 />} />
-            <Route path="/TortLawGame2" element={<TortLawGame2 />} />
-            <Route path="/TortLawGame3" element={<TortLawGame3 />} />
-            <Route path="/CrimeCivilGame" element={<CrimeCivilGame />} />
-            <Route path="/LandmarkCasesGame" element={<LandmarkCasesGame />} />
-            <Route path="/LandmarkCasesResult" element={<LandmarkCasesResult />} />
-            <Route path="/LegalConceptsGame" element={<LegalConceptsGame />} />
-            <Route path="/LegalConceptsResult" element={<LegalConceptsResult />} />
-            <Route path="/DecodetheMessage" element={<DecodetheMessage />} />
-            <Route path="/ListenerLensGame" element={<ListenerLensGame />} />
-            <Route path="/WhatWentWrongGame" element={<WhatWentWrongGame />} />
-            <Route path="/PitchPerfectGame" element={<PitchPerfectGame />} />
-            <Route path="/DigitalDilemma" element={<DigitalDilemma />} />
-            <Route path="/ToneTranslatorGame" element={<ToneTranslatorGame />} />
-            <Route path="/ConflictCommanderGame" element={<ConflictCommanderGame />} />
-            <Route path="/TheBigSpeech" element={<TheBigSpeech />} />
-            <Route path="/InboxInsightGame" element={<InboxInsightGame />} />
-            <Route path="/CauseEffectGame" element={<CauseEffectGame />} />
-            <Route path="/FeedbackLoopGame" element={<FeedbackLoopGame />} />
-            <Route path="/MeasureCompareQuiz" element={<MeasureCompareQuiz />} />
-            <Route path="/ExternalityDetectiveGame" element={<ExternalityDetectiveGame />} />
-            <Route path="/SustainabilityGames1" element={<SustainabilityGames1 />} />
-            <Route path="/SustainabilityGames2" element={<SustainabilityGames2 />} />
-            <Route path="/MatchTermsGame" element={<MatchTermsGame />} />
-            <Route path="/match-terms-game-result" element={<MatchTermsGameResult />} />
-            <Route path="/JusticeThroneGame" element={<JusticeThroneGame />} />
-            <Route path="/LegalQuizQuestLevel3" element={<LegalQuizQuestLevel3 />} />
-
-
-            {/* ================================================================= */}
-            {/* == Routes WITH Navbar/Footer (Your Main Content Pages)         == */}
-            {/* ================================================================= */}
-            
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/blogs" element={<AllBlogs />} />
-              <Route path="/blog/:id" element={<SingleBlog />} />
-              <Route path="/create-blog" element={<CreateBlog />} />
-
-              {/* --- SUBJECT & NOTES PAGES --- */}
-              <Route path="/finance/games" element={<Finance />} />
-              <Route path="/finance/notes" element={<FinanceNotes />} />
-              <Route path="/finance/notes/section-1" element={<Section1 />} />
-              <Route path="/finance/notes/section-2" element={<Section2 />} />
-              <Route path="/finance/notes/section-3" element={<Section3 />} />
-              <Route path="/finance/notes/section-4" element={<Section4 />} />
-              <Route path="/finance/notes/section-5" element={<Section5 />} />
-              <Route path="/finance/notes/section-6" element={<Section6 />} />
-
-              <Route path="/digital-marketing/games" element={<DigitalMarketing />} />
-              <Route path="/digital-marketing/notes" element={<DigitalMarketingNotes />} />
-              <Route path="/digitalmarketing/notes/section-1" element={<Section1dm />} />
-              <Route path="/digitalmarketing/notes/section-2" element={<Section2dm />} />
-              <Route path="/digitalmarketing/notes/section-3" element={<Section3dm />} />
-              <Route path="/digitalmarketing/notes/section-4" element={<Section4dm />} />
-              <Route path="/digitalmarketing/notes/section-5" element={<Section5dm />} />
-              <Route path="/digitalmarketing/notes/section-6" element={<Section6dm />} />
-              <Route path="/digitalmarketing/notes/section-7" element={<Section7dm />} />
-              <Route path="/digitalmarketing/notes/section-8" element={<Section8dm />} />
-
-              <Route path="/law/games" element={<Law />} />
-              <Route path="/law/notes" element={<LegalAwarenessNotes />} />
-              <Route path="/law/notes/module-1" element={<Module1 />} />
-              <Route path="/law/notes/module-2" element={<Module2 />} />
-              <Route path="/law/notes/module-3" element={<Module3 />} />
-              <Route path="/law/notes/module-4" element={<Module4 />} />
-              <Route path="/law/notes/module-5" element={<Module5 />} />
-              <Route path="/law/notes/module-6" element={<Module6 />} />
-
-              <Route path="/communications/games" element={<Communication />} />
-              <Route path="/communications/notes" element={<CommunicationsNotes />} />
-              <Route path="/communications/notes/listen-to-understand" element={<Mod1 />} />
-              <Route path="/communications/notes/feelings-explorer" element={<Mod2 />} />
-              <Route path="/communications/notes/speak-with-purpose" element={<Mod3 />} />
-              <Route path="/communications/notes/conflict-resolution" element={<Mod4 />} />
-              <Route path="/communications/notes/online-vs-real" element={<Mod5 />} />
-
-              <Route path="/social-learning/games" element={<SocialLearning />} />
-              <Route path="/social-learning/notes" element={<SocialLearningNotes />} />
-              <Route path="/social-learning/module-1" element={<KnowingMyself />} />
-              <Route path="/social-learning/module-2" element={<BuildPositiveRel />} />
-              <Route path="/social-learning/module-3" element={<HandlingStress />} />
-              <Route path="/social-learning/module-4" element={<SelfDiscipline />} />
-              <Route path="/social-learning/module-5" element={<DecisionMaking />} />
-
-              <Route path="/leadership/notes" element={<LeadershipNotes />} />
-              <Route path="/leadership/games" element={<Leadership />} />
-              
-              <Route path="/entrepreneurship/notes" element={<EntrepreneurshipNotes />} />
-              <Route path="/entrepreneurship/games" element={<Entrepreneurship />} />
-              
-              <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
-              <Route path="/environmental/games" element={<Environment />} />
-
-              <Route path="/computer/notes" element={<ComputerNotes />} />
-              <Route path="/computer/notes/module-1" element={<WhatIsAi />} />
-              <Route path="/computer/notes/module-2" element={<WorkOfAi />} />
-              <Route path="/computer/notes/module-3" element={<TypesAndUseOfAi />} />
-              <Route path="/computer/notes/module-4" element={<WhatCantAiDo />} />
-              <Route path="/computer/notes/module-5" element={<ImpAIWords />} />
-              <Route path="/computer/notes/module-6" element={<BuildAi />} />
-              <Route path="/computer/notes/module-7" element={<TestUrSkills />} />
-              <Route path="/computer/notes/module-8" element={<ImportanceOfAi />} />
-              <Route path="/computer/games" element={<Computer />} />
-
-              {/* --- FOOTER ROUTES --- */}
-              <Route path="/faq's" element={<FAQ />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/refund-policy" element={<RefundPolicy />} />
-              <Route path="/terms-conditions" element={<TermsAndConditions />} />
-            </Route>
-
           </Routes>
         </Router>
       )}

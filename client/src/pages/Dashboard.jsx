@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, NavLink, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { CheckCircle, ChevronRight, XCircle } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
+import { useAccessControl } from "../utils/accessControl";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,8 +14,14 @@ const Dashboard = () => {
   const [userComments, setUserComments] = useState([]);
   const [editingField, setEditingField] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [userSubscription, setUserSubscription] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null);
   const { getUserComments } = useBlog();
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { accessStatus, hasModuleAccess } = useAccessControl(subscriptions, selectedModule);
 
   useEffect(() => {
     const fetchUserComments = async () => {
@@ -29,11 +36,7 @@ const Dashboard = () => {
           console.log("Failed to fetch user comments:", error);
           setUserComments([]);
         }
-      } else if (
-        user?.name &&
-        typeof user.name === "string" &&
-        user.name.trim()
-      ) {
+      } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
         // Fallback to name-based fetching for backward compatibility
         // console.log("Fetching comments for user name:", user.name);
         try {
@@ -53,6 +56,155 @@ const Dashboard = () => {
     fetchUserComments();
   }, [user?.id, user?.name, getUserComments]);
 
+  // Fetch user subscription and payment data
+  useEffect(() => {
+    const fetchUserSubscriptionData = async () => {
+      if (!user?.id) return;
+
+      try {
+        setLoadingSubscriptions(true);
+        setLoadingPayments(true);
+
+        // Fetch user subscriptions
+        const subscriptionResponse = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (subscriptionResponse.ok) {
+          const subscriptionData = await subscriptionResponse.json();
+          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find the highest active and valid subscription
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          // Define plan hierarchy to find the highest plan
+          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          
+          let highestActiveSubscription = null;
+          
+          // Find the highest tier among active and valid subscriptions
+          for (const plan of planHierarchy.reverse()) {
+            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            if (subscription) {
+              highestActiveSubscription = subscription;
+              break;
+            }
+          }
+          
+          if (highestActiveSubscription) {
+            // Parse notes to get selectedModule if it exists
+            let selectedModuleFromSub = null;
+            if (highestActiveSubscription.notes) {
+              try {
+                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
+                const rawModule = parsedNotes.selectedModule;
+                
+                // Map the display name to the correct module key
+                const moduleMapping = {
+                  // Full display names from UI
+                  'Finance Management': 'finance',
+                  'Digital Marketing': 'digital-marketing',
+                  'Communication Skills': 'communication',
+                  'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
+                  'Environmental Science': 'environment',
+                  'Legal Awareness': 'law',
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
+                };
+                
+                selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+              } catch {
+                // If notes is not JSON, treat as plain text and map it
+                const moduleMapping = {
+                  // Full display names from UI
+                  'Finance Management': 'finance',
+                  'Digital Marketing': 'digital-marketing',
+                  'Communication Skills': 'communication',
+                  'Computer Science': 'computers',
+                  'Entrepreneurship': 'entrepreneurship',
+                  'Environmental Science': 'environment',
+                  'Legal Awareness': 'law',
+                  'Leadership Skills': 'leadership',
+                  'Social Emotional Learning': 'sel',
+                  
+                  // Short names (legacy support)
+                  'Leadership': 'leadership',
+                  'Finance': 'finance',
+                  'Communication': 'communication',
+                  
+                  // Course-specific names from screenshots
+                  'Fundamentals of Finance': 'finance',
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership',
+                  'Environmental Sustainability': 'environment'
+                };
+                
+                selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+              }
+            }
+            
+            setSelectedModule(selectedModuleFromSub);
+            setUserSubscription({
+              plan: highestActiveSubscription.planType,
+              status: highestActiveSubscription.status,
+              startDate: highestActiveSubscription.startDate,
+              endDate: highestActiveSubscription.endDate,
+              selectedModule: selectedModuleFromSub
+            });
+          }
+        } else {
+          console.log('Failed to fetch subscriptions:', subscriptionResponse.statusText);
+          setSubscriptions([]);
+        }
+
+        // Fetch user payments
+        const paymentResponse = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`
+        );
+        
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setPayments(Array.isArray(paymentData) ? paymentData : []);
+        } else {
+          console.log('Failed to fetch payments:', paymentResponse.statusText);
+          setPayments([]);
+        }
+
+      } catch (error) {
+        console.error('Error fetching subscription/payment data:', error);
+        setSubscriptions([]);
+        setPayments([]);
+      } finally {
+        setLoadingSubscriptions(false);
+        setLoadingPayments(false);
+      }
+    };
+
+    fetchUserSubscriptionData();
+  }, [user?.id]);
+
   // Refresh comments when user returns to the dashboard (page focus)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -60,36 +212,27 @@ const Dashboard = () => {
         if (user?.id) {
           // Use user ID for refreshing comments
           // console.log("Refreshing comments due to page focus for user ID:", user.id);
-          getUserComments(user.id, true)
-            .then((comments) => {
-              // console.log("Refreshed comments:", comments);
-              setUserComments(Array.isArray(comments) ? comments : []);
-            })
-            .catch((error) => {
-              console.log("Failed to refresh comments:", error);
-            });
-        } else if (
-          user?.name &&
-          typeof user.name === "string" &&
-          user.name.trim()
-        ) {
+          getUserComments(user.id, true).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
+        } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
           // Fallback to name-based refreshing
           // console.log("Refreshing comments due to page focus for user name:", user.name);
-          getUserComments(user.name.trim(), false)
-            .then((comments) => {
-              // console.log("Refreshed comments:", comments);
-              setUserComments(Array.isArray(comments) ? comments : []);
-            })
-            .catch((error) => {
-              console.log("Failed to refresh comments:", error);
-            });
+          getUserComments(user.name.trim(), false).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
         }
       }
     };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id, user?.name, getUserComments]);
 
   useEffect(() => {
@@ -99,7 +242,7 @@ const Dashboard = () => {
   }, [user, role, navigate]);
 
   const handleLogout = () => {
-    logout(() => navigate("/")); // ✅ Redirects to home page
+    logout(navigate);
   };
 
   const handleUploadClick = () => {
@@ -120,7 +263,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Navigation failed:", error);
       // Fallback: could show an error message or redirect to all blogs
-      navigate("/blogs");
+      navigate('/blogs');
     }
   };
 
@@ -128,14 +271,14 @@ const Dashboard = () => {
     setEditingField(field);
     setEditValues({
       ...editValues,
-      [field]: user[field] || "",
+      [field]: user[field] || ""
     });
   };
 
   const handleSaveClick = async (field) => {
     try {
       const value = editValues[field];
-
+      
       // Basic validation
       if (!value || value.toString().trim() === "") {
         alert("Please enter a valid value");
@@ -168,7 +311,7 @@ const Dashboard = () => {
 
       // Call the updateUser function from AuthContext
       const result = await updateUser(field, value);
-
+      
       if (result.success) {
         setEditingField(null);
         setEditValues({});
@@ -191,14 +334,14 @@ const Dashboard = () => {
   const handleInputChange = (field, value) => {
     setEditValues({
       ...editValues,
-      [field]: value,
+      [field]: value
     });
   };
 
   const handleKeyPress = (e, field) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSaveClick(field);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       handleCancelClick();
     }
   };
@@ -243,8 +386,8 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen font-sans">
-      {/* Sidebar (Desktop) / Bottom Navigation (Mobile) */}
-      <aside className="hidden md:flex w-56 bg-white shadow-lg flex-col py-8 px-4">
+      {/* Sidebar */}
+      <aside className="w-56 bg-white shadow-lg flex flex-col py-8 px-4">
         <div>
           <Link to="/" className="flex items-center gap-2 mb-10">
             <img
@@ -258,7 +401,7 @@ const Dashboard = () => {
           </Link>
 
           <nav className="flex flex-col gap-7 ml-5 text-sm font-medium">
-            {/* My Profile */}
+            {/* My Profile Button */}
             <button
               className={`flex items-center gap-3 hover:text-green-700 ${
                 selectedSection === "profile"
@@ -281,7 +424,7 @@ const Dashboard = () => {
               <span className="font-bold">My Profile</span>
             </button>
 
-            {/* My Modules (If Not Admin) */}
+            {/* My Modules Button - Only if NOT Admin */}
             {role !== "admin" && (
               <button
                 className={`flex items-center gap-3 hover:text-green-700 ${
@@ -304,9 +447,33 @@ const Dashboard = () => {
               </button>
             )}
 
-            {/* Logout */}
+            {/* My Subscriptions Button - Only if NOT Admin */}
+            {role !== "admin" && (
+              <button
+                className={`flex items-center gap-3 hover:text-green-700 ${
+                  selectedSection === "subscriptions"
+                    ? "text-green-600"
+                    : "text-gray-400"
+                }`}
+                onClick={() => setSelectedSection("subscriptions")}
+              >
+                <img
+                  src="/dashboardDesign/profile.svg"
+                  alt="Subscriptions"
+                  className="w-5 h-5"
+                  style={{
+                    filter:
+                      selectedSection === "subscriptions"
+                        ? "grayscale(0%)"
+                        : "grayscale(100%)",
+                  }}
+                />
+                <span className="font-bold">My Subscriptions</span>
+              </button>
+            )}
+
             <button
-              onClick={() => setShowLogoutPopup(true)}
+              onClick={handleLogout}
               className="flex items-center gap-3 text-red-500 hover:text-red-600"
             >
               <img
@@ -319,69 +486,6 @@ const Dashboard = () => {
           </nav>
         </div>
       </aside>
-
-      {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around items-center py-3 md:hidden">
-        <button onClick={() => setSelectedSection("profile")}>
-          <img
-            src="/dashboardDesign/profile.svg"
-            alt="Profile"
-            className={`w-6 h-6 mx-auto ${
-              selectedSection === "profile" ? "" : "grayscale"
-            }`}
-          />
-        </button>
-
-        {role !== "admin" && (
-          <button onClick={() => setSelectedSection("modules")}>
-            <img
-              src={
-                selectedSection === "modules"
-                  ? "/dashboardDesign/moduleGreen.svg"
-                  : "/dashboardDesign/modules.svg"
-              }
-              alt="Modules"
-              className="w-6 h-6 mx-auto"
-            />
-          </button>
-        )}
-
-        <button onClick={() => setShowLogoutPopup(true)}>
-          <img
-            src="/dashboardDesign/logout.svg"
-            alt="Logout"
-            className="w-6 h-6 mx-auto"
-          />
-        </button>
-      </nav>
-
-      {showLogoutPopup && (
-        <div className="fixed inset-0 bg-black/20 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
-            <h2 className="text-lg font-semibold mb-4">
-              Are you sure you want to log out?
-            </h2>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => {
-                  setShowLogoutPopup(false);
-                  handleLogout();
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-              >
-                Yes
-              </button>
-
-              <button
-                onClick={() => setShowLogoutPopup(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-lg"
-              >
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-100 overflow-x-hidden">
@@ -415,25 +519,90 @@ const Dashboard = () => {
                   </h2>
                 </div>
 
-                {/* Empty State Box */}
-                <div className="bg-white w-full max-w-6xl rounded-lg shadow-md flex flex-col items-center justify-center p-10">
-                  <img
-                    src="/blogDesign/notfound.svg"
-                    alt="No Modules"
-                    className="w-64 h-auto mb-6"
-                  />
-                  <h3 className="text-xl font-bold text-gray-800 -mt-18">
-                    No Modules Available
-                  </h3>
-                  <p className="text-gray-600 mb-4 text-sm mt-2">
-                    Upgrade your plan to learn via modules
-                  </p>
-                  <Link
-                    to="/pricing"
-                    className="bg-[#068F36] hover:bg-green-700 text-white px-5 py-2 rounded-lg inline-block text-center"
-                  >
-                    Upgrade Now
-                  </Link>
+                {/* Modules Grid */}
+                <div className="bg-white w-full max-w-6xl rounded-lg shadow-md p-6">
+                  {accessStatus?.subscription ? (
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">
+                        Available Modules ({accessStatus.subscription.plan.toUpperCase()} Plan)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { key: 'finance', name: 'Finance Management' },
+                          { key: 'digital-marketing', name: 'Digital Marketing' },
+                          { key: 'communication', name: 'Communication Skills' },
+                          { key: 'computers', name: 'Computer Science' },
+                          { key: 'entrepreneurship', name: 'Entrepreneurship' },
+                          { key: 'environment', name: 'Environmental Science' },
+                          { key: 'law', name: 'Legal Awareness' },
+                          { key: 'leadership', name: 'Leadership Skills' },
+                          { key: 'sel', name: 'Social Emotional Learning' }
+                        ].map((module) => {
+                          const hasAccess = hasModuleAccess(module.key);
+                          return (
+                            <div
+                              key={module.key}
+                              className={`border rounded-lg p-4 transition-all duration-200 ${
+                                hasAccess
+                                  ? 'border-green-200 bg-green-50 hover:shadow-md cursor-pointer'
+                                  : 'border-gray-200 bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-semibold text-gray-800">{module.name}</h4>
+                                <span
+                                  className={`w-4 h-4 rounded-full ${
+                                    hasAccess ? 'bg-green-500' : 'bg-gray-400'
+                                  }`}
+                                />
+                              </div>
+                              <p className={`text-sm mb-3 ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
+                                {hasAccess ? 'Ready to Learn' : 'Premium Required'}
+                              </p>
+                              {hasAccess && (
+                                <Link
+                                  to={`/courses?module=${module.toLowerCase().replace(' ', '-')}`}
+                                  className="bg-[#068F36] hover:bg-green-700 text-white px-3 py-1 rounded text-sm inline-block"
+                                >
+                                  Start Learning
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Special message for SOLO plan */}
+                      {accessStatus.subscription.plan === 'SOLO' && accessStatus.subscription.selectedModule && (
+                        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <h4 className="font-semibold text-blue-800 mb-2">Your Selected Module</h4>
+                          <p className="text-blue-600 text-sm">
+                            With your SOLO plan, you have access to: <strong>{accessStatus.subscription.selectedModule}</strong>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-10">
+                      <img
+                        src="/blogDesign/notfound.svg"
+                        alt="No Modules"
+                        className="w-64 h-auto mb-6"
+                      />
+                      <h3 className="text-xl font-bold text-gray-800 -mt-18">
+                        No Premium Modules Available
+                      </h3>
+                      <p className="text-gray-600 mb-4 text-sm mt-2">
+                        Upgrade your plan to unlock premium learning modules
+                      </p>
+                      <Link
+                        to="/pricing"
+                        className="bg-[#068F36] hover:bg-green-700 text-white px-5 py-2 rounded-lg inline-block text-center"
+                      >
+                        View Pricing Plans
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -480,35 +649,37 @@ const Dashboard = () => {
                       </div>
 
                       {/* Profile Info */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-6">
                         {/* Left Section: Name, Class, Age */}
                         <div className="border rounded-lg p-4 flex flex-col gap-4">
                           <div className="flex justify-between items-center">
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Your Name</p>
                               {editingField === "name" ? (
-                                <div className="flex items-center gap-2 mt-1.5">
-                                  {/* Input Field */}
+                                <div className="relative">
                                   <input
                                     type="text"
                                     value={editValues.name || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("name", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("name", e.target.value)}
                                     onKeyDown={(e) => handleKeyPress(e, "name")}
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter your name"
                                   />
-
-                                  {/* Action Buttons - OUTSIDE input */}
-                                  <div className="flex gap-2">
-                                    <button
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
                                       onClick={() => handleSaveClick("name")}
-                                      className="text-green-500 hover:text-green-600"
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
-                                      <CheckCircle size={18} />
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
                                     </button>
                                   </div>
                                 </div>
@@ -517,7 +688,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "name" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("name")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -530,45 +701,38 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Class</p>
                               {editingField === "userClass" ? (
-                                <div className="flex items-center gap-2 mt-1.5">
-                                  {/* Input Field */}
+                                <div className="relative">
                                   <input
                                     type="text"
                                     value={editValues.userClass || ""}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        "userClass",
-                                        e.target.value
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "userClass")
-                                    }
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    onChange={(e) => handleInputChange("userClass", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "userClass")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                   />
-
-                                  {/* Action Buttons - OUTSIDE input */}
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() =>
-                                        handleSaveClick("userClass")
-                                      }
-                                      className="text-green-500 hover:text-green-600"
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("userClass")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
-                                      <CheckCircle size={18} />
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
                                     </button>
                                   </div>
                                 </div>
                               ) : (
-                                <p className="font-semibold">
-                                  {user.userClass}
-                                </p>
+                                <p className="font-semibold">{user.userClass}</p>
                               )}
                             </div>
                             {editingField !== "userClass" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("userClass")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -581,29 +745,31 @@ const Dashboard = () => {
                             <div className="flex-1">
                               <p className="text-gray-500 text-xs">Age</p>
                               {editingField === "age" ? (
-                                <div className="flex items-center gap-2 mt-1.5">
-                                  {/* Input Field */}
+                                <div className="relative">
                                   <input
                                     type="number"
                                     value={editValues.age || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("age", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("age", e.target.value)}
                                     onKeyDown={(e) => handleKeyPress(e, "age")}
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     min="1"
                                     max="100"
                                   />
-
-                                  {/* Action Buttons - OUTSIDE input */}
-                                  <div className="flex gap-2">
-                                    <button
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
                                       onClick={() => handleSaveClick("age")}
-                                      className="text-green-500 hover:text-green-600"
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
-                                      <CheckCircle size={18} />
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
                                     </button>
                                   </div>
                                 </div>
@@ -612,7 +778,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "age" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("age")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -629,40 +795,78 @@ const Dashboard = () => {
                               <p className="text-gray-500 text-xs">
                                 Phone Number
                               </p>
-                              <p className="font-semibold">
-                                {user.phonenumber || "N/A"}
-                              </p>
+                              {editingField === "phonenumber" ? (
+                                <div className="relative">
+                                  <input
+                                    type="tel"
+                                    value={editValues.phonenumber || ""}
+                                    onChange={(e) => handleInputChange("phonenumber", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "phonenumber")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                                    autoFocus
+                                    placeholder="Enter phone number"
+                                  />
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
+                                      onClick={() => handleSaveClick("phonenumber")}
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
+                                      title="Save"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="font-semibold">
+                                  {user.phonenumber}
+                                </p>
+                              )}
                             </div>
+                            {editingField !== "phonenumber" && (
+                              <button 
+                                onClick={() => handleEditClick("phonenumber")}
+                                className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
+                              >
+                                Edit
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex justify-between items-center">
                             <div className="flex-1 min-w-0">
                               <p className="text-gray-500 text-xs">Email ID</p>
                               {editingField === "email" ? (
-                                <div className="flex items-center gap-2 mt-1.5">
-                                  {/* Input Field */}
+                                <div className="relative">
                                   <input
                                     type="email"
                                     value={editValues.email || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("email", e.target.value)
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "email")
-                                    }
-                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 w-full"
+                                    onChange={(e) => handleInputChange("email", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "email")}
+                                    className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter email address"
                                   />
-
-                                  {/* Action Buttons - OUTSIDE input */}
-                                  <div className="flex gap-2">
-                                    <button
+                                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                    <button 
                                       onClick={() => handleSaveClick("email")}
-                                      className="text-green-500 hover:text-green-600"
+                                      className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
-                                      <CheckCircle size={18} />
+                                      ✓
+                                    </button>
+                                    <button 
+                                      onClick={handleCancelClick}
+                                      className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                                      title="Cancel"
+                                    >
+                                      ✕
                                     </button>
                                   </div>
                                 </div>
@@ -680,13 +884,9 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "email" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("email")}
-                                className={`${
-                                  user.email
-                                    ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200"
-                                    : "bg-[#068F36] text-white hover:bg-green-700"
-                                } text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
+                                className={`${user.email ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200" : "bg-[#068F36] text-white hover:bg-green-700"} text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
                               >
                                 {user.email ? "Edit" : "Add Now"}
                               </button>
@@ -807,11 +1007,11 @@ const Dashboard = () => {
                           </div>
                         ))}
 
-                        {/* Fact Section - Desktop Only */}
-                        <div className="hidden lg:block bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
+                        {/* Fact Section */}
+                        <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
                           <p className="text-xs text-gray-400 mb-1">Fact</p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Meet <strong>"{user.characterName}"</strong> who is{" "}
+                            Meet <strong>“{user.characterName}”</strong> who is{" "}
                             {user.characterTraits.map((trait, index) => {
                               const percentages = [40, 30, 20, 10];
                               const isLast =
@@ -826,72 +1026,243 @@ const Dashboard = () => {
                           </p>
                         </div>
 
-                        {/* Button - Desktop Only */}
+                        {/* Button */}
                         <Link
                           to="/courses"
-                          className="hidden lg:flex bg-[#068F36] col-span-2 mt-4 text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 w-full text-center"
+                          className="bg-[#068F36] col-span-2 mt-4 text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 flex justify-center items-center gap-2 w-full text-center"
                         >
                           Start Exploration Now
                           <ChevronRight className="mt-1" size={18} />
                         </Link>
                       </div>
 
-                      {/* Right: Character Image - Desktop Only */}
-                      <div className="hidden lg:flex lg:w-56 flex-col items-center lg:mt-0">
-                        <div className="-mt-8 p-2 bg-white">
-                          <img
-                            src="/dashboardDesign/boy_sporty.gif"
-                            alt="Character"
-                            className="h-[360px] w-auto object-contain"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mobile: Image + Fact in 2-column grid (same width as traits above) */}
-                    <div className="lg:hidden grid grid-cols-2 gap-4 mt-6">
-                      {/* Character Image - Mobile */}
-                      <div className="flex items-center justify-center border rounded-lg p-3 bg-gray-50 shadow-sm">
+                      {/* Right: Character Image */}
+                      <div className="w-full h-[250px] lg:w-44 flex items-center justify-center mt-6 lg:mt-0">
                         <img
-                          src="/dashboardDesign/boy_sporty.gif"
+                          src="/dashboardDesign/boy.svg"
                           alt="Character"
-                          className="object-contain w-full h-35"
+                          className="object-contain w-full h-72"
                         />
                       </div>
-
-                      {/* Fact Box - Mobile */}
-                      <div className="bg-gray-50 rounded-lg p-3 text-left">
-                        <p className="text-xs text-gray-400 mb-1">Fact</p>
-                        <p className="text-sm leading-relaxed text-[#4A5565]">
-                          Meet{" "}
-                          <strong className="text-black">
-                            "{user.characterName}"
-                          </strong>{" "}
-                          who is{" "}
-                          {user.characterTraits.map((trait, index) => {
-                            const percentages = [40, 30, 20, 10];
-                            const isLast =
-                              index === user.characterTraits.length - 1;
-                            return (
-                              <span key={trait}>
-                                {percentages[index]}% {trait.toLowerCase()}
-                                {!isLast ? ", " : ""}
-                              </span>
-                            );
-                          })}
-                        </p>
-                      </div>
                     </div>
-
-                    {/* Mobile Button - stays below */}
-                    <Link
-                      to="/courses"
-                      className="flex w-full lg:hidden mt-4 bg-[#068F36] text-white px-5 font-semibold py-2 rounded-lg hover:bg-green-700 justify-center items-center gap-2 text-center"
-                    >
-                      Start Exploration Now
-                      <ChevronRight className="mt-1" size={18} />
-                    </Link>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Subscriptions Section */}
+            {selectedSection === "subscriptions" && (
+              <div className="max-w-6xl mx-auto px-6 pt-6">
+                {/* DASHBOARD HEADER */}
+                <div className="bg-[#068F36] text-5xl font-bold text-center px-10 py-4 rounded-md shadow-sm mb-8">
+                  <span className="text-white" style={{ opacity: 0.72 }}>
+                    MY SUBSCRIPTIONS
+                  </span>
+                </div>
+
+                {/* Current Plan Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Current Plan</h3>
+                  {loadingSubscriptions ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                      <span className="ml-2 text-gray-600">Loading subscription data...</span>
+                    </div>
+                  ) : userSubscription ? (
+                    <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="text-xl font-semibold text-green-800">
+                            {userSubscription.plan.toUpperCase()} PLAN
+                          </h4>
+                          <p className="text-gray-600 text-sm">
+                            Subscribed on: {new Date(userSubscription.startDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            userSubscription.status === 'ACTIVE' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {userSubscription.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500">Valid Until:</p>
+                          <p className="font-semibold">
+                            {new Date(userSubscription.endDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Plan Type:</p>
+                          <p className="font-semibold">{userSubscription.plan}</p>
+                        </div>
+                        {userSubscription.selectedModule && (
+                          <div className="md:col-span-2">
+                            <p className="text-gray-500">Selected Module:</p>
+                            <p className="font-semibold">{userSubscription.selectedModule}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Add upgrade button for STARTER and PRO plans */}
+                      {(userSubscription.plan === 'STARTER' || userSubscription.plan === 'PRO') && (
+                        <div className="mt-4 pt-4 border-t border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">
+                                {userSubscription.plan === 'STARTER' 
+                                  ? 'Unlock premium modules and certificates' 
+                                  : 'Get institutional features and live sessions'}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => navigate(`/payment?plan=${userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}`)}
+                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+                            >
+                             Upgrade to {userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
+                      <p className="text-gray-600 mb-4">You don't have any active subscriptions yet.</p>
+                      <Link 
+                        to="/courses" 
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Browse Plans
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Accessible Modules Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Accessible Modules</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { name: 'Finance Management', key: 'finance' },
+                      { name: 'Digital Marketing', key: 'digital-marketing' },
+                      { name: 'Communication Skills', key: 'communication' },
+                      { name: 'Computer Science', key: 'computers' },
+                      { name: 'Entrepreneurship', key: 'entrepreneurship' },
+                      { name: 'Environmental Science', key: 'environment' },
+                      { name: 'Legal Awareness', key: 'law' },
+                      { name: 'Leadership Skills', key: 'leadership' },
+                      { name: 'Social Emotional Learning', key: 'sel' }
+                    ].map((module) => {
+                      const hasAccess = hasModuleAccess(module.key);
+                      return (
+                        <div
+                          key={module.key}
+                          className={`border rounded-lg p-4 ${
+                            hasAccess
+                              ? 'border-green-200 bg-green-50'
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-gray-800">{module.name}</h4>
+                            <span
+                              className={`w-3 h-3 rounded-full ${
+                                hasAccess ? 'bg-green-500' : 'bg-gray-400'
+                              }`}
+                            />
+                          </div>
+                          <p className={`text-sm ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
+                            {hasAccess ? 'Accessible' : 'Premium Required'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment History Section */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Payment History</h3>
+                  {loadingPayments ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                      <span className="ml-2 text-gray-600">Loading payment history...</span>
+                    </div>
+                  ) : payments.length > 0 ? (
+                    <div className="space-y-4">
+                      {payments.slice(0, 5).map((payment) => (
+                        <div key={payment.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-semibold text-gray-800">
+                                {payment.planType} Plan - ₹{payment.amount}
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                {new Date(payment.createdAt).toLocaleDateString()} at {new Date(payment.createdAt).toLocaleTimeString()}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              payment.status === 'COMPLETED' 
+                                ? 'bg-green-100 text-green-800' 
+                                : payment.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {payment.status}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-500">Payment ID:</p>
+                              <p className="font-mono text-xs">{payment.razorpayPaymentId || 'Pending'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Order ID:</p>
+                              <p className="font-mono text-xs">{payment.razorpayOrderId}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Currency:</p>
+                              <p>{payment.currency}</p>
+                            </div>
+                          </div>
+                          {payment.notes && (
+                            <div className="mt-2 pt-2 border-t border-gray-100">
+                              <p className="text-gray-500 text-sm">Selected Module:</p>
+                              <p className="text-sm font-medium">
+                                {(() => {
+                                  try {
+                                    const parsedNotes = JSON.parse(payment.notes);
+                                    return parsedNotes.selectedModule || 'All Modules';
+                                  } catch {
+                                    return payment.notes || 'All Modules';
+                                  }
+                                })()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {payments.length > 5 && (
+                        <div className="text-center">
+                          <p className="text-gray-500 text-sm">Showing latest 5 payments</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">No payment history found.</p>
+                      <Link 
+                        to="/courses" 
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Make Your First Purchase
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

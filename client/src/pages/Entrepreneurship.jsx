@@ -1,9 +1,10 @@
-import Container from "@/EntrepreneurshipDesign/Container";
 import Hero from "../EntrepreneurshipDesign/Hero";
+import Container from "../EntrepreneurshipDesign/Container";
+
 const Entrepreneurship = () => {
   return (
     <div>
-      <Hero />
+      <Hero /> 
       <Container />
     </div>
   );

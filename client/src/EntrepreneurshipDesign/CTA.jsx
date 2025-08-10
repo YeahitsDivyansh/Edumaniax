@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext"; // Adjust path if needed
+import { useAuth } from "../contexts/AuthContext";
 
 const CTA = () => {
   const { user } = useAuth();

@@ -4,6 +4,7 @@ import { useBlog } from "@/contexts/BlogContext";
 import BlogCard from "@/components/BlogCard";
 import { useAuth } from "@/contexts/AuthContext";
 import CTA from "@/BlogDesign/CTA";
+import { formatTextWithLinks } from "@/utils/linkFormatter";
 
 const SingleBlog = () => {
   const { user, role } = useAuth();
@@ -21,7 +22,6 @@ const SingleBlog = () => {
     const handleScroll = () => {
       if (!tocRef.current || !ctaRef.current) return;
 
-      const tocRect = tocRef.current.getBoundingClientRect();
       const ctaRect = ctaRef.current.getBoundingClientRect();
 
       const padding = 20;
@@ -166,24 +166,23 @@ const SingleBlog = () => {
                         <li key={idx}>
                           <a
                             href={`#point-${idx}`}
-                            className="hover:underline text-green-800"
-                          >
-                            {item.heading}
-                          </a>
+                            className="text-green-800"
+                            dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item.heading) }}
+                          />
                         </li>
                       ))}
                 </ol>
               </div>
 
               {/* Blog Content */}
-              <div className="mt-6 space-y-10">
+              <div className="mt-6 space-y-10 blog-content">
                 {Array.isArray(singleBlog.tableOfContents) &&
                   singleBlog.tableOfContents
                     .filter((point) => point.heading?.trim())
                     .map((point, index) => (
                       <div key={index} id={`point-${index}`} className="scroll-mt-24">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                          {index + 1}. {point.heading}
+                          <span dangerouslySetInnerHTML={{ __html: `${index + 1}. ${formatTextWithLinks(point.heading)}` }} />
                         </h2>
 
                         {Array.isArray(point.explanation) &&
@@ -192,19 +191,14 @@ const SingleBlog = () => {
                               {point.explanation
                                 .filter((item) => item.trim())
                                 .map((item, i) => (
-                                  <li key={i}>
-                                    <span className="font-medium">
-                                      {String.fromCharCode(65 + i)}.
-                                    </span>{" "}
-                                    {item}
-                                  </li>
+                                  <p key={i} dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item) }} />
                                 ))}
                             </ul>
                           )}
 
                         {point.reflection?.trim() && (
                           <p className="mt-4 italic text-gray-700">
-                            <strong>Reflection:</strong> {point.reflection}
+                            <strong>Reflection:</strong> <span dangerouslySetInnerHTML={{ __html: formatTextWithLinks(point.reflection) }} />
                           </p>
                         )}
                       </div>
@@ -216,7 +210,7 @@ const SingleBlog = () => {
                 To explore more modules and success stories, visit the official{" "}
                 <Link
                   to="/blogs"
-                  className="underline"
+                  className="blog-hyperlink"
                 >
                   EduManiax Blogs
                 </Link>
@@ -357,10 +351,9 @@ const SingleBlog = () => {
                     <li key={idx}>
                       <a
                         href={`#point-${idx}`}
-                        className="hover:underline text-green-800"
-                      >
-                        {item.heading}
-                      </a>
+                        className="text-green-800"
+                        dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item.heading) }}
+                      />
                     </li>
                   ))}
             </ol>

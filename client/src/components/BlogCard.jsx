@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useBlog } from "@/contexts/BlogContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatTextWithLinks } from "@/utils/linkFormatter";
 
 const BlogCard = ({ blog }) => {
   const navigate = useNavigate();
@@ -15,7 +16,12 @@ const BlogCard = ({ blog }) => {
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    // Don't navigate if user clicked on a link within the title
+    if (e.target.tagName === 'A') {
+      e.stopPropagation();
+      return;
+    }
     navigate(`/blog/${blog.id}`);
   };
 
@@ -38,7 +44,9 @@ const BlogCard = ({ blog }) => {
 
       {/* Content */}
       <div className="p-5 space-y-2">
-        <h2 className="text-lg font-bold text-gray-900">{blog.title}</h2>
+        <h2 className="text-lg font-bold text-gray-900">
+          <span dangerouslySetInnerHTML={{ __html: formatTextWithLinks(blog.title) }} />
+        </h2>
 
         <p className="text-xs text-black font-semibold">
           By <span>{blog.author || "Edumaniax"}</span> |{" "}

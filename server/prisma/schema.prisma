@@ -10,7 +10,6 @@ datasource db {
 model User {
   id                         String                      @id @default(cuid())
   phonenumber                String                      @unique
-  email                      String?                     
   name                       String
   age                        Int
   userClass                  String
@@ -19,6 +18,9 @@ model User {
   characterStyle             String
   characterTraits            String[]
   createdAt                  DateTime                    @default(now())
+  email                      String?
+  selectedModule             String?
+  role                       UserRole                    @default(USER)
   communicationChallenges    CommunicationChallenge[]
   computersChallenges        ComputersChallenge[]
   dmChallenges               DMChallenge[]
@@ -28,7 +30,9 @@ model User {
   lawChallenges              LawChallenge[]
   leadershipChallenges       LeadershipChallenge[]
   modulePerformances         ModulePerformance[]
+  payments                   Payment[]
   selChallenges              SELChallenge[]
+  subscriptions              Subscription[]
   topicPerformances          TopicPerformance[]
 }
 
@@ -212,4 +216,100 @@ model Comment {
   content String
   date    DateTime @default(now())
   blog    Blog     @relation(fields: [blogId], references: [id])
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  planType  String
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime
+  amount    Float
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  notes     String?
+  payments  Payment[]
+  user      User               @relation(fields: [userId], references: [id])
+
+  @@unique([userId, planType])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  subscriptionId    String?
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique
+  amount            Float
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  planType          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  notes             String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  user              User          @relation(fields: [userId], references: [id])
+}
+
+model InstitutionalInquiry {
+  id               String        @id
+  contactName      String
+  contactEmail     String
+  contactPhone     String
+  organizationName String
+  organizationType String
+  studentCount     Int
+  message          String
+  status           InquiryStatus @default(NEW)
+  notes            String?
+  followUpDate     DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+}
+
+model SalesNotification {
+  id        String             @id
+  type      String
+  message   String
+  data      String
+  status    NotificationStatus @default(UNREAD)
+  inquiryId String?
+  paymentId String?
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+  readBy    String[]
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  FOLLOW_UP
+  CONVERTED
+  NOT_INTERESTED
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SALES
 }

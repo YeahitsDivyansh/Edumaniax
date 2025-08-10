@@ -1,0 +1,105 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import usePayment from '../hooks/usePayment';
+
+const SubscriptionContext = createContext();
+
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
+  if (!context) {
+    throw new Error('useSubscription must be used within a SubscriptionProvider');
+  }
+  return context;
+};
+
+export const SubscriptionProvider = ({ children }) => {
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [userAccess, setUserAccess] = useState({});
+  const [loading, setLoading] = useState(false);
+  const { checkSubscription, getSubscriptions } = usePayment();
+
+  // Check if user has access to a specific plan
+  const hasAccess = (planType) => {
+    return userAccess[planType]?.hasAccess || planType === 'STARTER';
+  };
+
+  // Check if user has any premium access
+  const hasPremiumAccess = () => {
+    return Object.values(userAccess).some(access => access.hasAccess);
+  };
+
+  // Get active subscription for a plan type
+  const getActiveSubscription = (planType) => {
+    return userAccess[planType]?.subscription || null;
+  };
+
+  // Refresh user subscriptions
+  const refreshSubscriptions = async (userId) => {
+    if (!userId) return;
+
+    try {
+      setLoading(true);
+      
+      // Get all subscriptions
+      const userSubscriptions = await getSubscriptions(userId);
+      setSubscriptions(userSubscriptions);
+
+      // Check access for each plan type
+      const planTypes = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+      const accessChecks = await Promise.all(
+        planTypes.map(async (planType) => {
+          const access = await checkSubscription(userId, planType);
+          return { planType, access };
+        })
+      );
+
+      // Update user access state
+      const newUserAccess = {};
+      accessChecks.forEach(({ planType, access }) => {
+        newUserAccess[planType] = access;
+      });
+      setUserAccess(newUserAccess);
+
+    } catch (error) {
+      console.error('Error refreshing subscriptions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get highest tier access
+  const getHighestTierAccess = () => {
+    const tiers = ['INSTITUTIONAL', 'PRO', 'SOLO', 'STARTER'];
+    for (const tier of tiers) {
+      if (hasAccess(tier)) {
+        return tier;
+      }
+    }
+    return 'STARTER';
+  };
+
+  // Check if content requires premium access
+  const requiresPayment = (requiredPlan) => {
+    if (requiredPlan === 'STARTER') return false;
+    return !hasAccess(requiredPlan);
+  };
+
+  const value = {
+    subscriptions,
+    userAccess,
+    loading,
+    hasAccess,
+    hasPremiumAccess,
+    getActiveSubscription,
+    refreshSubscriptions,
+    getHighestTierAccess,
+    requiresPayment
+  };
+
+  return (
+    <SubscriptionContext.Provider value={value}>
+      {children}
+    </SubscriptionContext.Provider>
+  );
+};
+
+export default SubscriptionContext;

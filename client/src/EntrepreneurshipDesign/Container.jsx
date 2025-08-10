@@ -3,7 +3,7 @@ import CTA from "./CTA";
 import CTA2 from "./CTA2";
 import CTA3 from "./CTA3";
 import LevelsDisplay from "./LevelsDisplay";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import SkillsYouWillLearn from "./SkillsYouWillLearn";
 import GameInfo from "./GameInfo";
 
