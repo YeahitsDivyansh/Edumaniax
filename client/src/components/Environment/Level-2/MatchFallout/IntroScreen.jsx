@@ -69,7 +69,7 @@ const IntroScreen = ({ onShowInstructions }) => {
       {/* Exit Button */}
       <Link
         to="/environmental/games"
-        className="absolute top-4 left-4 w-[7vw] h-[7vh] mt-8 ml-7 transition transform active:scale-95"
+        className="absolute top-4 left-4 w-[7vw] h-[7vh] mt-7 ml-7 transition transform active:scale-95"
       >
         <img
           src={btnExit}
@@ -90,7 +90,7 @@ const IntroScreen = ({ onShowInstructions }) => {
       <div className="text-center flex flex-col items-center justify-start sm:justify-center mt-10 sm:-mt-100 z-10">
         {/* Heading: The Budgeter */}
         <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[7vh] md:text-[9vh] text-[#ffcc00] tracking-[0.05vw]">
-          Green Budget
+          Match the Fallout
         </span>
 
         {/* Subheading: Challenge 1 */}
