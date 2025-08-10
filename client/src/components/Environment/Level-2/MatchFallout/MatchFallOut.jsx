@@ -1,552 +1,382 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-  useDroppable,
-  useDraggable,
-} from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+import React, { useState, useEffect, useCallback, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
-import { usePerformance } from "@/contexts/PerformanceContext";
+import Confetti from "react-confetti";
+import useWindowSize from "react-use/lib/useWindowSize";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay, useDroppable, useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
+// Import your components
+import IntroScreen from "./IntroScreen";
+import InstructionsScreen from "./InstructionsScreen";
+import GameNav from "./GameNav";
+import Checknow from "@/components/icon/GreenBudget/Checknow";
+
+// =============================================================================
+// Game Data & Config
+// =============================================================================
 const matchFalloutData = [
-  { id: "1", text: "Dumping industrial waste", match: "Aquatic animal death" },
-  { id: "2", text: "Plastic usage", match: "Wildlife choking" },
-  { id: "3", text: "Over-mining", match: "Soil infertility" },
-  { id: "4", text: "Cutting forests", match: "Loss of biodiversity" },
-  {
-    id: "5",
-    text: "Excessive pesticide use",
-    match: "Water poisoning and food chain damage",
-  },
+    { id: "1", text: "Dumping industrial waste", match: "Aquatic animal death" },
+    { id: "2", text: "Plastic usage", match: "Wildlife choking" },
+    { id: "3", text: "Over-mining", match: "Soil infertility" },
+    { id: "4", text: "Cutting forests", match: "Loss of biodiversity" },
+    { id: "5", text: "Excessive pesticide use", match: "Water poisoning and food chain damage" },
 ];
 
-const DraggableCard = React.memo(({ id, content, isDraggingOverlay }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: id });
+const PERFECT_SCORE = matchFalloutData.length * 5;
+const PASSING_THRESHOLD = 0.7;
+const GAME_TIME_LIMIT = 120;
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDraggingOverlay
-      ? undefined
-      : isDragging
-      ? "transform 0.25s ease"
-      : undefined,
-    width: "[30vw]",
-    minWidth: "[30vw]",
-    height: "8vh",
-    minHeight: "8vh",
-    zIndex: isDragging ? 100 : "auto",
-    opacity: isDraggingOverlay ? 1 : isDragging ? 0 : 1,
-  };
+// =============================================================================
+// Reusable End-Screen Components
+// =============================================================================
+function VictoryScreen({ onContinue, onViewFeedback, accuracyScore, insight }) {
+  const { width, height } = useWindowSize();
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`
-        flex justify-center items-center shrink-0 basis-auto text-center
-        bg-[#d8bfd8] shadow-[2px_4px_10px_0_rgba(167,142,207,0.6)] font-['Comic_Sans_MS'] text-sm md:text-base font-bold leading-tight text-[rgba(75,0,130,0.6)] cursor-grab
-      `}
-    >
-           {" "}
-      <span className="flex w-auto h-auto justify-center items-center p-1 text-wrap break-words">
-                {content || id}     {" "}
-      </span>
-         {" "}
-    </div>
-  );
-});
-
-const DroppableSequenceSlot = React.memo(
-  ({ id, content, text, isDraggingOverlay }) => {
-    const { setNodeRef: setDroppableNodeRef } = useDroppable({ id: id });
-
-    const {
-      attributes,
-      listeners,
-      setNodeRef: setDraggableNodeRef,
-      transform,
-      isDragging,
-    } = useDraggable({ id: id, disabled: !content });
-
-    const combinedRef = useCallback(
-      (node) => {
-        setDroppableNodeRef(node);
-        if (content) {
-          setDraggableNodeRef(node);
-        }
-      },
-      [setDroppableNodeRef, setDraggableNodeRef, content]
-    );
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition: isDraggingOverlay
-        ? undefined
-        : isDragging
-        ? "transform 0.25s ease"
-        : undefined,
-      width: "[30vw]",
-      minWidth: "[30vw]",
-      height: "8vh",
-      minHeight: "8vh",
-      zIndex: isDragging ? 100 : "auto",
-      opacity: isDraggingOverlay ? 1 : isDragging ? 0 : 1,
-    };
-
-    const borderClass = content
-      ? ""
-      : "border-dashed border-[2.5px] border-[rgba(167,142,207,0.6)]";
-    const slotBackgroundColorClass = content
-      ? "bg-[#d8bfd8]"
-      : "bg-[rgba(216,191,216,0.2)]";
-
-    return (
-      <div
-        ref={combinedRef}
-        style={style}
-        {...(content ? attributes : {})}
-        {...(content ? listeners : {})}
-        className={`
-        flex justify-center items-center shrink-0 basis-auto text-center
-        ${slotBackgroundColorClass}
-        font-['Commissioner'] text-xs sm:text-sm md:text-base font-medium leading-tight text-[#79caef] tracking-[1.82px]
-        w-full relative ${borderClass}
-        ${content ? "shadow-[2px_4px_10px_0_rgba(167,142,207,0.6)]" : ""}
-        ${content ? "cursor-grab" : ""}
-      `}
-      >
-             {" "}
-        {content ? (
-          <span className="flex w-auto h-auto justify-center items-center p-1 text-wrap break-words text-[rgba(75,0,130,0.6)] font-['Comic_Sans_MS'] text-sm md:text-base font-bold">
-                      {content}       {" "}
-          </span>
-        ) : (
-          <span className="flex w-auto h-auto justify-center items-center p-1 text-[rgba(121,202,239,0.9)] text-xs sm:text-sm md:text-base">
-                      {text}       {" "}
-          </span>
-        )}
-           {" "}
-      </div>
-    );
-  }
-);
-
-const EmptyPlaceholderCardLeft = React.memo(({ id }) => {
-  const { setNodeRef } = useDroppable({ id: id });
-  return (
-    <div
-      ref={setNodeRef}
-      className="flex w-full min-w-[150px] h-[8vh] min-h-[60px] p-1 gap-[10px] justify-center items-center flex-nowrap bg-[rgba(216,191,216,0.2)] border-dashed border-[2.5px] border-[rgba(75,0,130,0.4)] relative"
-    />
-  );
-});
-
-const StaticReviewCard = React.memo(({ content, type }) => {
-  const bgColorClass = type === "user" ? "bg-[#d8bfd8]" : "bg-[#e0ffe0]";
-  const textColorClass =
-    type === "user" ? "text-[rgba(75,0,130,0.6)]" : "text-[rgba(9,190,67,0.8)]";
-  const shadowClass = "shadow-[2px_4px_10px_0_rgba(167,142,207,0.6)]";
-
-  return (
-    <div
-      className={`
-        flex justify-center items-center shrink-0 basis-auto text-center
-        ${bgColorClass} ${shadowClass} font-['Comic_Sans_MS'] text-sm md:text-base font-bold leading-tight
-        w-full min-w-[150px] h-[8vh] min-h-[60px] relative
-      `}
-    >
-           {" "}
-      <span
-        className={`flex w-auto h-auto justify-center items-center p-1 text-wrap break-words ${textColorClass}`}
-      >
-                {content || "Empty Slot"}     {" "}
-      </span>
-         {" "}
-    </div>
-  );
-});
-
-const ReviewItemCard = React.memo(({ cause, userAnswer, correctAnswer }) => {
-  const isCorrect =
-    userAnswer[0] &&
-    userAnswer[0].trim().toLowerCase() === cause.trim().toLowerCase();
-
-  return (
-    <div
-      className={`main-container flex w-full max-w-[280px] sm:max-w-[256px] h-auto p-2 sm:pt-3 sm:pr-4 sm:pb-3 sm:pl-4 flex-col gap-[6px] justify-center items-start rounded-[15px] relative ${
-        isCorrect ? "bg-[#c8ff9e]" : "bg-[#ffdfe0]"
-      }`}
-    >
-           {" "}
-      <div className="flex w-full justify-between items-start relative">
-               {" "}
-        <div className="flex flex-col gap-[4px] sm:gap-[6px] items-start flex-1">
-                   {" "}
-          <span
-            className={`font-['Comic_Neue'] text-sm sm:text-base font-bold leading-tight relative text-left break-words z-[2] ${
-              isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"
-            }`}
-          >
-            Fallout: {correctAnswer}
-          </span>
-                   {" "}
-          <div className="flex flex-col gap-[1px] sm:gap-[2px] items-start w-full">
-                       {" "}
-            <span
-              className={`font-['Commissioner'] text-xs sm:text-sm font-light leading-tight relative text-left break-words z-[4] ${
-                isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"
-              }`}
-            >
-              Your Action : {userAnswer[0] || "N/A"}
-            </span>
-                       {" "}
-            <span
-              className={`font-['Commissioner'] text-xs sm:text-sm font-light leading-tight relative text-left break-words z-[5] ${
-                isCorrect ? "text-[#09be43]" : "text-[#ea2b2b]"
-              }`}
-            >
-              Correct Action : {cause}
-            </span>
-                     {" "}
+    <>
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={300} />
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        <div className="flex flex-col items-center justify-center flex-1 p-[1.6vw]">
+          <div className="relative w-[17.7vw] h-[28.4vh] flex items-center justify-center">
+            <img src="/financeGames6to8/trophy-rotating.gif" alt="Rotating Trophy" className="absolute w-full h-full object-contain" />
+            <img src="/financeGames6to8/trophy-celebration.gif" alt="Celebration Effects" className="absolute w-full h-full object-contain" />
           </div>
-                 {" "}
+          <h2 className="text-yellow-400 lilita-one-regular text-[4vh] font-bold mt-[2.7vh]">Challenge Complete!</h2>
+          <div className="mt-[2.7vh] flex flex-col sm:flex-row gap-[1.1vw]">
+            <div className="w-[17.7vw] bg-[#09BE43] rounded-[0.83vw] p-[0.27vw] flex flex-col items-center">
+              <p className="text-black text-[1.5vh] font-bold mb-[0.5vh] mt-[1vh]">TOTAL ACCURACY</p>
+              <div className="bg-[#131F24] mt-0 w-full h-[8.8vh] rounded-[0.55vw] flex items-center justify-center py-[1.6vh] px-[1.3vw]">
+                <img src="/financeGames6to8/accImg.svg" alt="Target Icon" className="w-[1.6vw] h-[2.6vh] mr-[0.5vw]" />
+                <span className="text-[#09BE43] text-[2.7vh] font-extrabold">{accuracyScore}%</span>
+              </div>
+            </div>
+            <div className="w-[20vw] bg-[#FFCC00] rounded-[0.83vw] p-[0.27vw] flex flex-col items-center">
+              <p className="text-black text-[1.5vh] font-bold mb-[0.5vh] mt-[1vh]">INSIGHT</p>
+              <div className="bg-[#131F24] mt-0 w-full h-[8.8vh] rounded-[0.55vw] flex items-center justify-center px-[1.1vw] text-center">
+                <span className="text-[#FFCC00] lilita-one-regular text-[1.5vh] font-medium italic">{insight}</span>
+              </div>
+            </div>
+          </div>
         </div>
-               {" "}
-        <div
-          className="w-[20px] h-[20px] sm:w-[25px] sm:h-[25px] shrink-0 bg-contain bg-no-repeat ml-1"
-          style={{
-            backgroundImage: isCorrect ? "url(/check.png)" : "url(/cancel.png)",
-          }}
-        />
-             {" "}
+        <div className="bg-[#2f3e46] border-t-[0.1vh] border-gray-700 py-[2.2vh] px-[1.6vw] flex justify-center gap-[1.6vw]">
+          <img src="/financeGames6to8/feedback.svg" alt="Feedback" onClick={onViewFeedback} className="cursor-pointer w-[12.2vw] h-[7.7vh] object-contain hover:scale-105 transition-transform duration-200" />
+          <img src="/financeGames6to8/next-challenge.svg" alt="Next Challenge" onClick={onContinue} className="cursor-pointer w-[12.2vw] h-[7.7vh] object-contain hover:scale-105 transition-transform duration-200" />
+        </div>
       </div>
-         {" "}
-    </div>
+    </>
   );
-});
-
-const TOTAL_TIME_LIMIT = 120;
-const TOTAL_PUZZLES_SCORE = matchFalloutData.length * 2;
-
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
 }
 
-const MatchFallout = () => {
-  const { completeEnvirnomentChallenge } = useEnvirnoment();
-  const { updatePerformance } = usePerformance();
-  const navigate = useNavigate();
-
-  const [showStart, setShowStart] = useState(true);
-  const [availableCards, setAvailableCards] = useState([]);
-  const [sequenceSlotsContent, setSequenceSlotsContent] = useState(
-    matchFalloutData.map((item, index) => ({
-      id: null,
-      slotId: `slot-${index}`,
-      text: item.match,
-    }))
-  );
-
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [showReview, setShowReview] = useState(false);
-
-  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME_LIMIT);
-  const [startTime, setStartTime] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  const [userAnswers, setUserAnswers] = useState([]);
-
-  const activeDragItemDataRef = useRef(null);
-  const [activeId, setActiveId] = useState(null);
-
-  const sensors = useSensors(useSensor(PointerSensor));
-
-  const handleSubmit = useCallback(() => {
-    setIsTimerRunning(false);
-
-    let newScore = 0;
-    const answersForReview = [];
-
-    sequenceSlotsContent.forEach((item) => {
-      const correctMatch = matchFalloutData.find((d) => d.match === item.text);
-      const isCorrect = correctMatch && correctMatch.text === item.id;
-      if (isCorrect) {
-        newScore += 2;
-      }
-      answersForReview.push({
-        cause: correctMatch ? correctMatch.text : "N/A",
-        userAnswer: [item.id],
-        correctAnswer: item.text,
-      });
-    });
-
-    setScore(newScore);
-
-    const endTime = Date.now();
-    const totalTimeSec = Math.floor((endTime - startTime) / 1000);
-    const avgResponseTimeSec = totalTimeSec / matchFalloutData.length;
-
-    const scaledScore = Number(
-      ((newScore / TOTAL_PUZZLES_SCORE) * 10).toFixed(2)
+function LosingScreen({ onPlayAgain, onViewFeedback, onContinue, insight, accuracyScore }) {
+    return (
+        <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+            <div className="flex flex-col items-center justify-center flex-1 p-[1.6vw]">
+                <img src="/financeGames6to8/game-over-game.gif" alt="Game Over" className="w-[17.7vw] h-auto mb-[2.7vh]" />
+                <p className="text-yellow-400 lilita-one-regular text-[3.3vh] font-semibold text-center">Oops! That was close! Wanna Retry?</p>
+                <div className="mt-[2.7vh] flex flex-col sm:flex-row gap-[1.1vw]">
+                    <div className="w-[17.7vw] bg-red-500 rounded-[0.83vw] p-[0.27vw] flex flex-col items-center">
+                        <p className="text-black text-[1.5vh] font-bold mb-[0.5vh] mt-[1vh]">TOTAL ACCURACY</p>
+                        <div className="bg-[#131F24] mt-0 w-full h-[8.8vh] rounded-[0.55vw] flex items-center justify-center py-[1.6vh] px-[1.3vw]">
+                            <img src="/financeGames6to8/accImg.svg" alt="Target Icon" className="w-[1.6vw] h-[2.6vh] mr-[0.5vw]" />
+                            <span className="text-red-500 text-[2.7vh] font-extrabold">{accuracyScore}%</span>
+                        </div>
+                    </div>
+                    <div className="w-[20vw] bg-[#FFCC00] rounded-[0.83vw] p-[0.27vw] flex flex-col items-center">
+                        <p className="text-black text-sm font-bold mb-[0.5vh] mt-[1vh]">INSIGHT</p>
+                        <div className="bg-[#131F24] mt-0 w-full h-[8.8vh] rounded-[0.55vw] flex items-center justify-center px-[1.1vw] text-center">
+                            <span className="text-[#FFCC00] lilita-one-regular text-[1.5vh] font-medium italic">{insight}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="bg-[#2f3e46] border-t-[0.1vh] border-gray-700 py-[2.2vh] px-[1.6vw] flex justify-center gap-[1.6vw]">
+                <img src="/financeGames6to8/feedback.svg" alt="Feedback" onClick={onViewFeedback} className="cursor-pointer w-[12.2vw] h-[7.7vh] object-contain hover:scale-105 transition-transform duration-200" />
+                <img src="/financeGames6to8/retry.svg" alt="Retry" onClick={onPlayAgain} className="cursor-pointer w-[12.2vw] h-[7.7vh] object-contain hover:scale-105 transition-transform duration-200" />
+                <img src="/financeGames6to8/next-challenge.svg" alt="Next Challenge" onClick={onContinue} className="cursor-pointer w-[12.2vw] h-[7.7vh] object-contain hover:scale-105 transition-transform duration-200" />
+            </div>
+        </div>
     );
+}
 
-    updatePerformance({
-      moduleName: "Environment",
-      topicName: "ecoDecisionMaker",
-      score: scaledScore,
-      accuracy: (newScore / TOTAL_PUZZLES_SCORE) * 100,
-      avgResponseTimeSec,
-      studyTimeMinutes: Math.ceil(totalTimeSec / 60),
-      completed: true,
-    });
+function ReviewScreen({ answers, onBackToResults }) {
+    return (
+        <div className="w-full h-screen bg-[#0A160E] text-white p-[1.6vw] flex flex-col items-center">
+            <h1 className="text-[4.4vh] font-bold lilita-one-regular mb-[2.7vh] text-yellow-400 flex-shrink-0">Review Your Answers</h1>
+            <div className="w-full max-w-[88vw] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1.3vw] flex-grow overflow-y-auto p-[0.5vw]">
+                {answers.map((ans, idx) => (
+                    <div key={idx} className={`p-[1.1vw] rounded-[0.83vw] flex flex-col ${ans.isCorrect ? 'bg-green-900/70 border-green-700' : 'bg-red-900/70 border-red-700'} border-[0.1vh]`}>
+                        <p className="text-gray-300 text-[1.7vh] mb-[1vh] leading-tight font-bold">Cause: {ans.cause}</p>
+                        <div className="text-[1.5vh] space-y-[0.5vh]">
+                            <p className="font-semibold">Your Match:</p>
+                            <p className={`font-mono ${ans.isCorrect ? 'text-white' : 'text-red-300'}`}>{ans.userAnswer || "Not Answered"}</p>
+                            {!ans.isCorrect && (
+                                <>
+                                <p className="font-semibold pt-[1vh]">Correct Match:</p>
+                                <p className="font-mono text-green-300">{ans.correctAnswer}</p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button onClick={onBackToResults} className="mt-[2.7vh] px-[2.7vw] py-[1.6vh] bg-yellow-500 hover:bg-yellow-600 rounded-[0.55vw] text-[2.2vh] font-bold text-black transition-colors flex-shrink-0">
+                Back to Results
+            </button>
+        </div>
+    );
+}
 
-    setUserAnswers(answersForReview);
-    setShowResult(true);
-  }, [sequenceSlotsContent, startTime, updatePerformance]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 768);
+// =============================================================================
+// DnD Components
+// =============================================================================
+const DraggableCard = React.memo(({ id, content }) => {
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
+    const style = {
+        transform: transform ? CSS.Transform.toString(transform) : undefined,
+        zIndex: isDragging ? 1000 : 'auto',
+        opacity: isDragging ? 0.75 : 1,
     };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (showResult && score >= 8) {
-      completeEnvirnomentChallenge(1, 1);
-    }
-  }, [showResult, score]);
-
-  useEffect(() => {
-    let timer;
-    if (
-      !showStart &&
-      !showResult &&
-      !showReview &&
-      isTimerRunning &&
-      timeLeft > 0
-    ) {
-      timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
-    } else if (timeLeft === 0 && !showResult && !showReview && isTimerRunning) {
-      handleSubmit();
-    }
-    return () => clearTimeout(timer);
-  }, [
-    timeLeft,
-    showStart,
-    showResult,
-    showReview,
-    isTimerRunning,
-    handleSubmit,
-  ]);
-
-  const startGame = () => {
-    const shuffledCauses = shuffle(matchFalloutData.map((item) => item.text));
-    const shuffledMatches = shuffle(matchFalloutData.map((item) => item.match));
-
-    setAvailableCards(shuffledCauses);
-    setSequenceSlotsContent(
-      shuffledMatches.map((match, index) => ({
-        id: null,
-        slotId: `slot-${index}`,
-        text: match,
-      }))
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="flex h-[8vh] w-[30vw] items-center self-stretch shrink-0 rounded-[0.7vw] relative cursor-grab transition-opacity bg-[#131f24] border-solid border-[0.1vh] border-[#37464f] shadow-[0_0.2vh_0_0_#37464f]">
+            <div className="flex p-[1vw] items-center justify-center grow relative">
+                <span className="font-['Inter'] text-[1.6vh] font-medium text-[#f1f7fb] text-center">{content || id}</span>
+            </div>
+        </div>
     );
-    setScore(0);
-    setTimeLeft(TOTAL_TIME_LIMIT);
-    setStartTime(Date.now());
-    setShowStart(false);
-    setShowResult(false);
-    setShowReview(false);
-    setUserAnswers([]);
-    setIsTimerRunning(true);
-  };
+});
 
-  const handleDragStart = (event) => {
-    const draggedId = event.active.id;
-    setActiveId(draggedId);
+const DroppableSlot = React.memo(({ id, labelText, content }) => {
+    const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({ id });
+    const { attributes, listeners, setNodeRef: setDraggableNodeRef, transform, isDragging } = useDraggable({ id, disabled: !content });
+    
+    const combinedRef = useCallback(node => {
+        setDroppableNodeRef(node);
+        if (content) setDraggableNodeRef(node);
+    }, [setDroppableNodeRef, setDraggableNodeRef, content]);
 
-    const activeItemContent = availableCards.find((card) => card === draggedId);
-    if (activeItemContent) {
-      activeDragItemDataRef.current = {
-        type: "card",
-        content: activeItemContent,
-        id: draggedId,
-      };
-    } else {
-      const activeSlot = sequenceSlotsContent.find(
-        (slot) => slot.slotId === draggedId
-      );
-      if (activeSlot && activeSlot.id) {
-        activeDragItemDataRef.current = {
-          type: "slot",
-          content: activeSlot.id,
-          slotText: activeSlot.text,
-          id: activeSlot.slotId,
-        };
-      } else {
-        activeDragItemDataRef.current = null;
-        setActiveId(null);
-      }
-    }
-  };
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    setActiveId(null);
-    activeDragItemDataRef.current = null;
-
-    if (!over) {
-      return;
-    }
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    let newAvailableCards = [...availableCards];
-    let newSequenceSlotsContent = [...sequenceSlotsContent];
-
-    const isDraggingFromAvailable = newAvailableCards.includes(activeId);
-    const activeSequenceSlot = newSequenceSlotsContent.find(
-      (slot) => slot.slotId === activeId
+    const style = {
+        transform: transform ? CSS.Transform.toString(transform) : undefined,
+        zIndex: isDragging ? 1000 : 'auto',
+        opacity: isDragging ? 0 : 1,
+    };
+    
+    return (
+        <div ref={combinedRef} style={style} {...(content ? attributes : {})} {...(content ? listeners : {})} className="flex h-[8vh] w-[30vw] items-center self-stretch shrink-0 rounded-[0.7vw] relative">
+            {content ? (
+                <div className="flex h-full w-full items-center rounded-[0.7vw] relative cursor-grab bg-[#131f24] border-solid border-[0.1vh] border-[#37464f] shadow-[0_0.2vh_0_0_#37464f]">
+                     <div className="flex p-[1vw] items-center justify-center grow relative">
+                         <span className="font-['Inter'] text-[1.6vh] font-medium text-[#f1f7fb] text-center">{content}</span>
+                     </div>
+                </div>
+            ) : (
+                <div className={`w-full h-full flex items-center justify-center rounded-[0.7vw] relative bg-black/30 border-dashed border-[0.2vh] ${isOver ? 'border-yellow-400' : 'border-[#37464f]'} transition-colors`}>
+                    <span className="font-['Inter'] text-[1.6vh] font-medium text-gray-400 text-center p-2">{labelText}</span>
+                </div>
+            )}
+        </div>
     );
-    const isDraggingFromSequence = activeSequenceSlot !== undefined;
+});
 
-    const overSequenceSlotIndex = newSequenceSlotsContent.findIndex(
-      (slot) => slot.slotId === overId
-    );
-    const isOverSequenceSlot = overSequenceSlotIndex !== -1;
-    const isOverAvailableCardsArea =
-      overId === "available-cards-area" ||
-      String(overId).startsWith("available-cards-placeholder");
+const EmptyPlaceholder = React.memo(({ id }) => {
+    const { setNodeRef, isOver } = useDroppable({ id: id });
+    return <div ref={setNodeRef} className={`flex h-[8vh] w-[30vw] shrink-0 rounded-[0.7vw] bg-black/20 border-dashed border-[0.2vh] ${isOver ? 'border-yellow-400' : 'border-[#37464f]'} transition-colors`} />;
+});
 
-    let draggedContent = null;
-    if (isDraggingFromAvailable) {
-      draggedContent = activeId;
-    } else if (isDraggingFromSequence) {
-      draggedContent = activeSequenceSlot.id;
-      if (!draggedContent) return;
-    } else {
-      return;
-    }
 
-    if (isOverSequenceSlot) {
-      const targetSlot = newSequenceSlotsContent[overSequenceSlotIndex];
-      const cardCurrentlyInTargetSlot = targetSlot.id;
-
-      newSequenceSlotsContent[overSequenceSlotIndex] = {
-        ...targetSlot,
-        id: draggedContent,
-      };
-
-      if (isDraggingFromAvailable) {
-        newAvailableCards = newAvailableCards.filter(
-          (id) => id !== draggedContent
-        );
-        if (cardCurrentlyInTargetSlot) {
-          newAvailableCards.push(cardCurrentlyInTargetSlot);
-        }
-      } else if (isDraggingFromSequence) {
-        const activeSequenceSlotIndex = newSequenceSlotsContent.findIndex(
-          (slot) => slot.slotId === activeId
-        );
-        if (activeSequenceSlotIndex !== -1) {
-          newSequenceSlotsContent[activeSequenceSlotIndex] = {
-            ...newSequenceSlotsContent[activeSequenceSlotIndex],
-            id: cardCurrentlyInTargetSlot,
-          };
-        }
-      }
-    } else if (isOverAvailableCardsArea) {
-      if (isDraggingFromSequence) {
-        const activeSequenceSlotIndex = newSequenceSlotsContent.findIndex(
-          (slot) => slot.slotId === activeId
-        );
-        if (activeSequenceSlotIndex !== -1) {
-          newSequenceSlotsContent[activeSequenceSlotIndex] = {
-            ...newSequenceSlotsContent[activeSequenceSlotIndex],
-            id: null,
-          };
-        }
-        if (!newAvailableCards.includes(draggedContent)) {
-          newAvailableCards.push(draggedContent);
-        }
-      }
-    }
-
-    setAvailableCards(newAvailableCards);
-    setSequenceSlotsContent(newSequenceSlotsContent);
-  };
-
-  const { setNodeRef: setAvailableCardsAreaRef } = useDroppable({
-    id: "available-cards-area",
-  });
-
-  const handleBackToLevels = () => navigate(-1);
-
-  const handleReviewGame = () => {
-    setShowResult(false);
-    setShowReview(true);
-  };
-
-  const isSubmitEnabled = sequenceSlotsContent.every(
-    (item) => item && item.id !== null
-  );
-
-  const progress = ((TOTAL_TIME_LIMIT - timeLeft) / TOTAL_TIME_LIMIT) * 100; // Helper to format MM:SS
-
-  const formattedTime = `${String(Math.floor(timeLeft / 60)).padStart(
-    2,
-    "0"
-  )}:${String(timeLeft % 60).padStart(2, "0")}`; // DragOverlay renderer function
-
-  const renderDragOverlayContent = useCallback(() => {
-    if (activeId && activeDragItemDataRef.current) {
-      const currentDragItem = activeDragItemDataRef.current;
-      if (currentDragItem.type === "card") {
-        return (
-          <DraggableCard
-            id={currentDragItem.id}
-            content={currentDragItem.content}
-            isDraggingOverlay={true}
-          />
-        );
-      } else if (currentDragItem.type === "slot") {
-        return (
-          <DroppableSequenceSlot
-            id={currentDragItem.id}
-            content={currentDragItem.content}
-            text={currentDragItem.slotText}
-            isDraggingOverlay={true}
-          />
-        );
-      }
-    }
-    return null; // Don't forget dependencies
-  }, [activeId]);
-
-  return (
-    <div className="min-h-[89vh] flex flex-col justify-evenly items-center bg-white relative overflow-hidden">
-           {" "}
-      {/* ...START/REVIEW/MAIN GAME/RESULT screens, same as your existing code... */}
-            {/* No changes needed here! */}     {" "}
-      {/* ...see your provided code block for UI... */}   {" "}
-    </div>
-  );
+// =============================================================================
+// Reducer Logic (with Timer)
+// =============================================================================
+const initialState = {
+    gameState: "intro",
+    score: 0,
+    answers: [],
+    timeLeft: GAME_TIME_LIMIT,
 };
 
-export default MatchFallout;
+function gameReducer(state, action) {
+    switch (action.type) {
+        case "SHOW_INSTRUCTIONS": return { ...state, gameState: "instructions" };
+        case "START_GAME": return { ...initialState, gameState: "playing" };
+        case "SUBMIT_ANSWERS": {
+            const { slots } = action.payload;
+            let currentScore = 0;
+            const newAnswers = matchFalloutData.map(item => {
+                const userSlot = slots.find(s => s.id === item.id);
+                const userAnswer = userSlot ? userSlot.content : null;
+                const isCorrect = userAnswer === item.match;
+                if (isCorrect) {
+                    currentScore += 5;
+                }
+                return { cause: item.text, userAnswer, correctAnswer: item.match, isCorrect };
+            });
+
+            return { ...state, score: currentScore, answers: newAnswers, gameState: "finished" };
+        }
+        case "TICK":
+            if (state.timeLeft <= 0) {
+                return state;
+            }
+            return { ...state, timeLeft: state.timeLeft - 1 };
+        case "REVIEW_GAME": return { ...state, gameState: "review" };
+        case "BACK_TO_FINISH": return { ...state, gameState: "finished" };
+        case "RESET_GAME": return { ...initialState, gameState: "playing" };
+        default: return state;
+    }
+}
+
+// =============================================================================
+// Main Game Component
+// =============================================================================
+const MatchTheFallout = () => {
+    const navigate = useNavigate();
+    const [state, dispatch] = useReducer(gameReducer, initialState);
+    
+    const [availableFallouts, setAvailableFallouts] = useState([]);
+    const [slots, setSlots] = useState([]);
+    const [activeId, setActiveId] = useState(null);
+    const sensors = useSensors(useSensor(PointerSensor));
+
+    const shuffle = useCallback((array) => [...array].sort(() => Math.random() - 0.5), []);
+    
+    const handleSubmit = useCallback(() => {
+        dispatch({ type: "SUBMIT_ANSWERS", payload: { slots } });
+    }, [slots]);
+
+    useEffect(() => {
+        if (state.gameState === "playing") {
+            setAvailableFallouts(shuffle(matchFalloutData.map(item => item.match)));
+            setSlots(matchFalloutData.map(item => ({ id: item.id, labelText: item.text, content: null })));
+        }
+    }, [state.gameState, shuffle]);
+
+    useEffect(() => {
+        if (state.gameState !== "playing") return;
+        if (state.timeLeft <= 0) {
+            handleSubmit();
+            return;
+        }
+        const timerId = setInterval(() => {
+            dispatch({ type: "TICK" });
+        }, 1000);
+        return () => clearInterval(timerId);
+    }, [state.gameState, state.timeLeft, handleSubmit]);
+    
+    const handleDragStart = (event) => setActiveId(event.active.id);
+
+    // FIXED: Rewritten drag and drop logic to handle all cases correctly
+    const handleDragEnd = (event) => {
+        setActiveId(null);
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        const newSlots = [...slots];
+        const newAvailableFallouts = [...availableFallouts];
+
+        // Find out what is being dragged
+        const isDraggingFromAvailable = availableFallouts.includes(activeId);
+        const sourceSlotIndex = slots.findIndex(s => s.id === activeId);
+        const isDraggingFromSlot = sourceSlotIndex !== -1;
+        const draggedContent = isDraggingFromAvailable ? activeId : newSlots[sourceSlotIndex]?.content;
+
+        if (!draggedContent) return;
+
+        // Find out where it is being dropped
+        const targetSlotIndex = slots.findIndex(s => s.id === overId);
+        const isDroppingOnSlot = targetSlotIndex !== -1;
+        const isDroppingOnAvailableArea = overId.toString().startsWith('placeholder');
+
+        if (isDroppingOnSlot) {
+            const contentInTargetSlot = newSlots[targetSlotIndex].content;
+            
+            // If dragging from another slot (SWAP)
+            if (isDraggingFromSlot) {
+                newSlots[sourceSlotIndex].content = contentInTargetSlot;
+            } 
+            // If dragging from the available pool
+            else {
+                const indexToRemove = newAvailableFallouts.indexOf(draggedContent);
+                if (indexToRemove > -1) newAvailableFallouts.splice(indexToRemove, 1);
+                if (contentInTargetSlot) newAvailableFallouts.push(contentInTargetSlot);
+            }
+            newSlots[targetSlotIndex].content = draggedContent;
+        } 
+        else if (isDroppingOnAvailableArea) {
+             // If dragging from a slot back to the available area
+            if (isDraggingFromSlot) {
+                newSlots[sourceSlotIndex].content = null;
+                if (!newAvailableFallouts.includes(draggedContent)) newAvailableFallouts.push(draggedContent);
+            }
+        }
+        
+        setSlots(newSlots);
+        setAvailableFallouts(newAvailableFallouts);
+    };
+    
+    if (state.gameState === "intro") return <IntroScreen onShowInstructions={() => dispatch({ type: "SHOW_INSTRUCTIONS" })} />;
+    if (state.gameState === "instructions") return <InstructionsScreen onStartGame={() => dispatch({ type: "START_GAME" })} />;
+    if (state.gameState === "finished") {
+        const accuracyScore = Math.round((state.score / PERFECT_SCORE) * 100);
+        const isVictory = accuracyScore >= PASSING_THRESHOLD * 100;
+        let insightText = accuracyScore >= 80 ? "Excellent! You know the consequences." : "Good try! Review the matches to learn more.";
+        return isVictory
+            ? <VictoryScreen accuracyScore={accuracyScore} insight={insightText} onViewFeedback={() => dispatch({type: 'REVIEW_GAME'})} onContinue={() => navigate('/environmental/games')} />
+            : <LosingScreen accuracyScore={accuracyScore} insight={insightText} onPlayAgain={() => dispatch({ type: 'RESET_GAME'})} onViewFeedback={() => dispatch({type: 'REVIEW_GAME'})} onContinue={() => navigate('/environmental/games')} />;
+    }
+    if (state.gameState === "review") return <ReviewScreen answers={state.answers} onBackToResults={() => dispatch({ type: "BACK_TO_FINISH" })} />;
+    
+    const isSubmitEnabled = availableFallouts.length === 0;
+    const activeDragItem = activeId ? (availableFallouts.find(c => c === activeId) || slots.find(s => s.id === activeId)?.content) : null;
+
+    return (
+        <div className="w-full h-screen bg-[#202f36] flex flex-col items-center justify-center p-[1vw] pt-[10.5vh] pb-[12vh] relative overflow-hidden">
+            <GameNav timeLeft={state.timeLeft} />
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                <div className="flex w-full max-w-[70vw] justify-between items-start">
+                    {/* Left Column: Draggable Fallouts */}
+                    <div className="flex w-[32vw] h-[60vh] flex-col gap-[2vh] p-[1vw] justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
+                        {availableFallouts.map(fallout => (
+                            <DraggableCard key={fallout} id={fallout} content={fallout} />
+                        ))}
+                        {Array.from({ length: matchFalloutData.length - availableFallouts.length }).map((_, i) => (
+                           <EmptyPlaceholder key={i} id={`placeholder-${i}`} />
+                        ))}
+                    </div>
+                    {/* Right Column: Droppable Cause Slots */}
+                    <div className="flex w-[32vw] h-[60vh] flex-col gap-[2vh] p-[1vw] justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
+                         {slots.map(slot => (
+                            <DroppableSlot
+                                key={slot.id}
+                                id={slot.id}
+                                labelText={slot.labelText}
+                                content={slot.content}
+                            />
+                         ))}
+                    </div>
+                </div>
+                
+                <DragOverlay>
+                    {activeId && activeDragItem ? <DraggableCard id={activeId} content={activeDragItem} /> : null}
+                </DragOverlay>
+            </DndContext>
+
+            <div className="w-full h-[12vh] bg-[#28343A] flex justify-center items-center px-[5vw] z-50 fixed bottom-0">
+                <div className="w-auto md:w-[15vw] h-[8vh]">
+                    <button
+                        className="relative w-full h-full cursor-pointer"
+                        onClick={handleSubmit}
+                        disabled={!isSubmitEnabled}
+                    >
+                        <Checknow topGradientColor={"#09be43"} bottomGradientColor={"#068F36"} width="100%" height="100%" />
+                        <span className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 lilita text-[2.5vh] text-white [text-shadow:0_0.3vh_0_#000] transition-opacity ${!isSubmitEnabled ? "opacity-50" : ""}`}>
+                            Check Now
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default MatchTheFallout;
