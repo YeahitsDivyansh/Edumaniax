@@ -49,7 +49,7 @@ const GameNav = ({ heartCount = 4 }) => {
   }, []);
 
   return (
-    <div className="w-full bg-[#263238] px-4 py-6 flex items-center justify-between shadow-md rounded-none -mt-6">
+    <div className="fixed top-0 left-0 w-full z-50 bg-[#263238] px-4 py-6 flex items-center justify-between shadow-md rounded-none">
       {/* Hidden Audio Element */}
       <audio ref={audioRef} loop>
         <source src="/financeGames6to8/bgMusic.mp3" type="audio/mp3" />
@@ -136,23 +136,20 @@ const GameNav = ({ heartCount = 4 }) => {
           onClick={toggleAudio}
           className="relative transition active:scale-95 focus:outline-none"
         >
+          {/* Base play icon */}
           <img
             src="/financeGames6to8/btnAudio.svg"
             alt="Audio"
             className="h-12 w-auto sm:h-10"
           />
 
-          {/* Cross overlay when muted */}
+          {/* Pause overlay when muted */}
           {!isPlaying && (
-            <span
-              className="absolute inset-0 flex items-center justify-center text-red-600 text-xl font-bold pointer-events-none"
-              style={{
-                transform: "rotate(-90deg)",
-                lineHeight: 0,
-              }}
-            >
-              ❌
-            </span>
+            <img
+              src="/financeGames6to8/audio-pause.svg"
+              alt="Paused"
+              className="absolute inset-0 h-12 w-auto sm:h-10 mx-auto my-auto"
+            />
           )}
         </button>
       </div>

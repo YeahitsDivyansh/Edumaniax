@@ -20,22 +20,25 @@ const InstructionOverlay = ({ onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`transition-all duration-200 p-4 mb-3 rounded-lg flex items-center justify-between shadow-sm 
-        border ${iceCreamInSpend ? "border-[#5F8428]" : "border-gray-600"} 
-        bg-[#131F24] hover:bg-[#202F36]`}
+      className={`transition-all duration-200 p-3 mb-2 rounded-lg flex items-center justify-between shadow-sm 
+      border ${iceCreamInSpend ? "border-[#5F8428]" : "border-gray-600"} 
+      bg-[#131F24] hover:bg-[#202F36]`}
     >
-      <div className="flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border border-gray-600">
-        <img src="/financeGames6to8/coin.svg" alt="coin" className="w-5 h-5" />
-        <span className="text-yellow-400 font-bold">₹150</span>
+      {/* Left coin + amount */}
+      <div className="flex items-center gap-1 min-w-[65px] px-1 py-0.5 rounded-md border border-gray-600">
+        <img src="/financeGames6to8/coin.svg" alt="coin" className="w-4 h-4" />
+        <span className="text-yellow-400 font-bold text-sm">₹150</span>
       </div>
-      <div className="flex items-center gap-3 flex-1 justify-center">
-        <div className="text-white font-medium text-sm text-center">
+
+      {/* Text + icon */}
+      <div className="flex items-center gap-2 flex-1 justify-center">
+        <div className="text-white font-medium text-xs text-center whitespace-nowrap">
           Ice Cream Treat
         </div>
         <img
           src="/financeGames6to8/level-1/ice-cream.svg"
           alt="Ice Cream"
-          className="w-6 h-6 flex-shrink-0"
+          className="w-5 h-5 flex-shrink-0"
         />
       </div>
     </motion.div>
@@ -203,7 +206,7 @@ const InstructionOverlay = ({ onClose }) => {
             </p>
 
             {/* Learning Outcome */}
-            <div className="bg-[#FCB813] lilita-one-regular text-white font-semibold p-2 sm:p-3 rounded-sm shadow-md text-xs sm:text-sm text-left leading-snug mt-0 lg:mt-8 max-w-md">
+            <div className="bg-[#FCB813] lilita-one-regular text-white font-semibold p-2 sm:p-3 rounded-sm shadow-md text-xs sm:text-sm text-left leading-snug mt-0 lg:mt-8 max-w-md text-outline">
               <div className="uppercase text-sm sm:text-base mb-1">
                 Learning Outcome:
               </div>
