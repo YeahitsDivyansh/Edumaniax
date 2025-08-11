@@ -92,15 +92,24 @@ const IntroScreen = () => {
       <button
         onClick={toggleAudio}
         className="absolute mt-10 top-4 right-4 
-          w-[82px] h-[48px] sm:w-[120px] sm:h-[64px] 
-          md:w-[202px] md:h-[82px] 
-          transition-transform active:scale-95 z-50"
+    w-[82px] h-[48px] sm:w-[120px] sm:h-[64px] 
+    md:w-[202px] md:h-[82px]  transition-transform active:scale-95 z-50"
       >
+        {/* Base icon */}
         <img
           src={btnAudio}
           alt="Audio"
           className="w-full h-full object-contain cursor-pointer"
         />
+
+        {/* Pause overlay when muted */}
+        {!isPlaying && (
+          <img
+            src="/financeGames6to8/audio-pause.svg"
+            alt="Paused"
+            className="absolute inset-0 w-full h-full object-contain mx-auto my-auto"
+          />
+        )}
       </button>
 
       {/* Center Content */}
