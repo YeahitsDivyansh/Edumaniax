@@ -22,7 +22,7 @@ const BottomProgressLoader = () => {
   }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-black/40 text-white pt-4 pb-6 px-4 lilita-one-regular border-t border-white/10 shadow-inner">
+    <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur bg-black/40 text-white pt-4 pb-6 px-4 lilita-one-regular border-t border-white/10 shadow-inner">
       {/* TIP Heading */}
       <div className="text-center text-lg sm:text-xl md:text-2xl font-extrabold drop-shadow-sm mb-1">
         TIP:
