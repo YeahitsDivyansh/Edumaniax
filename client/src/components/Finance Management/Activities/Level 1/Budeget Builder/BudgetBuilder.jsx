@@ -229,6 +229,28 @@ const BudgetBuilder = () => {
   const [showGif, setShowGif] = useState(false);
   const [gifCount, setGifCount] = useState(0);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [showResultBox, setShowResultBox] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  useEffect(() => {
+    if (result) {
+      setShowResultBox(true);
+      setIsFadingOut(false);
+
+      const fadeTimer = setTimeout(() => {
+        setIsFadingOut(true);
+      }, 14000); // fade after 20s
+
+      const hideTimer = setTimeout(() => {
+        setShowResultBox(false);
+      }, 15000); // remove after fade
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [result]);
 
   useEffect(() => {
     if (parseInt(result?.spendingScore?.split("/")[0]) >= 7) {
@@ -455,17 +477,19 @@ Constraints -
       >
         {/* Dark Theme Weekly Budget Builder */}
         <div
-          className="w-full -mt-15 sm:mt-0 main-content bg-[#0A160E] font-sans"
+          className="w-full -mt-22 sm:mt-0 main-content bg-[#0A160E] font-sans"
           style={{
             fontFamily: "'Inter', sans-serif",
             paddingBottom:
               document.body.scrollHeight > window.innerHeight ? "8rem" : "0rem",
           }}
         >
-          {!showVictoryScreen && result && (
+          {!showVictoryScreen && result && showResultBox && (
             <div
               id="resultBox"
-              className="w-full lg:max-w-2xl -mt-20 lg:mt-0 p-6 mx-auto flex items-center justify-center"
+              className={`w-full lg:max-w-2xl lg:mt-0 p-6 mx-auto flex items-center justify-center transition-opacity duration-1000 ${
+                isFadingOut ? "opacity-0" : "opacity-100"
+              }`}
             >
               <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
                 <p className="text-lg lilita-one-regular font-semibold text-white">
