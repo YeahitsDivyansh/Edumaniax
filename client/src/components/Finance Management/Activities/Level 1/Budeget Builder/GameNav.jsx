@@ -7,10 +7,8 @@ const GameNav = ({ heartCount = 4 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const navigate = useNavigate();
-  const [rotated, setRotated] = useState(false);
 
   const handleSettingsClick = () => {
-    setRotated((prev) => !prev);
     setShowSettings((prev) => !prev);
   };
 
@@ -60,15 +58,31 @@ const GameNav = ({ heartCount = 4 }) => {
         {/* Settings Button (only visible on mobile) */}
         <button
           onClick={handleSettingsClick}
-          className="sm:hidden active:scale-95 focus:outline-none"
+          className="sm:hidden active:scale-95 focus:outline-none relative min-w-[40px] h-[28px]"
         >
-          <img
-            src="/financeGames6to8/settings.svg"
-            alt="Settings"
-            className={`h-8 w-auto transform transition-transform duration-900 ease-in-out ${
-              rotated ? "rotate-180" : "rotate-0"
-            }`}
+          {/* Shadow Layer */}
+          <div
+            className="absolute inset-0"
+            style={{
+              clipPath: "polygon(4.2% 0, 99% 0, 93% 100%, 0% 100%)",
+              backgroundColor: "#000",
+              transform: "translateY(1px)",
+            }}
           />
+          {/* Main Button Layer */}
+          <div
+            className="absolute inset-0 bg-[#232E34] flex items-center justify-center"
+            style={{
+              clipPath: "polygon(5.5% 0, 99% 0, 93% 100%, 0% 100%)",
+              border: "1px solid black",
+            }}
+          >
+            <img
+              src="/financeGames6to8/menu.svg"
+              alt="Settings"
+              className="h-4 w-auto transition duration-300 ease-in-out"
+            />
+          </div>
         </button>
 
         {/* Back Button (PC view only) */}
@@ -141,37 +155,65 @@ const GameNav = ({ heartCount = 4 }) => {
 
       {/* ===== MOBILE SETTINGS POPUP ===== */}
       {showSettings && (
-        <div className="absolute top-full left-0 w-full bg-[#1c262b] flex flex-col items-center gap-4 py-4 sm:hidden">
-          {/* Back Button */}
-          <button
-            onClick={handleBackClick}
-            className="transition active:scale-95 focus:outline-none"
-          >
-            <img
-              src="/financeGames6to8/btn-navigation.svg"
-              alt="Back"
-              className="h-8 w-auto"
-            />
-          </button>
-
-          {/* Audio Button */}
-          <button
-            onClick={toggleAudio}
-            className="relative transition active:scale-95 focus:outline-none"
-          >
-            <img
-              src="/financeGames6to8/btnAudio.svg"
-              alt="Audio"
-              className="h-8 w-auto"
-            />
-            {!isPlaying && (
+        <div className="absolute top-full left-0 w-full bg-[#1c262b] flex items-center justify-between px-4 py-4 sm:hidden">
+          {/* LEFT: Back + Exit */}
+          <div className="flex items-center gap-3">
+            {/* Back Button */}
+            <button
+              onClick={handleBackClick}
+              className="transition active:scale-95 focus:outline-none relative"
+            >
+              {/* Background */}
               <img
-                src="/financeGames6to8/audio-pause.svg"
-                alt="Paused"
-                className="absolute inset-0 h-8 w-auto mx-auto my-auto"
+                src="/financeGames6to8/rect.svg"
+                alt="Background"
+                className="h-8 w-auto"
               />
-            )}
-          </button>
+
+              {/* Exit Icon Centered */}
+              <img
+                src="/financeGames6to8/exit.svg"
+                alt="Exit"
+                className="absolute inset-0 m-auto h-4 w-auto z-10"
+              />
+            </button>
+
+            {/* Exit Button */}
+            <button
+              onClick={handleYes}
+              className="transition active:scale-95 focus:outline-none text-white text-sm font-bold"
+            >
+              EXIT
+            </button>
+          </div>
+
+          {/* RIGHT: Audio + ON/OFF */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleAudio}
+              className="relative transition active:scale-95 focus:outline-none"
+            >
+              <img
+                src="/financeGames6to8/btnAudio.svg"
+                alt="Audio"
+                className="h-8 w-auto"
+              />
+              {!isPlaying && (
+                <img
+                  src="/financeGames6to8/audio-pause.svg"
+                  alt="Paused"
+                  className="absolute inset-0 h-8 w-auto mx-auto my-auto"
+                />
+              )}
+            </button>
+            <span
+              className={`font-bold text-sm ${
+                isPlaying ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {isPlaying ? "ON" : "OFF"}
+            </span>
+          </div>
         </div>
       )}
 
