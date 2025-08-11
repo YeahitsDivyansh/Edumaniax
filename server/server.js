@@ -17,6 +17,7 @@ import performanceRoutes from './routes/performanceRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import accessRoutes from './routes/accessRoutes.js';
+import specialRoutes from './routes/specialRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -43,6 +44,7 @@ app.use("/performance", performanceRoutes);
 app.use("/blogs", blogRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/access", accessRoutes);
+app.use("/special", specialRoutes); // Changed from /sales to /special
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -74,6 +76,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Create Express server and start listening
 const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Graceful shutdown handling

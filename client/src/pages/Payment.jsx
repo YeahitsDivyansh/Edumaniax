@@ -265,14 +265,32 @@ const Payment = () => {
       
       setFormStatus('sending');
       
-      // Simulate form submission (replace with actual API call)
-      setTimeout(() => {
-        // In a real application, you would make an API call to your backend here
-        console.log('Institutional plan inquiry:', formData);
+      try {
+        // Send inquiry to backend
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/sales/inquiries`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to submit inquiry');
+        }
+        
+        console.log('Institutional plan inquiry submitted:', data);
         setFormStatus('success');
-        // Optionally redirect after a delay
+        
+        // Redirect after a delay
         setTimeout(() => navigate('/dashboard'), 3000);
-      }, 1500);
+      } catch (error) {
+        console.error('Error submitting inquiry:', error);
+        alert(`Failed to submit inquiry: ${error.message}`);
+        setFormStatus(null);
+      }
     };
 
     if (formStatus === 'success') {

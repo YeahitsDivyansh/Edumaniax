@@ -31,15 +31,15 @@ const InstructionsScreen = ({ onStartGame }) => {
           {/* Right column: Text and learning outcome */}
           <div className="flex flex-col items-center w-[25vw]">
             <span className="lilita text-[15px] font-normal leading-[28px] text-[#fff] text-left">
-              You’ll be given a list of 12 words. <br/>Your job is to sort each into one of four categories:
+              Match the description of the environment zone to its correct name:
               <br/>
-              • Natural–Biotic (living natural elements)
+              • Lithosphere 
               <br/>
-              • Natural–Abiotic (non-living natural elements)
+              • Hydrosphere 
               <br/>
-              • Human-Made (built by humans)
+              • Biosphere 
               <br/>
-              • Social (related to society, rules, or institutions)
+              • Atmosphere 
             </span>
             
             {/* Learning Outcome box */}
@@ -48,7 +48,7 @@ const InstructionsScreen = ({ onStartGame }) => {
                 LEARNING OUTCOME:
               </span>
               <span className="w-full font-['Lilita_One'] text-[0.9vw] font-normal leading-[2vh] text-[#fff] tracking-[0.01vw]">
-                You will learn to classify things in your surrounding.
+                You will learn to classify your surroundings into layers of earth.
               </span>
             </div>
           </div>

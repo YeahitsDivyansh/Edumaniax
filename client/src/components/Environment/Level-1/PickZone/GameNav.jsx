@@ -10,7 +10,7 @@ import bgMusic from "/financeGames6to8/bgMusic.mp3";
 const GameNav = () => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true); // Start playing by default
-  const [timeLeft, setTimeLeft] = useState(180);
+  const [timeLeft, setTimeLeft] = useState(120);
 
   useEffect(() => {
     // Exit early when we reach 0
@@ -75,7 +75,7 @@ const GameNav = () => {
       </Link>
       
       <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
-        Classify It
+        Pick the Zone
       </span>
       
       <div className="flex items-center space-x-[1vw]">

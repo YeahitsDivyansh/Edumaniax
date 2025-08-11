@@ -451,6 +451,20 @@ Constraints -
               document.body.scrollHeight > window.innerHeight ? "8rem" : "0rem",
           }}
         >
+          {!showVictoryScreen && result && (
+            <div className="w-full lg:max-w-3xl p-6 mx-auto mt-4 flex items-center justify-center">
+              <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
+                <p className="text-lg lilita-one-regular font-semibold text-white">
+                  🎯 Spending Score: {result?.spendingScore}
+                </p>
+                <p className="text-sm text-gray-300">💡 Tip: {result?.tip}</p>
+                <p className="text-sm text-red-400">
+                  ✂️ Cut this category: {result?.categoryToCut}
+                </p>
+              </div>
+            </div>
+          )}
+
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex flex-col lg:flex-row justify-center items-stretch gap-12 lg:gap-16 px-4 lg:px-8">
               {/* Available Expenses Section */}
@@ -474,29 +488,25 @@ Constraints -
                         >
                           {(provided, snapshot) => (
                             <div
-                              className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
-                                snapshot.isDragging
-                                  ? "border-[#5F8428]"
-                                  : "border-gray-600"
-                              } bg-[#131F24] hover:bg-[#202F36]`}
+                              className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+    ${snapshot.isDragging ? "border-[#5F8428]" : "border-gray-600"}
+  bg-[#131F24] hover:bg-[#202F36]`}
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                             >
-                              {/* Left: Coin + Cost (inside bordered box) */}
+                              {/* Left: Coin + Cost */}
                               <div
-                                className={`flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border ${
-                                  snapshot.isDragging
-                                    ? "border-[#5F8428]"
-                                    : "border-gray-600"
-                                }`}
+                                className={`flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border bg-[#1E2A30] shadow-inner
+      ${snapshot.isDragging ? "border-[#5F8428]" : "border-white/20"}`}
+                                style={{ margin: "4px" }}
                               >
                                 <img
                                   src="/financeGames6to8/coin.svg"
                                   alt="coin"
                                   className="w-5 h-5"
                                 />
-                                <span className="text-yellow-400 font-bold">
+                                <span className="text-white font-extrabold drop-shadow-sm">
                                   ₹{item.cost}
                                 </span>
                               </div>
@@ -550,17 +560,22 @@ Constraints -
                           >
                             {(provided, snapshot) => (
                               <div
-                                className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
-                                  snapshot.isDragging
-                                    ? "border-[#5F8428]"
-                                    : "border-[#5F8428]"
-                                } bg-[#131F24] hover:bg-[#202F36]`}
+                                className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+                  ${
+                    snapshot.isDragging
+                      ? "border-[#5F8428]"
+                      : "border-[#5F8428]"
+                  }
+                  bg-[#131F24] hover:bg-[#202F36]`}
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
                                 {/* Left: Coin + Cost */}
-                                <div className="flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border border-[#5F8428]">
+                                <div
+                                  className="flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border border-[#5F8428] bg-[#1E2A30]"
+                                  style={{ margin: "4px" }}
+                                >
                                   <img
                                     src="/financeGames6to8/coin.svg"
                                     alt="coin"
@@ -571,7 +586,7 @@ Constraints -
                                   </span>
                                 </div>
 
-                                {/* Center: Label with green color */}
+                                {/* Center: Label */}
                                 <div className="text-[#5F8428] font-medium text-sm text-center flex-1">
                                   {item.label}
                                 </div>
@@ -595,72 +610,35 @@ Constraints -
             </div>
           </DragDropContext>
 
-          {!showVictoryScreen && result && (
-            <div className="mt-10">
-              <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
-                <div className="bg-[#243324] border border-gray-600 p-6 rounded-xl shadow-lg text-center space-y-4">
-                  {parseInt(result?.spendingScore?.split("/")[0]) >= 7 ? (
-                    // Victory Mode
-                    <>
-                      <h3 className="text-2xl font-semibold text-green-400">
-                        🎉 Challenge Complete!
-                      </h3>
-                      <p className="text-lg text-gray-300">
-                        🎯 Accuracy Score:{" "}
-                        <span className="font-bold text-yellow-400">
-                          {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
-                        </span>
-                      </p>
-                      <div className="flex justify-center gap-4 pt-4">
-                        <button
-                          onClick={handleViewFeedback}
-                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          🔍 View Feedback
-                        </button>
-                        <button
-                          onClick={handleNextChallenge}
-                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          ➡️ Next Challenge
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    // Normal Feedback Mode
-                    <>
-                      <p className="text-lg font-semibold text-green-400">
-                        🎯 Spending Score: {result?.spendingScore}
-                      </p>
-                      <p className="text-sm text-gray-300">
-                        💡 Tip: {result?.tip}
-                      </p>
-                      <p className="text-sm text-red-400">
-                        ✂️ Cut this category: {result?.categoryToCut}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Footer with Total Wallet and Check Now Button */}
           <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center z-40">
             {/* Kid Celebration Gif + Speech Bubble */}
             {showGif && (
-              <div className="absolute -top-28 left-[83%] transform -translate-x-1/2 z-50 flex items-start">
+              <div
+                className="
+    absolute
+    -top-27 sm:-top-28 md:-top-29 lg:-top-30
+    left-[83%] transform -translate-x-1/2
+    z-50 flex items-start
+  "
+              >
                 {/* Kid gif */}
                 <img
                   src="/financeGames6to8/kid-gif.gif"
                   alt="Kid Celebration"
-                  className="w-28 h-28"
+                  className="object-contain"
+                  style={{
+                    maxHeight: "120px",
+                    height: "auto",
+                    width: "auto",
+                  }}
                 />
-                {/* Speech bubble */}
+
+                {/* Speech bubble — hidden on small screens */}
                 <img
                   src="/financeGames6to8/kid-saying.svg"
                   alt="Kid Saying"
-                  className="absolute top-2 left-24 w-24"
+                  className="absolute top-2 left-[90px] w-24 hidden md:block"
                 />
               </div>
             )}
@@ -738,10 +716,10 @@ Constraints -
                   Challenge Complete!
                 </h2>
 
-                {/* Accuracy + Insight Boxes Side by Side */}
-                <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                {/* Accuracy + Insight Boxes */}
+                <div className="mt-6 flex flex-col items-center sm:flex-row sm:items-start sm:gap-4">
                   {/* Accuracy Box */}
-                  <div className="w-64 bg-[#09BE43] rounded-xl p-1 flex flex-col items-center">
+                  <div className="bg-[#09BE43] rounded-xl p-1 flex flex-col items-center w-64">
                     <p className="text-black text-sm font-bold mb-1 mt-2">
                       TOTAL ACCURACY
                     </p>
@@ -758,12 +736,19 @@ Constraints -
                   </div>
 
                   {/* Insight Box */}
-                  <div className="w-74 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+                  <div className="mt-4 sm:mt-0 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center w-74">
                     <p className="text-black text-sm font-bold mb-1 mt-2">
                       INSIGHT
                     </p>
-                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center">
-                      <span className="text-[#FFCC00] lilita-one-regular text-sm font-medium italic">
+                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center overflow-hidden">
+                      <span
+                        className="text-[#FFCC00] lilita-one-regular font-medium italic leading-tight"
+                        style={{
+                          fontSize: "clamp(0.65rem, 1.2vw, 0.85rem)",
+                          lineHeight: "1.1",
+                          whiteSpace: "normal",
+                        }}
+                      >
                         {result?.tip || "Analyzing your results..."}
                       </span>
                     </div>
