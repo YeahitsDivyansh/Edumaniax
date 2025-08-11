@@ -30,7 +30,6 @@ const SalesDashboard = () => {
   const { user, logout, role } = useAuth();
   const [activeTab, setActiveTab] = useState('inquiries');
   const [inquiries, setInquiries] = useState([]);
-  const [payments, setPayments] = useState([]);
   const [analytics, setAnalytics] = useState({
     inquiryStatusCounts: [],
     revenueByPlan: [],
@@ -45,14 +44,22 @@ const SalesDashboard = () => {
   const [isEditingInquiry, setIsEditingInquiry] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [notifications, setNotifications] = useState([]);
-  const [notificationsPage, setNotificationsPage] = useState(1);
-  const [totalNotificationPages, setTotalNotificationPages] = useState(1);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [pollingInterval, setPollingInterval] = useState(null);
-  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   // Define fetch functions with useCallback first
+  // Helper function to handle 401 errors
+  const handleAuthError = (error, response) => {
+    if (response?.status === 401 || error.message.includes('Invalid or expired token')) {
+      console.log('Authentication error detected, clearing auth state and redirecting');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+      logout();
+      navigate('/sales');
+    }
+  };
+
   // Fetch inquiries from API
   const fetchInquiries = useCallback(async () => {
     try {
@@ -67,7 +74,7 @@ const SalesDashboard = () => {
       if (searchQuery) {
         url += `&search=${encodeURIComponent(searchQuery)}`;
       }
-      
+
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -77,17 +84,22 @@ const SalesDashboard = () => {
       const data = await response.json();
       
       if (!response.ok) {
+        if (response.status === 401) {
+          handleAuthError(new Error(data.message), response);
+          return;
+        }
         throw new Error(data.message || 'Failed to fetch inquiries');
       }
       
       setInquiries(data.data || []);
-      setTotalPages(Math.ceil((data.count || 0) / 10)); // Assuming 10 items per page
+      setTotalPages(data.pagination?.totalPages || Math.ceil((data.count || 0) / 10));
     } catch (error) {
       console.error('Error fetching inquiries:', error);
+      handleAuthError(error);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filterStatus, searchQuery]);
+  }, [currentPage, filterStatus, searchQuery, logout, navigate]);
   
   // Fetch analytics data
   const fetchAnalytics = useCallback(async () => {
@@ -101,10 +113,12 @@ const SalesDashboard = () => {
       const data = await response.json();
       
       if (!response.ok) {
+        if (response.status === 401) {
+          handleAuthError(new Error(data.message), response);
+          return;
+        }
         throw new Error(data.message || 'Failed to fetch analytics');
-      }
-      
-      setAnalytics({
+      }      setAnalytics({
         inquiryStatusCounts: Array.isArray(data.data?.inquiryStatusCounts) 
           ? data.data.inquiryStatusCounts 
           : [],
@@ -138,6 +152,10 @@ const SalesDashboard = () => {
         const data = await response.json();
         
         if (!response.ok) {
+          if (response.status === 401) {
+            handleAuthError(new Error(data.message), response);
+            return;
+          }
           throw new Error(data.message || 'Failed to fetch notifications');
         }
         
@@ -932,7 +950,15 @@ const SalesDashboard = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {['BASIC', 'STANDARD', 'PREMIUM', 'INSTITUTIONAL'].map((planType) => {
+                  {['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'].map((planType) => {
+                    // Map plan types to display names
+                    const planDisplayNames = {
+                      'STARTER': 'Starter Plan',
+                      'SOLO': 'Solo Plan', 
+                      'PRO': 'Pro Plan',
+                      'INSTITUTIONAL': 'Institutional Plan'
+                    };
+                    
                     const revenue = Array.isArray(analytics.revenueByPlan) 
                       ? analytics.revenueByPlan.find(i => i.planType === planType)?.total || 0
                       : 0;
@@ -945,7 +971,7 @@ const SalesDashboard = () => {
                       <div key={planType} className="bg-white overflow-hidden">
                         <div className="px-4 py-2">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium">{planType}</span>
+                            <span className="text-sm font-medium">{planDisplayNames[planType] || planType}</span>
                             <span className="text-sm font-medium">₹{revenue}</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2.5">
