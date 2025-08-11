@@ -319,7 +319,7 @@ const INTRO_EXPIRY_HOURS = 0.5; // Change this to 1 for 1 hour, 0.1 for 6 minute
 function AppContent() {
   const location = useLocation();
 
-  // Define game routes where footer should not appear
+  // Define game routes where both Navbar and Footer should not appear
   const gameRoutes = [
     "/pick-a-bank",
     "/budget-activity",
@@ -545,11 +545,11 @@ function AppContent() {
     "/LegalQuizQuestLevel3",
   ];
 
-  const shouldShowFooter = !gameRoutes.includes(location.pathname);
+  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      {shouldShowNavbarAndFooter && <Navbar />}
       <main className="flex-grow ">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -820,29 +820,29 @@ function AppContent() {
             element={<DecisionMaking />}
           />
 
-          {/*  Leadership Notes*/}
+          {/* Leadership Notes*/}
           <Route path="/leadership/notes" element={<LeadershipNotes />} />
-          {/*  Leadership Games 6-8*/}
+          {/* Leadership Games 6-8*/}
           <Route path="/leadership/games" element={<Leadership />} />
-          {/*  level 1*/}
+          {/* level 1*/}
           <Route path="/leader-type" element={<LeaderTypeMatch />} />
           <Route path="/vision-builder" element={<VisionBuilderGame />} />
 
-          {/*  level 2*/}
+          {/* level 2*/}
           <Route path="/communication-lab" element={<CommunicationLab />} />
           <Route path="/empathy-radar" element={<EmpathyRadarGame />} />
 
-          {/*  level 3*/}
+          {/* level 3*/}
           <Route path="/decision-room" element={<DecisionRoom />} />
           <Route path="/team-architect" element={<TeamArchitect />} />
 
-          {/*  level 4*/}
+          {/* level 4*/}
           <Route path="/innovation-sprint" element={<InnovationSprint />} />
           <Route path="/integrity-quest" element={<IntegrityQuest />} />
 
           {/* Finish  Leadership Games 6-8*/}
 
-          {/*  Entrepreneurship Notes*/}
+          {/* Entrepreneurship Notes*/}
           <Route
             path="/entrepreneurship/notes"
             element={<EntrepreneurshipNotes />}
@@ -865,7 +865,7 @@ function AppContent() {
           />
           <Route path="/mvp-test" element={<MVPTest />} />
 
-          {/*  Environmental Notes*/}
+          {/* Environmental Notes*/}
           <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
           {/* Environmental Games for 6th-8th */}
           <Route path="/environmental/games" element={<Environment />} />
@@ -1336,7 +1336,7 @@ function AppContent() {
           <Route path="/terms-conditions" element={<TermsAndConditions />} />
         </Routes>
       </main>
-      {shouldShowFooter && <Footer />}
+      {shouldShowNavbarAndFooter && <Footer />}
     </div>
   );
 }

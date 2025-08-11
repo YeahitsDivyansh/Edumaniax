@@ -1,24 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  FaWallet,
+  FaShoePrints,
+  FaIceCream,
+  FaGift,
+  FaMobileAlt,
+  FaUserFriends,
   FaFilm,
   FaHamburger,
-  FaGift,
   FaBook,
-  FaPiggyBank,
-  FaShoePrints,
-  FaQuestionCircle,
+  FaWallet,
 } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
-import Avatar from "./Avatar.jsx";
-import SurpriseAvatar from "./SurpriseAvatar.jsx";
-import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { useFinance } from "../../../../../contexts/FinanceContext.jsx";
 import { usePerformance } from "@/contexts/PerformanceContext"; // for performance
-
+import IntroScreen from "./IntroScreen.jsx";
+import GameNav from "./GameNav.jsx";
+import { useNavigate } from "react-router-dom";
+import InstructionOverlay from "./InstructionOverlay.jsx";
 
 function parsePossiblyStringifiedJSON(text) {
   if (typeof text !== "string") return null;
@@ -53,98 +54,66 @@ const BudgetBuilder = () => {
   //for performance
   const { updatePerformance } = usePerformance();
   const [startTime, setStartTime] = useState(Date.now());
+  const [showIntro, setShowIntro] = useState(true);
 
   const initialExpenses = [
     {
       id: "1",
-      label: "Weekend Movie",
-      cost: 200,
-      icon: <FaFilm />,
-      priorityScore: 2,
+      label: "Save for Shoes",
+      cost: 350,
+      imgSrc: "/financeGames6to8/level-1/shoes.svg",
+      priorityScore: 4,
     },
     {
       id: "2",
-      label: "Data Plan",
-      cost: 210,
-      icon: <FaPiggyBank />,
-      priorityScore: 4,
+      label: "Ice Cream Treat",
+      cost: 150,
+      imgSrc: "/financeGames6to8/level-1/ice-cream.svg",
+      priorityScore: 2,
     },
     {
       id: "3",
-      label: "Lunch",
-      cost: 125,
-      icon: <FaHamburger />,
-      priorityScore: 3,
+      label: "Gift",
+      cost: 150,
+      imgSrc: "/financeGames6to8/level-1/gift.svg",
+      priorityScore: 4,
     },
     {
       id: "4",
-      label: "Save for Shoes",
-      cost: 350,
-      icon: <FaShoePrints />,
+      label: "Data Plan",
+      cost: 210,
+      imgSrc: "/financeGames6to8/level-1/data-plan.svg",
       priorityScore: 4,
     },
-    { id: "5", label: "Books", cost: 200, icon: <FaBook />, priorityScore: 5 },
-    { id: "6", label: "Gift", cost: 150, icon: <FaGift />, priorityScore: 4 },
-  ];
-
-  const [surpriseExpenses, setSurpriseExpenses] = useState([
     {
-      id: "s1",
-      label: "Car Repair",
-      cost: 250,
-      icon: <FaQuestionCircle />,
-      shown: false,
-      priorityScore: 5,
-    },
-    {
-      id: "s2",
-      label: "Medical Bill",
-      cost: 180,
-      icon: <FaQuestionCircle />,
-      shown: false,
-      priorityScore: 5,
-    },
-    {
-      id: "s3",
-      label: "Midnight Cravings",
-      cost: 120,
-      icon: <FaQuestionCircle />,
-      shown: false,
-      priorityScore: 1,
-    },
-    {
-      id: "s4",
-      label: "Ice Cream Treat",
-      cost: 80,
-      icon: <FaQuestionCircle />,
-      shown: false,
-      priorityScore: 1,
-    },
-    {
-      id: "s5",
-      label: "Stationery",
-      cost: 60,
-      icon: <FaQuestionCircle />,
-      shown: false,
-      priorityScore: 5,
-    },
-    {
-      id: "s6",
-      label: "Lend to a friend",
+      id: "5",
+      label: "Lend to a Friend",
       cost: 50,
-      icon: <FaQuestionCircle />,
-      shown: false,
+      imgSrc: "/financeGames6to8/level-1/lend-to-a-friend.svg",
       priorityScore: 3,
     },
     {
-      id: "s7",
-      label: "Split an Unexpected Bill",
-      cost: 200,
-      icon: <FaQuestionCircle />,
-      shown: false,
+      id: "6",
+      label: "Weekend Movie",
+      cost: 50,
+      imgSrc: "/financeGames6to8/level-1/weekend-movie.svg",
       priorityScore: 2,
     },
-  ]);
+    {
+      id: "7",
+      label: "Lunch",
+      cost: 50,
+      imgSrc: "/financeGames6to8/level-1/lunch.svg",
+      priorityScore: 3,
+    },
+    {
+      id: "8",
+      label: "Books",
+      cost: 50,
+      imgSrc: "/financeGames6to8/level-1/books.svg",
+      priorityScore: 5,
+    },
+  ];
 
   function getSavingsScore(percentageSpent) {
     let savingsScore;
@@ -168,67 +137,28 @@ const BudgetBuilder = () => {
   const [available, setAvailable] = useState(initialExpenses);
   const [spent, setSpent] = useState([]);
   const [feedbackAvatarType, setFeedbackAvatarType] = useState("disappointing");
-  const [showSurpriseAvatar, setShowSurpriseAvatar] = useState(false);
-  const surpriseCount = useRef(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showVictoryScreen, setShowVictoryScreen] = useState(false);
+  const navigate = useNavigate(); // ensure `useNavigate()` is defined
+  const [heartCount, setHeartCount] = useState(4);
+  const [isGameOver, setIsGameOver] = useState(false);
 
-  const addSurpriseExpense = (currentWallet) => {
-    if (surpriseCount.current >= 2) {
-      return;
+  useEffect(() => {
+    if (heartCount === 0) {
+      setIsGameOver(true);
     }
-
-    let index;
-
-    index = Math.floor(Math.random() * surpriseExpenses.length);
-    let trial = 0;
-
-    while (
-      surpriseExpenses[index].cost > currentWallet ||
-      surpriseExpenses[index].shown
-    ) {
-      if (trial > 5) {
-        return;
-      }
-      trial++;
-      index = Math.floor(Math.random() * surpriseExpenses.length);
-    }
-
-    setSurpriseExpenses((prev) => {
-      return surpriseExpenses.map((item, idx) => {
-        if (idx === index) {
-          return { ...item, shown: true };
-        }
-        return item;
-      });
-    });
-
-    const surpriseItem = surpriseExpenses[index];
-
-    console.log("Surprise expenses", surpriseExpenses);
-    console.log("Surprise item", surpriseItem);
-
-    toast.info(
-      `💥 Surprise Expense Added : ${surpriseItem.label} : ₹${surpriseItem.cost}`
-    );
-
-    setSpent((prev) => [...prev, surpriseItem]);
-    setShowSurpriseAvatar(true);
-    setTimeout(() => {
-      setShowSurpriseAvatar(false);
-    }, 3000);
-    setWallet((prev) => prev - surpriseItem.cost);
-    surpriseCount.current += 1;
-  };
+  }, [heartCount]);
 
   const handleDragEnd = (result) => {
     const { source, destination } = result;
-    console.log(result, source, destination);
 
     if (!destination) return;
 
-    // Moving within same list - do nothing for now
+    // Ignore same list movement
     if (source.droppableId === destination.droppableId) return;
 
     let movedItem;
+
     // FROM AVAILABLE TO SPENT
     if (
       source.droppableId === "available" &&
@@ -247,18 +177,35 @@ const BudgetBuilder = () => {
       const newSpent = [...spent];
       newSpent.splice(destination.index, 0, movedItem);
 
+      const newWallet = wallet - movedItem.cost;
       setAvailable(newAvailable);
       setSpent(newSpent);
-      const newWallet = wallet - movedItem.cost;
       setWallet(newWallet);
 
-      if (Math.random() > 0.3) {
-        addSurpriseExpense(newWallet);
+      // 💔 Deduct a life if priorityScore is 3 or below
+      if (movedItem.priorityScore <= 3) {
+        setHeartCount((prev) => {
+          const updated = Math.max(0, prev - 1);
+          if (updated === 0) {
+            setIsGameOver(true); // Trigger Game Over
+          }
+          return updated;
+        });
+      }
+
+      // 🎯 Show gif for 1 sec, only 3 times
+      if (gifCount < 3) {
+        setShowGif(true);
+        setGifCount((prev) => prev + 1);
+        setTimeout(() => setShowGif(false), 3000);
       }
     }
 
     // FROM SPENT TO AVAILABLE
-    else {
+    else if (
+      source.droppableId === "spent" &&
+      destination.droppableId === "available"
+    ) {
       movedItem = spent[source.index];
 
       const newSpent = [...spent];
@@ -267,20 +214,38 @@ const BudgetBuilder = () => {
       const newAvailable = [...available];
       newAvailable.splice(destination.index, 0, movedItem);
 
+      const refund = wallet + movedItem.cost;
       setSpent(newSpent);
       setAvailable(newAvailable);
-      const refund = wallet + movedItem.cost;
       setWallet(refund);
 
-      if (Math.random() > 0.3) {
-        addSurpriseExpense(refund);
-      }
+      // 🛑 No heartCount logic here as per your current rule
     }
   };
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState("");
+  const [showGif, setShowGif] = useState(false);
+  const [gifCount, setGifCount] = useState(0);
+  const [showInstructions, setShowInstructions] = useState(true);
+
+  useEffect(() => {
+    if (parseInt(result?.spendingScore?.split("/")[0]) >= 7) {
+      setShowVictoryScreen(true);
+    }
+  }, [showVictoryScreen, result]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 4000); // show intro for 4 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showIntro) {
+    return <IntroScreen />;
+  }
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -390,11 +355,10 @@ Constraints -
         avgResponseTimeSec: totalTime,
         studyTimeMinutes,
         completed: true,
-
       });
       setStartTime(Date.now());
       if (!isNaN(scoreNumber) && scoreNumber >= 8) {
-        completeFinanceChallenge(0, 0);// mark completed 
+        completeFinanceChallenge(0, 0); // mark completed
       }
     } catch (err) {
       setError("Error fetching AI response");
@@ -403,179 +367,421 @@ Constraints -
     setLoading(false);
   };
 
+  // View Feedback Handler
+  const handleViewFeedback = () => {
+    setShowFeedback(true);
+  };
+
+  // Next Challenge Handler
+  const handleNextChallenge = () => {
+    navigate("/budget-activity"); // ensure `useNavigate()` is defined
+  };
+
+  if (isGameOver) {
+    return (
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+        {/* Game Over Content */}
+        <div className="flex flex-col items-center justify-center flex-1 p-6">
+          {/* Game Over GIF */}
+          <img
+            src="/financeGames6to8/game-over-game.gif"
+            alt="Game Over"
+            className="w-64 h-auto mb-6"
+          />
+
+          {/* Text */}
+          <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">
+            Oops! That was close! Wanna Retry?
+          </p>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+          <img
+            src="/financeGames6to8/feedback.svg"
+            alt="Feedback"
+            onClick={handleViewFeedback}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/retry.svg"
+            alt="Retry"
+            onClick={() => {
+              setWallet(1000);
+              setAvailable(initialExpenses);
+              setSpent([]);
+              setHeartCount(4);
+              setIsGameOver(false);
+              setShowIntro(false);
+            }}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+          <img
+            src="/financeGames6to8/next-challenge.svg"
+            alt="Next Challenge"
+            onClick={handleNextChallenge}
+            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8">
-      {/* 🎮 Weekly Budget Builder */}
+    <>
       <div
-        className="w-full lg:w-3/5 bg-gradient-to-b from-sky-200 to-blue-100 rounded-3xl p-6 font-sans shadow-xl border-4 border-yellow-300"
-        style={{ fontFamily: "'Comic Neue', cursive" }}
+        className={`${
+          showInstructions ? "brightness-50 transition-all duration-300" : ""
+        }`}
       >
+        <GameNav heartCount={heartCount} />
+      </div>
+
+      <div
+        className={`flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8 ${
+          showInstructions ? "brightness-50" : ""
+        } pb-28`} // <-- add padding bottom here
+      >
+        {/* Dark Theme Weekly Budget Builder */}
         <div
-          className={`text-center text-4xl sm:text-5xl font-bold mb-8 text-pink-600 drop-shadow-sm`}
+          className="w-full main-content bg-[#0A160E] font-sans"
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            paddingBottom:
+              document.body.scrollHeight > window.innerHeight ? "8rem" : "0rem",
+          }}
         >
-          🎯 Weekly Budget Builder!
-        </div>
-
-        <div className="flex justify-center items-center text-2xl sm:text-3xl mb-8 text-green-700 font-bold animate-bounce">
-          💰 Wallet <FaWallet className="ml-3 mr-2" /> ₹{wallet}
-        </div>
-
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex flex-col md:flex-row justify-center md:space-x-14 space-y-8 md:space-y-0">
-            {/* Available Expenses */}
-            <Droppable droppableId="available">
-              {(provided) => (
-                <div
-                  className="bg-white p-5 rounded-3xl shadow-lg w-full md:w-80 min-h-[300px] border-4 border-blue-300"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <h2 className="text-2xl font-bold text-center text-blue-600 mb-3">
-                    🛍️ Available Expenses
-                  </h2>
-                  {available.map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          className="bg-blue-100 hover:bg-blue-300 transition-all duration-300 p-3 m-2 rounded-xl flex justify-between items-center shadow-sm cursor-grab"
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <span className="text-lg flex items-center gap-2">
-                            {item.icon} {item.label}
-                          </span>
-                          <span className="text-sm font-bold">
-                            ₹{item.cost}
-                          </span>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-
-            {/* Spent Expenses */}
-            <Droppable droppableId="spent">
-              {(provided) => (
-                <div
-                  className="bg-white p-5 rounded-3xl shadow-lg w-full md:w-80 min-h-[300px] border-4 border-red-300"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <h2 className="text-2xl font-bold text-center text-red-600 mb-3">
-                    🧾 Spent
-                  </h2>
-                  {spent.map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          className="bg-red-100 hover:bg-red-200 transition-all duration-300 p-3 m-2 rounded-xl flex justify-between items-center shadow-sm cursor-grab"
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <span className="flex items-center gap-2">
-                            {item.icon} {item.label}
-                          </span>
-                          <span className="text-sm font-bold">
-                            ₹{item.cost}
-                          </span>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </div>
-        </DragDropContext>
-
-        <div className="mt-12">
-          <div className="flex justify-center">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center my-6">
-                <div className="w-12 h-12 border-4 border-t-pink-500 border-yellow-200 rounded-full animate-spin"></div>
-                <p className="mt-4 text-pink-600 text-2xl font-semibold">
-                  Thinking...
+          {!showVictoryScreen && result && (
+            <div className="w-full lg:max-w-3xl p-6 mx-auto mt-4 flex items-center justify-center">
+              <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
+                <p className="text-lg lilita-one-regular font-semibold text-white">
+                  🎯 Spending Score: {result?.spendingScore}
+                </p>
+                <p className="text-sm text-gray-300">💡 Tip: {result?.tip}</p>
+                <p className="text-sm text-red-400">
+                  ✂️ Cut this category: {result?.categoryToCut}
                 </p>
               </div>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="text-2xl rounded-full py-3 px-6 bg-yellow-300 hover:bg-yellow-400 text-pink-700 font-bold shadow-md hover:scale-105 transition-transform duration-300"
-              >
-                🎉 Click for Feedback!
-              </button>
-            )}
-          </div>
-
-          {error && (
-            <p className="text-red-600 text-center mt-4 font-bold">{error}</p>
-          )}
-        </div>
-
-        {result && (
-          <div className="mt-12">
-            <div className="flex justify-center items-center">
-              <h2 className="text-3xl text-purple-600 font-bold">
-                📣 Feedback
-              </h2>
             </div>
-            <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
-              <div className="bg-white border-4 p-6 border-fuchsia-400 rounded-3xl shadow-md whitespace-pre-wrap">
-                <div className="text-gray-800 space-y-4">
-                  <div className="flex flex-col sm:flex-row items-center sm:space-x-5 space-y-4 sm:space-y-0">
-                    <Avatar
-                      style={{ width: 120, height: 120 }}
-                      type={feedbackAvatarType}
+          )}
+
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="flex flex-col lg:flex-row justify-center items-stretch gap-12 lg:gap-16 px-4 lg:px-8">
+              {/* Available Expenses Section */}
+              <div className="w-full lg:w-auto">
+                <h2 className="text-xl font-semibold text-center text-white mb-4">
+                  Available Expenses
+                </h2>
+
+                <Droppable droppableId="available">
+                  {(provided) => (
+                    <div
+                      className="bg-[#202F364D] p-6 rounded-xl shadow-lg w-full lg:w-96 min-h-[450px] border border-gray-600"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {available.map((item, index) => (
+                        <Draggable
+                          key={item.id}
+                          draggableId={item.id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+    ${snapshot.isDragging ? "border-[#5F8428]" : "border-gray-600"}
+  bg-[#131F24] hover:bg-[#202F36]`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              {/* Left: Coin + Cost */}
+                              <div
+                                className={`flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border bg-[#1E2A30] shadow-inner
+      ${snapshot.isDragging ? "border-[#5F8428]" : "border-white/20"}`}
+                                style={{ margin: "4px" }}
+                              >
+                                <img
+                                  src="/financeGames6to8/coin.svg"
+                                  alt="coin"
+                                  className="w-5 h-5"
+                                />
+                                <span className="text-white font-extrabold drop-shadow-sm">
+                                  ₹{item.cost}
+                                </span>
+                              </div>
+
+                              {/* Center: Label */}
+                              <div className="text-white font-medium text-sm text-center flex-1">
+                                {item.label}
+                              </div>
+
+                              {/* Right: Icon Image */}
+                              <img
+                                src={item.imgSrc}
+                                alt={item.label}
+                                className="w-6 h-6 flex-shrink-0"
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+
+              {/* Spent Expenses */}
+              <div className="w-full lg:w-96">
+                <h2 className="text-xl font-semibold text-center text-white mb-4">
+                  Spend It
+                </h2>
+
+                <Droppable droppableId="spent">
+                  {(provided) => (
+                    <div
+                      className="bg-[#0A160E] p-6 rounded-xl shadow-lg w-full min-h-[450px] border border-gray-600"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {spent.length === 0 ? (
+                        <div className="text-gray-400 text-center mt-40 text-sm">
+                          Drag and drop here from
+                          <br />
+                          available expenses
+                        </div>
+                      ) : (
+                        spent.map((item, index) => (
+                          <Draggable
+                            key={item.id}
+                            draggableId={item.id}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+                  ${
+                    snapshot.isDragging
+                      ? "border-[#5F8428]"
+                      : "border-[#5F8428]"
+                  }
+                  bg-[#131F24] hover:bg-[#202F36]`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                {/* Left: Coin + Cost */}
+                                <div
+                                  className="flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border border-[#5F8428] bg-[#1E2A30]"
+                                  style={{ margin: "4px" }}
+                                >
+                                  <img
+                                    src="/financeGames6to8/coin.svg"
+                                    alt="coin"
+                                    className="w-5 h-5"
+                                  />
+                                  <span className="text-yellow-400 font-bold">
+                                    ₹{item.cost}
+                                  </span>
+                                </div>
+
+                                {/* Center: Label */}
+                                <div className="text-[#5F8428] font-medium text-sm text-center flex-1">
+                                  {item.label}
+                                </div>
+
+                                {/* Right: Icon Image */}
+                                <img
+                                  src={item.imgSrc}
+                                  alt={item.label}
+                                  className="w-6 h-6 flex-shrink-0"
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            </div>
+          </DragDropContext>
+
+          {/* Footer with Total Wallet and Check Now Button */}
+          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center z-40">
+            {/* Kid Celebration Gif + Speech Bubble */}
+            {showGif && (
+              <div
+                className="
+    absolute
+    -top-27 sm:-top-28 md:-top-29 lg:-top-30
+    left-[83%] transform -translate-x-1/2
+    z-50 flex items-start
+  "
+              >
+                {/* Kid gif */}
+                <img
+                  src="/financeGames6to8/kid-gif.gif"
+                  alt="Kid Celebration"
+                  className="object-contain"
+                  style={{
+                    maxHeight: "120px",
+                    height: "auto",
+                    width: "auto",
+                  }}
+                />
+
+                {/* Speech bubble — hidden on small screens */}
+                <img
+                  src="/financeGames6to8/kid-saying.svg"
+                  alt="Kid Saying"
+                  className="absolute top-2 left-[90px] w-24 hidden md:block"
+                />
+              </div>
+            )}
+
+            <div className="w-full max-w-4xl px-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+                {/* Wallet Info */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center">
+                    <img
+                      src="/financeGames6to8/coin.svg"
+                      alt="Coin"
+                      className="w-8 h-8 object-contain"
                     />
-                    <span className="text-xl rounded-full shadow-lg p-4 bg-yellow-200 font-semibold">
-                      {feedbackAvatarType === "disappointing"
-                        ? "😟 You can do better!"
-                        : "🌟 Great job budgeting!"}
+                  </div>
+                  <div className="text-white flex flex-col">
+                    <span className="text-md lilita-one-regular sm:text-lg font-medium text-yellow-400">
+                      Total Wallet:
+                    </span>
+                    <span className="text-white lilita-one-regular text-xl font-bold">
+                      ₹{wallet}
                     </span>
                   </div>
-                  <p>
-                    <strong>🎯 Spending Score:</strong> {result?.spendingScore}
-                  </p>
-                  <p>
-                    <strong>💡 Tip:</strong> {result?.tip}
-                  </p>
-                  <div>
-                    <strong>✂️ Cut this category:</strong>{" "}
-                    {result?.categoryToCut}
+                </div>
+
+                {/* Button or Loader */}
+                <div>
+                  {loading ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-8 h-8 border-4 border-t-green-500 border-gray-600 rounded-full animate-spin"></div>
+                      <p className="mt-2 text-green-400 text-sm font-medium">
+                        Analyzing...
+                      </p>
+                    </div>
+                  ) : (
+                    <img
+                      src="/financeGames6to8/check-now-btn.svg"
+                      alt="Check Now"
+                      onClick={handleSubmit}
+                      className="cursor-pointer w-[150px] hover:scale-105 transition-transform duration-200"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <p className="text-red-400 text-center mt-4 font-medium">
+                  {error}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {showVictoryScreen && (
+            <div className="fixed inset-0 z-50 bg-[#0A160E] flex flex-col justify-between">
+              {/* Center Content */}
+              <div className="flex flex-col items-center justify-center flex-1 p-6">
+                {/* Trophy GIFs */}
+                <div className="relative w-64 h-64 flex items-center justify-center">
+                  <img
+                    src="/financeGames6to8/trophy-rotating.gif"
+                    alt="Rotating Trophy"
+                    className="absolute w-full h-full object-contain"
+                  />
+                  <img
+                    src="/financeGames6to8/trophy-celebration.gif"
+                    alt="Celebration Effects"
+                    className="absolute w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Challenge Complete Text */}
+                <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">
+                  Challenge Complete!
+                </h2>
+
+                {/* Accuracy + Insight Boxes */}
+                <div className="mt-6 flex flex-col items-center sm:flex-row sm:items-start sm:gap-4">
+                  {/* Accuracy Box */}
+                  <div className="bg-[#09BE43] rounded-xl p-1 flex flex-col items-center w-64">
+                    <p className="text-black text-sm font-bold mb-1 mt-2">
+                      TOTAL ACCURACY
+                    </p>
+                    <div className="bg-[#131F24] mt-0 w-63 h-16 rounded-xl flex items-center justify-center py-3 px-5">
+                      <img
+                        src="/financeGames6to8/accImg.svg"
+                        alt="Target Icon"
+                        className="w-6 h-6 mr-2"
+                      />
+                      <span className="text-[#09BE43] text-xl font-extrabold">
+                        {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Insight Box */}
+                  <div className="mt-4 sm:mt-0 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center w-74">
+                    <p className="text-black text-sm font-bold mb-1 mt-2">
+                      INSIGHT
+                    </p>
+                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center overflow-hidden">
+                      <span
+                        className="text-[#FFCC00] lilita-one-regular font-medium italic leading-tight"
+                        style={{
+                          fontSize: "clamp(0.65rem, 1.2vw, 0.85rem)",
+                          lineHeight: "1.1",
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {result?.tip || "Analyzing your results..."}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Footer Buttons */}
+              <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+                <img
+                  src="/financeGames6to8/feedback.svg"
+                  alt="Feedback"
+                  onClick={handleViewFeedback}
+                  className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                />
+                <img
+                  src="/financeGames6to8/next-challenge.svg"
+                  alt="Next Challenge"
+                  onClick={handleNextChallenge}
+                  className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                />
+              </div>
             </div>
-          </div>
-        )}
-
-        <AnimatePresence>
-          {showSurpriseAvatar && (
-            <SurpriseAvatar
-              show={showSurpriseAvatar}
-              onClose={() => setShowSurpriseAvatar(false)}
-            />
           )}
-        </AnimatePresence>
-
-        <ToastContainer />
+          <ToastContainer />
+        </div>
       </div>
-    </div>
+
+      {/* Instructions overlay */}
+      {showInstructions && (
+        <InstructionOverlay onClose={() => setShowInstructions(false)} />
+      )}
+    </>
   );
 };
 

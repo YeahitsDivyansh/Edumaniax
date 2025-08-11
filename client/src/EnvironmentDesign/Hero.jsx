@@ -32,7 +32,7 @@ const Hero = () => {
                   alt="Home Icon"
                   className="w-4 h-4"
                 />
-                <span>Home</span>
+                <span className="ml-1 mr-2 md:mx-0">Home</span>
               </Link>
 
               <span className="text-white/60">&gt;</span>

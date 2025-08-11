@@ -226,9 +226,9 @@ model Subscription {
   startDate DateTime           @default(now())
   endDate   DateTime
   amount    Float
-  notes     String?
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+  notes     String?
   payments  Payment[]
   user      User               @relation(fields: [userId], references: [id])
 
@@ -245,11 +245,40 @@ model Payment {
   currency          String        @default("INR")
   status            PaymentStatus @default(PENDING)
   planType          String
-  notes             String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  notes             String?
   subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
   user              User          @relation(fields: [userId], references: [id])
+}
+
+model InstitutionalInquiry {
+  id               String        @id
+  contactName      String
+  contactEmail     String
+  contactPhone     String
+  organizationName String
+  organizationType String
+  studentCount     Int
+  message          String
+  status           InquiryStatus @default(NEW)
+  notes            String?
+  followUpDate     DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+}
+
+model SalesNotification {
+  id        String             @id
+  type      String
+  message   String
+  data      String
+  status    NotificationStatus @default(UNREAD)
+  inquiryId String?
+  paymentId String?
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+  readBy    String[]
 }
 
 enum SubscriptionStatus {

@@ -178,15 +178,17 @@ const AboutUs = () => {
 
                 <h1 className="text-[#068F36] text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
                   style={{ fontFamily: '"Sigmar", sans-serif' }}>
-                  through smarter learning
+                  through smarter 
+                  <br className="block md:hidden" />
+                  learning
                 </h1>
               </div>
 
             </motion.div>
 
             {/* Hero Cards Grid */}
-            <div className="w-[70%] h-[60vh] flex items-center justify-center mx-auto mb-15">
-              <div className="grid w-full h-full grid-cols-2 md:grid-cols-4 gap-6 mb-16 relative z-50">
+            <div className="w-[90vw] h-[25vh] md:h-[60vh] flex items-center justify-center mx-auto mb-15">
+              <div className="grid w-full h-full grid-cols-4 gap-2 md:gap-6 mb-16 relative z-50">
                 {heroCards.map((card, index) => (
                   <AnimatedCard key={index} delay={index * 0.1}>
                     <div

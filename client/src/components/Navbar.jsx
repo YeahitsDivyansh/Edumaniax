@@ -140,11 +140,14 @@ const Navbar = () => {
     fetchUserSubscriptions();
   }, [user?.id]);
 
-  // Check if user should see upgrade button (STARTER or PRO plan)
-  // Don't show upgrade button while subscriptions are loading
-  const shouldShowUpgrade = user && !subscriptionsLoading && 
-    (currentPlan === 'STARTER' || currentPlan === 'PRO');
+  // Check if user should see upgrade button (SOLO or PRO plan)
+  const shouldShowUpgrade = user && 
+    (currentPlan === 'SOLO' || currentPlan === 'PRO');
   
+  // Show pricing if: no user OR user has STARTER or INSTITUTIONAL plan
+  const shouldShowPricing = !user || 
+    (currentPlan === 'STARTER' || currentPlan === 'INSTITUTIONAL');
+
   // Get the next upgrade plan
   const getUpgradePlan = () => {
     if (currentPlan === 'STARTER') return 'SOLO';
@@ -189,32 +192,74 @@ const Navbar = () => {
     return `${baseClasses} text-black hover:text-green-600`;
   };
 
+  const getCharacterIconPath = () => {
+    if (!user || !user.characterGender || !user.characterStyle) {
+      return "/blogDesign/avatar.svg";
+    }
+    const gender = (user.characterGender === "Boy" || user.characterGender === "Male") 
+      ? "male" 
+      : "female";
+    const style = user.characterStyle.toLowerCase().replace(/\s/g, '');
+    return `/dashboardDesign/${style}_${gender}.png`;
+  };
+
+  // Don't render navbar content for authenticated users until subscriptions are loaded
+  if (user && subscriptionsLoading) {
+    return (
+      <nav className="bg-white text-black sticky top-0 z-200 w-full rounded-bl-4xl rounded-br-4xl shadow-lg">
+        <div className="w-full py-4 px-6 flex justify-between items-center max-w-7xl mx-auto">
+          {/* Logo Section */}
+          <div className="">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-15  h-10 relative">
+                {/* 3D Cube Icon - recreating the exact green cube from Figma */}
+                <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
+              </div>
+              <span className="text-[#09BE43] mt-1 font-bold text-2xl">
+                Edumaniax
+              </span>
+            </Link>
+          </div>
+          
+          {/* Loading placeholder for navigation */}
+          <div className="hidden md:flex items-center gap-8">
+            <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+            <div className="w-20 h-6 bg-gray-200 animate-pulse rounded"></div>
+            <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+            <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+            <div className="w-12 h-6 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+          
+          {/* Loading placeholder for right side buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="w-24 h-10 bg-gray-200 animate-pulse rounded-lg"></div>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button className="text-black">
+              <Menu size={24} />
+            </button>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="bg-white text-black sticky top-0 z-200 w-full rounded-bl-4xl rounded-br-4xl shadow-lg">
       <div className="w-full py-4 px-6 flex justify-between items-center max-w-7xl mx-auto">
         {/* Logo Section */}
         <div className="">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-15  h-10 relative">
-              {/* 3D Cube Icon - recreating the exact green cube from Figma */}
+            <div className="w-15 h-10 relative">
               <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
             </div>
             <span className="text-[#09BE43] mt-1 font-bold text-2xl">
-              Edumaniax
+              Edumaniax<span className="text-sm align-super ml-1">™</span>
             </span>
           </Link>
         </div>
-
-        {/* <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
-          <Link to="/">
-            <img
-              src="/loginPageDesign/EduManiax_Logo.svg"
-              alt="Edumaniax Logo"
-              className="h-20 w-auto"
-            />
-          </Link>
-          <h1 className="text-white text-2xl font-bold">Edumaniax</h1>
-        </div> */}
 
         {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
@@ -234,7 +279,7 @@ const Navbar = () => {
             >
               Upgrade Plan
             </button>
-          ) : (!user || subscriptionsLoading || currentPlan === 'INSTITUTIONAL' || currentPlan === 'SOLO') ? (
+          ) : shouldShowPricing ? (
             <Link to="/pricing" className={getNavLinkClasses("/pricing")}>
               Pricing
             </Link>
@@ -247,22 +292,26 @@ const Navbar = () => {
         {/* Right Side Buttons */}
         <div className="hidden md:flex items-center gap-3">
           {user || role === "admin" ? (
-            <>
-              <Link
-                to="/dashboard"
-                className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
-              >
-                Dashboard
-              </Link>
-            </>
+            <Link
+              to="/dashboard"
+              className="w-10 h-10 flex items-center justify-center bg-green-600 rounded-full hover:bg-green-700 transition duration-300"
+            >
+              <img
+                src={getCharacterIconPath()}
+                alt="User Dashboard"
+                className="h-6 w-6"
+              />
+            </Link>
           ) : (
             <>
-              {/* <Link
+
+              <Link
                 to="/register"
                 className="border border-green-600 text-green-600 font-medium px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300"
               >
                 Register
-              </Link> */}
+              </Link>
+
               <Link
                 to="/login"
                 className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
@@ -345,7 +394,7 @@ const Navbar = () => {
                 >
                   Upgrade Plan
                 </button>
-              ) : (!user || subscriptionsLoading || currentPlan === 'INSTITUTIONAL' || currentPlan === 'SOLO') ? (
+              ) : shouldShowPricing ? (
                 <Link
                   to="/pricing"
                   onClick={handleItemClick}
@@ -379,9 +428,13 @@ const Navbar = () => {
                 <Link
                   to="/dashboard"
                   onClick={handleItemClick}
-                  className="block bg-green-600 text-white text-center hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                  className="w-full flex items-center justify-center bg-green-600 text-white hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
-                  Dashboard
+                  <img
+                    src={getCharacterIconPath()}
+                    alt="User Dashboard"
+                    className="h-6 w-6"
+                  />
                 </Link>
                 <button
                   onClick={() => {
@@ -395,13 +448,6 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {/* <Link
-                  to="/register"
-                  onClick={handleItemClick}
-                  className="block border border-green-600 text-green-600 text-center hover:bg-green-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
-                >
-                  Register
-                </Link> */}
                 <Link
                   to="/login"
                   onClick={handleItemClick}
