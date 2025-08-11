@@ -14,7 +14,7 @@ export const createInstitutionalInquiry = async (req, res) => {
       organizationalEmail, 
       organization, 
       phone, 
-      employeeCount, 
+      employees, 
       message 
     } = req.body;
 
@@ -29,13 +29,13 @@ export const createInstitutionalInquiry = async (req, res) => {
     // Create inquiry in database
     const inquiry = await prisma.institutionalInquiry.create({
       data: {
-        name,
-        email,
-        organizationalEmail,
-        organization,
-        phone: phone || null,
-        employeeCount: employeeCount || null,
-        message: message || null,
+        contactName: name,
+        contactEmail: email,
+        contactPhone: phone || '',
+        organizationName: organization,
+        organizationType: 'BUSINESS', // Default value, could be made dynamic
+        studentCount: employees || 'Not specified',
+        message: message || '',
         status: 'NEW'
       }
     });
@@ -68,13 +68,30 @@ export const createInstitutionalInquiry = async (req, res) => {
  */
 export const getInquiries = async (req, res) => {
   try {
-    const { status, startDate, endDate, sort = 'createdAt', order = 'desc' } = req.query;
+    const { 
+      status, 
+      startDate, 
+      endDate, 
+      sort = 'createdAt', 
+      order = 'desc',
+      page = 1,
+      limit = 10,
+      search
+    } = req.query;
     
     // Build filter conditions
     let where = {};
     
     if (status) {
       where.status = status;
+    }
+    
+    if (search) {
+      where.OR = [
+        { contactName: { contains: search, mode: 'insensitive' } },
+        { organizationName: { contains: search, mode: 'insensitive' } },
+        { contactEmail: { contains: search, mode: 'insensitive' } }
+      ];
     }
     
     if (startDate && endDate) {
@@ -84,18 +101,33 @@ export const getInquiries = async (req, res) => {
       };
     }
 
-    // Execute query with filters and sorting
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
+
+    // Get total count for pagination
+    const totalCount = await prisma.institutionalInquiry.count({ where });
+
+    // Execute query with filters, sorting, and pagination
     const inquiries = await prisma.institutionalInquiry.findMany({
       where,
       orderBy: {
         [sort]: order.toLowerCase()
-      }
+      },
+      skip,
+      take
     });
 
     res.status(200).json({
       success: true,
-      count: inquiries.length,
-      data: inquiries
+      count: totalCount,
+      data: inquiries,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(totalCount / parseInt(limit)),
+        totalCount
+      }
     });
   } catch (error) {
     console.error('Error getting inquiries:', error);
@@ -213,12 +245,23 @@ export const getSalesAnalytics = async (req, res) => {
       where: { status: 'UNREAD' }
     });
 
+    // Convert BigInt values to numbers for JSON serialization
+    const processedInquiryStatusCounts = inquiryStatusCounts.map(item => ({
+      ...item,
+      count: Number(item.count)
+    }));
+
+    const processedRevenueByPlan = revenueByPlan.map(item => ({
+      ...item,
+      total: Number(item.total)
+    }));
+
     res.status(200).json({
       success: true,
       data: {
-        inquiryStatusCounts,
+        inquiryStatusCounts: processedInquiryStatusCounts,
         recentPayments,
-        revenueByPlan,
+        revenueByPlan: processedRevenueByPlan,
         unreadNotificationsCount
       }
     });

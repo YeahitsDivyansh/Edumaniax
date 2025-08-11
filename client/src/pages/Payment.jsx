@@ -267,7 +267,7 @@ const Payment = () => {
       
       try {
         // Send inquiry to backend
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/sales/inquiries`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
