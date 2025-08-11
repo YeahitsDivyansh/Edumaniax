@@ -294,12 +294,6 @@ enum PaymentStatus {
   REFUNDED
 }
 
-enum UserRole {
-  USER
-  ADMIN
-  SALES
-}
-
 enum InquiryStatus {
   NEW
   CONTACTED
@@ -308,37 +302,14 @@ enum InquiryStatus {
   NOT_INTERESTED
 }
 
-model InstitutionalInquiry {
-  id                String        @id @default(cuid())
-  contactName       String
-  contactEmail      String
-  contactPhone      String
-  organizationName  String
-  organizationType  String
-  studentCount      Int
-  message           String
-  status            InquiryStatus @default(NEW)
-  notes             String?
-  followUpDate      DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-}
-
-model SalesNotification {
-  id              String            @id @default(cuid())
-  type            String            // Notification type (e.g., NEW_INQUIRY, INQUIRY_UPDATED, etc.)
-  message         String
-  data            String            // JSON stringified data related to the notification
-  status          NotificationStatus @default(UNREAD)
-  inquiryId       String?           // Related inquiry ID if applicable
-  paymentId       String?           // Related payment ID if applicable
-  createdAt       DateTime          @default(now())
-  readAt          DateTime?         // When the notification was read
-  readBy          String[]          // IDs of users who have read this notification
-}
-
 enum NotificationStatus {
   UNREAD
   READ
   ARCHIVED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SALES
 }
