@@ -14,8 +14,33 @@ export function AuthProvider({ children }) {
   const [phonenumber, setPhonenumber] = useState("");
   const [role, setRole] = useState(localStorage.getItem("role") || "student");
 
+  // Helper function to clear authentication state
+  const clearAuthState = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+    setToken("");
+    setUser(null);
+    setRole("student");
+  };
+
+  // Helper function to validate token format
+  const isValidToken = (token) => {
+    if (!token) return false;
+    // Basic JWT format validation (header.payload.signature)
+    const parts = token.split('.');
+    return parts.length === 3;
+  };
+
   useEffect(() => {
-    if (token && !user) fetchMe();
+    // Validate token on startup
+    const storedToken = localStorage.getItem("token");
+    if (storedToken && !isValidToken(storedToken)) {
+      console.log("Invalid token detected, clearing auth state");
+      clearAuthState();
+    } else if (token && !user) {
+      fetchMe();
+    }
   }, [token]);
 
   useEffect(() => {
@@ -106,6 +131,13 @@ export function AuthProvider({ children }) {
       return { success: true };
     } catch (err) {
       console.error("Fetch /me failed:", err);
+      
+      // If token is invalid (401), clear auth state
+      if (err.response?.status === 401) {
+        console.log("Invalid token detected, clearing auth state");
+        clearAuthState();
+      }
+      
       return { success: false, message: err.response?.data?.message || "Fetch failed" };
     }
   };
@@ -120,6 +152,12 @@ export function AuthProvider({ children }) {
     setRole("student");
     setPhonenumber("");
     navigate("/login");
+  };
+
+  // 🔹 Direct user state update (for cases like avatar upload where we have complete user data)
+  const updateUserState = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   // 🔹 Update User Profile
@@ -166,6 +204,36 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 🔹 Sales login
+  const loginAsSales = async (username, password, navigate) => {
+    try {
+      const res = await axios.post(`${server}/special/login`, { 
+        username, 
+        password 
+      });
+
+      const { token: newToken, user: userData } = res.data;
+      
+      localStorage.setItem("token", newToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("role", userData.role);
+      
+      setToken(newToken);
+      setUser(userData);
+      setRole(userData.role);
+      
+      toast.success("Sales login successful");
+      navigate("/sales/dashboard");
+      return { success: true };
+    } catch (err) {
+      console.error('Sales login error:', err);
+      return { 
+        success: false, 
+        message: err.response?.data?.message || "Login failed. Please check your credentials." 
+      };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -179,8 +247,10 @@ export function AuthProvider({ children }) {
         fetchMe,
         logout,
         updateUser,
+        updateUserState,
         role,
         loginAsAdmin,
+        loginAsSales,
       }}
     >
       {children}
