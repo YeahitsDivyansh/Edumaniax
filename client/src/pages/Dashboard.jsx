@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, NavLink, Link } from "react-router-dom";
+import { useNavigate, NavLink, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
@@ -9,11 +9,14 @@ import 'react-image-crop/dist/ReactCrop.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, logout, role, updateUser, updateUserState } = useAuth();
   const fileInputRef = useRef(null);
   const imageRef = useRef(null);
   const [avatar, setAvatar] = useState(user?.avatar || "/dashboardDesign/uploadPic.svg");
-  const [selectedSection, setSelectedSection] = useState("profile");
+  const [selectedSection, setSelectedSection] = useState(
+    searchParams.get('section') || "profile"
+  );
   const [userComments, setUserComments] = useState([]);
   const [editingField, setEditingField] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -686,49 +689,171 @@ const Dashboard = () => {
                 <div className="bg-white w-full max-w-6xl rounded-lg shadow-md p-6">
                   {accessStatus?.subscription ? (
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">
-                        Available Modules ({accessStatus.subscription.plan.toUpperCase()} Plan)
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex justify-between items-center mb-6">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">
+                            My Learning Journey
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            {accessStatus.subscription.plan.toUpperCase()} Plan - Continue your progress
+                          </p>
+                        </div>
+                        {accessStatus.subscription.plan !== 'PRO' && accessStatus.subscription.plan !== 'INSTITUTIONAL' && (
+                          <Link
+                            to="/pricing"
+                            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+                          >
+                            Upgrade Plan
+                          </Link>
+                        )}
+                      </div>
+
+                      {/* Progress Overview */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-green-800 font-semibold">Modules Unlocked</p>
+                              <p className="text-2xl font-bold text-green-600">
+                                {[
+                                  { key: 'finance', name: 'Finance Management' },
+                                  { key: 'digital-marketing', name: 'Digital Marketing' },
+                                  { key: 'communication', name: 'Communication Skills' },
+                                  { key: 'computers', name: 'Computer Science' },
+                                  { key: 'entrepreneurship', name: 'Entrepreneurship' },
+                                  { key: 'environment', name: 'Environmental Science' },
+                                  { key: 'law', name: 'Legal Awareness' },
+                                  { key: 'leadership', name: 'Leadership Skills' },
+                                  { key: 'sel', name: 'Social Emotional Learning' }
+                                ].filter(module => hasModuleAccess(module.key)).length}
+                              </p>
+                            </div>
+                            <div className="text-3xl">📚</div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-blue-800 font-semibold">Overall Progress</p>
+                              <p className="text-2xl font-bold text-blue-600">65%</p>
+                            </div>
+                            <div className="text-3xl">🎯</div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-purple-800 font-semibold">Certificates Earned</p>
+                              <p className="text-2xl font-bold text-purple-600">3</p>
+                            </div>
+                            <div className="text-3xl">🏆</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Module Cards with Progress */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
-                          { key: 'finance', name: 'Finance Management' },
-                          { key: 'digital-marketing', name: 'Digital Marketing' },
-                          { key: 'communication', name: 'Communication Skills' },
-                          { key: 'computers', name: 'Computer Science' },
-                          { key: 'entrepreneurship', name: 'Entrepreneurship' },
-                          { key: 'environment', name: 'Environmental Science' },
-                          { key: 'law', name: 'Legal Awareness' },
-                          { key: 'leadership', name: 'Leadership Skills' },
-                          { key: 'sel', name: 'Social Emotional Learning' }
+                          { key: 'finance', name: 'Finance Management', icon: '💰', progress: 85, color: 'green' },
+                          { key: 'digital-marketing', name: 'Digital Marketing', icon: '📱', progress: 60, color: 'blue' },
+                          { key: 'communication', name: 'Communication Skills', icon: '🗣️', progress: 45, color: 'orange' },
+                          { key: 'computers', name: 'Computer Science', icon: '💻', progress: 30, color: 'purple' },
+                          { key: 'entrepreneurship', name: 'Entrepreneurship', icon: '🚀', progress: 0, color: 'red' },
+                          { key: 'environment', name: 'Environmental Science', icon: '🌍', progress: 0, color: 'green' },
+                          { key: 'law', name: 'Legal Awareness', icon: '⚖️', progress: 0, color: 'indigo' },
+                          { key: 'leadership', name: 'Leadership Skills', icon: '👑', progress: 75, color: 'yellow' },
+                          { key: 'sel', name: 'Social Emotional Learning', icon: '❤️', progress: 90, color: 'pink' }
                         ].map((module) => {
                           const hasAccess = hasModuleAccess(module.key);
+                          const colorClasses = {
+                            green: 'border-green-200 bg-green-50 hover:border-green-300',
+                            blue: 'border-blue-200 bg-blue-50 hover:border-blue-300',
+                            orange: 'border-orange-200 bg-orange-50 hover:border-orange-300',
+                            purple: 'border-purple-200 bg-purple-50 hover:border-purple-300',
+                            red: 'border-red-200 bg-red-50 hover:border-red-300',
+                            indigo: 'border-indigo-200 bg-indigo-50 hover:border-indigo-300',
+                            yellow: 'border-yellow-200 bg-yellow-50 hover:border-yellow-300',
+                            pink: 'border-pink-200 bg-pink-50 hover:border-pink-300'
+                          };
+                          
                           return (
                             <div
                               key={module.key}
-                              className={`border rounded-lg p-4 transition-all duration-200 ${
+                              className={`border-2 rounded-xl p-6 transition-all duration-300 ${
                                 hasAccess
-                                  ? 'border-green-200 bg-green-50 hover:shadow-md cursor-pointer'
-                                  : 'border-gray-200 bg-gray-50'
+                                  ? `${colorClasses[module.color]} hover:shadow-lg cursor-pointer transform hover:-translate-y-1`
+                                  : 'border-gray-200 bg-gray-50 opacity-60'
                               }`}
                             >
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-semibold text-gray-800">{module.name}</h4>
-                                <span
-                                  className={`w-4 h-4 rounded-full ${
-                                    hasAccess ? 'bg-green-500' : 'bg-gray-400'
-                                  }`}
-                                />
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="text-2xl">{module.icon}</div>
+                                {hasAccess ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                                    <span className="text-xs text-green-600 font-medium">Active</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 bg-gray-400 rounded-full"></span>
+                                    <span className="text-xs text-gray-500 font-medium">Locked</span>
+                                  </div>
+                                )}
                               </div>
-                              <p className={`text-sm mb-3 ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
-                                {hasAccess ? 'Ready to Learn' : 'Premium Required'}
-                              </p>
-                              {hasAccess && (
-                                <Link
-                                  to={`/courses?module=${module.toLowerCase().replace(' ', '-')}`}
-                                  className="bg-[#068F36] hover:bg-green-700 text-white px-3 py-1 rounded text-sm inline-block"
-                                >
-                                  Start Learning
-                                </Link>
+                              
+                              <h4 className="font-bold text-gray-800 mb-2 text-lg">{module.name}</h4>
+                              
+                              {hasAccess ? (
+                                <>
+                                  {/* Progress Bar */}
+                                  <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-sm text-gray-600">Progress</span>
+                                      <span className="text-sm font-semibold text-gray-800">{module.progress}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className={`h-2 rounded-full transition-all duration-500 ${
+                                          module.progress >= 80 ? 'bg-green-500' :
+                                          module.progress >= 50 ? 'bg-yellow-500' : 'bg-blue-500'
+                                        }`}
+                                        style={{ width: `${module.progress}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Action Buttons */}
+                                  <div className="space-y-2">
+                                    <Link
+                                      to={`/courses?module=${module.key}`}
+                                      className="w-full bg-[#068F36] hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                      {module.progress > 0 ? 'Continue Learning' : 'Start Learning'}
+                                      <ChevronRight size={16} />
+                                    </Link>
+                                    
+                                    {module.progress > 50 && (
+                                      <Link
+                                        to={`/${module.key}/games`}
+                                        className="w-full border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                      >
+                                        Practice Games
+                                        🎮
+                                      </Link>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-center py-4">
+                                  <p className="text-gray-500 text-sm mb-3">Premium Required</p>
+                                  <Link
+                                    to="/pricing"
+                                    className="text-[#068F36] hover:text-green-700 text-sm font-medium"
+                                  >
+                                    Upgrade to Access
+                                  </Link>
+                                </div>
                               )}
                             </div>
                           );
@@ -737,10 +862,16 @@ const Dashboard = () => {
 
                       {/* Special message for SOLO plan */}
                       {accessStatus.subscription.plan === 'SOLO' && accessStatus.subscription.selectedModule && (
-                        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <h4 className="font-semibold text-blue-800 mb-2">Your Selected Module</h4>
-                          <p className="text-blue-600 text-sm">
-                            With your SOLO plan, you have access to: <strong>{accessStatus.subscription.selectedModule}</strong>
+                        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="text-2xl">⭐</div>
+                            <h4 className="font-bold text-blue-800">Your Selected Module</h4>
+                          </div>
+                          <p className="text-blue-700">
+                            With your SOLO plan, you have premium access to: <strong>{accessStatus.subscription.selectedModule}</strong>
+                          </p>
+                          <p className="text-blue-600 text-sm mt-2">
+                            Want access to all modules? <Link to="/pricing" className="underline font-medium">Upgrade to PRO</Link>
                           </p>
                         </div>
                       )}

@@ -913,9 +913,60 @@ const Home = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [userPlan, setUserPlan] = useState(null);
   const { user } = useAuth();
 
   const [showScroll, setShowScroll] = useState(false);
+
+  // Fetch user subscriptions to determine button state
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find active subscriptions
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          if (activeSubscriptions.length > 0) {
+            setHasActiveSubscription(true);
+            // Find the highest tier plan
+            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            for (const plan of [...planHierarchy].reverse()) {
+              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              if (subscription) {
+                setUserPlan(subscription.planType);
+                break;
+              }
+            }
+          } else {
+            setHasActiveSubscription(false);
+            setUserPlan(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error);
+        setUserSubscriptions([]);
+        setHasActiveSubscription(false);
+        setUserPlan(null);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1431,14 +1482,29 @@ const Home = () => {
                 onClick={() => navigate(user ? "/pricing" : "/courses")}
                 className="bg-white text-black font-semibold px-4 sm:px-8 py-3 sm:py-4 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
               >
-                {user ? "Purchase Plan" : "Get Started Free"}
+                {user ? (
+                  hasActiveSubscription && (userPlan === 'STARTER' || userPlan === 'SOLO') 
+                    ? "Upgrade Plan" 
+                    : "Purchase Plan"
+                ) : "Get Started Free"}
               </button>
-              <button
-                onClick={() => setIsTrialModalOpen(true)}
-                className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
-              >
-                Book a trial
-              </button>
+              
+              {/* Conditional second button */}
+              {user && hasActiveSubscription ? (
+                <button
+                  onClick={() => navigate("/dashboard?section=modules")}
+                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                >
+                  Continue Reading
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsTrialModalOpen(true)}
+                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                >
+                  Book a trial
+                </button>
+              )}
             </div>
           </div>
 
