@@ -154,6 +154,12 @@ export function AuthProvider({ children }) {
     navigate("/login");
   };
 
+  // 🔹 Direct user state update (for cases like avatar upload where we have complete user data)
+  const updateUserState = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   // 🔹 Update User Profile
   const updateUser = async (field, value) => {
     if (!token) return { success: false, message: "Not authenticated" };
@@ -241,6 +247,7 @@ export function AuthProvider({ children }) {
         fetchMe,
         logout,
         updateUser,
+        updateUserState,
         role,
         loginAsAdmin,
         loginAsSales,

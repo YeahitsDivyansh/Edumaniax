@@ -4,12 +4,15 @@ import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
 import { useAccessControl } from "../utils/accessControl";
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, logout, role, updateUser } = useAuth();
+  const { user, logout, role, updateUser, updateUserState } = useAuth();
   const fileInputRef = useRef(null);
-  const [avatar, setAvatar] = useState("/dashboardDesign/uploadPic.svg");
+  const imageRef = useRef(null);
+  const [avatar, setAvatar] = useState(user?.avatar || "/dashboardDesign/uploadPic.svg");
   const [selectedSection, setSelectedSection] = useState("profile");
   const [userComments, setUserComments] = useState([]);
   const [editingField, setEditingField] = useState(null);
@@ -20,8 +23,38 @@ const Dashboard = () => {
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [userSubscription, setUserSubscription] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
+  
+  // Image cropping states
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [crop, setCrop] = useState({
+    unit: '%',
+    width: 90,
+    height: 90,
+    x: 5,
+    y: 5
+  });
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const { getUserComments } = useBlog();
   const { accessStatus, hasModuleAccess } = useAccessControl(subscriptions, selectedModule);
+
+  // Sync avatar state with user context (fixes issue after page refresh)
+  useEffect(() => {
+    if (user?.avatar) {
+      setAvatar(user.avatar);
+    } else {
+      setAvatar("/dashboardDesign/uploadPic.svg");
+    }
+  }, [user?.avatar]);
+
+  // Additional effect to handle cases where user is loaded after component mount
+  useEffect(() => {
+    if (user && !avatar.includes('http') && user.avatar) {
+      setAvatar(user.avatar);
+    }
+  }, [user, avatar]);
 
   useEffect(() => {
     const fetchUserComments = async () => {
@@ -240,6 +273,11 @@ const Dashboard = () => {
       navigate("/login");
     }
     
+    // Set avatar from user data
+    if (user?.avatar) {
+      setAvatar(user.avatar);
+    }
+    
     // If user is a sales team member, update the page title
     if (role === "SALES") {
       document.title = "Sales Team Dashboard | Edumaniax";
@@ -261,9 +299,112 @@ const Dashboard = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setAvatar(imageUrl);
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setImageToCrop(reader.result);
+          setShowCropModal(true);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert('Please select an image file');
+      }
     }
+  };
+
+  const getCroppedImg = (image, crop) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!crop || !ctx) {
+      return Promise.reject(new Error('Canvas context not available'));
+    }
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob(resolve, 'image/jpeg', 0.9);
+    });
+  };
+
+  const handleCropConfirm = async () => {
+    if (!imageRef.current || !completedCrop) return;
+
+    try {
+      setIsUploading(true);
+      const croppedImageBlob = await getCroppedImg(imageRef.current, completedCrop);
+      
+      // Convert blob to file
+      const file = new File([croppedImageBlob], 'avatar.jpg', { type: 'image/jpeg' });
+      
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/upload-avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update local avatar state immediately for UI responsiveness
+        setAvatar(data.avatarUrl);
+        
+        // The backend returns the complete updated user object
+        if (data.user) {
+          // Use the new updateUserState function to update both context and localStorage
+          updateUserState(data.user);
+        } else {
+          // Fallback: if no user data returned, use updateUser method
+          if (updateUser) {
+            await updateUser('avatar', data.avatarUrl);
+          }
+        }
+        
+        setShowCropModal(false);
+        setImageToCrop(null);
+        alert('Profile picture updated successfully!');
+      } else {
+        throw new Error(data.message || 'Failed to upload avatar');
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Failed to upload profile picture. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setImageToCrop(null);
+    setCrop({
+      unit: '%',
+      width: 90,
+      height: 90,
+      x: 5,
+      y: 5
+    });
   };
 
   const handleCommentClick = (blogId) => {
@@ -1328,6 +1469,49 @@ const Dashboard = () => {
           </>
         )}
       </main>
+      
+      {/* Image Crop Modal */}
+      {showCropModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Crop Your Profile Picture</h3>
+            
+            <div className="mb-4">
+              <ReactCrop
+                crop={crop}
+                onChange={(newCrop) => setCrop(newCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <img
+                  ref={imageRef}
+                  src={imageToCrop}
+                  alt="Crop preview"
+                  className="max-w-full max-h-64 object-contain"
+                />
+              </ReactCrop>
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCropCancel}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={isUploading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCropConfirm}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                disabled={isUploading || !completedCrop}
+              >
+                {isUploading ? 'Uploading...' : 'Confirm & Upload'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

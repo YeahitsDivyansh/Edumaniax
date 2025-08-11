@@ -19,6 +19,7 @@ model User {
   characterTraits            String[]
   createdAt                  DateTime                    @default(now())
   email                      String?
+  avatar                     String?
   selectedModule             String?
   role                       UserRole                    @default(USER)
   communicationChallenges    CommunicationChallenge[]
