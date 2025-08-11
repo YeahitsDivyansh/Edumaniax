@@ -453,7 +453,7 @@ Constraints -
           }}
         >
           {!showVictoryScreen && result && (
-            <div className="w-full lg:max-w-2xl -mt-8 p-6 mx-auto flex items-center justify-center">
+            <div className="w-full lg:max-w-2xl -mt-20 lg:mt-0 p-6 mx-auto flex items-center justify-center">
               <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
                 <p className="text-lg lilita-one-regular font-semibold text-white">
                   <span role="img" aria-label="target">
@@ -662,7 +662,7 @@ Constraints -
             )}
 
             <div className="w-full max-w-4xl px-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+              <div className="flex flex-row justify-between items-center gap-6 flex-wrap">
                 {/* Wallet Info */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center">
