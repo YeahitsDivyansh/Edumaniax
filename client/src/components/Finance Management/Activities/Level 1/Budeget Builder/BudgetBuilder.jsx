@@ -237,10 +237,10 @@ const BudgetBuilder = () => {
   }, [showVictoryScreen, result]);
 
   useEffect(() => {
-    // const timer = setTimeout(() => {
-    //   setShowIntro(false);
-    // }, 4000); // show intro for 4 seconds
-    // return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 4000); // show intro for 4 seconds
+    return () => clearTimeout(timer);
   }, []);
 
   if (showIntro) {
