@@ -193,6 +193,12 @@ const Navbar = () => {
   };
 
   const getCharacterIconPath = () => {
+    // If user has uploaded an avatar, use that
+    if (user?.avatar) {
+      return user.avatar;
+    }
+    
+    // Otherwise, use character icon based on selected character
     if (!user || !user.characterGender || !user.characterStyle) {
       return "/blogDesign/avatar.svg";
     }
@@ -294,12 +300,12 @@ const Navbar = () => {
           {user || role === "admin" ? (
             <Link
               to="/dashboard"
-              className="w-10 h-10 flex items-center justify-center bg-green-600 rounded-full hover:bg-green-700 transition duration-300"
+              className="w-10 h-10 flex items-center justify-center bg-green-600 rounded-full hover:bg-green-700 transition duration-300 overflow-hidden"
             >
               <img
                 src={getCharacterIconPath()}
                 alt="User Dashboard"
-                className="h-6 w-6"
+                className={`${user?.avatar ? 'h-10 w-10 object-cover rounded-full' : 'h-6 w-6'}`}
               />
             </Link>
           ) : (
@@ -428,12 +434,12 @@ const Navbar = () => {
                 <Link
                   to="/dashboard"
                   onClick={handleItemClick}
-                  className="w-full flex items-center justify-center bg-green-600 text-white hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                  className="w-full flex items-center justify-center bg-green-600 text-white hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium overflow-hidden"
                 >
                   <img
                     src={getCharacterIconPath()}
                     alt="User Dashboard"
-                    className="h-6 w-6"
+                    className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-6 w-6'}`}
                   />
                 </Link>
                 <button

@@ -6,6 +6,8 @@ import connectionManager from "../connectionManager.js";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken"; 
 import axios from "axios";
+import cloudinary, { extractPublicIdFromUrl } from "../utils/cloudinary.js";
+import fs from "fs";
 
 
 const sendOtpForRegistration = async (req, res) => {
@@ -233,7 +235,7 @@ const updateProfile = async (req, res) => {
   try {
     // User is already authenticated by middleware and available in req.user
     const userId = req.user.id;
-    const allowedFields = ['name', 'age', 'userClass', 'phonenumber', 'email'];
+    const allowedFields = ['name', 'age', 'userClass', 'phonenumber', 'email', 'avatar'];
     const updateData = {};
 
     // Only allow updating specific fields
@@ -319,6 +321,187 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// Upload Avatar
+const uploadAvatar = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "No file uploaded" 
+      });
+    }
+
+    console.log('Uploading file:', req.file.path);
+
+    // Check if file exists
+    if (!fs.existsSync(req.file.path)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Uploaded file not found" 
+      });
+    }
+
+    // Get current user data to check for existing avatar
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatar: true }
+    });
+
+    // Extract public_id from old avatar URL if it exists
+    let oldPublicId = null;
+    if (currentUser?.avatar) {
+      oldPublicId = extractPublicIdFromUrl(currentUser.avatar);
+    }
+
+    // Upload to Cloudinary with organized folder structure
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "edumaniax/avatars/users", // Organized folder structure
+      public_id: `user_${userId}_avatar`, // Clear naming convention
+      overwrite: true, // Replace existing avatar with same public_id
+      transformation: [
+        { width: 300, height: 300, crop: "fill" }, // Ensure square aspect ratio
+        { quality: "auto" }, // Optimize quality
+        { format: "auto" } // Auto format selection
+      ]
+    });
+
+    // If there was an old avatar with different public_id, delete it
+    if (oldPublicId && oldPublicId !== `edumaniax/avatars/users/user_${userId}_avatar`) {
+      try {
+        const deleteResult = await cloudinary.uploader.destroy(oldPublicId);
+        if (deleteResult.result === 'ok') {
+          console.log(`Successfully deleted old avatar: ${oldPublicId}`);
+        } else {
+          console.log(`Old avatar not found or already deleted: ${oldPublicId}`);
+        }
+      } catch (deleteError) {
+        console.error("Error deleting old avatar:", deleteError);
+        // Don't fail the upload if deletion fails
+      }
+    }
+
+    // Delete temporary file
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch (unlinkError) {
+      console.error("Error deleting temporary file:", unlinkError);
+    }
+
+    // Update user's avatar URL in database
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        avatar: result.secure_url 
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Avatar uploaded successfully",
+      avatarUrl: result.secure_url,
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        avatar: updatedUser.avatar
+      }
+    });
+  } catch (error) {
+    // Clean up temporary file if it exists
+    if (req.file && req.file.path) {
+      try {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (unlinkError) {
+        console.error("Error deleting temporary file:", unlinkError);
+      }
+    }
+    
+    console.error("Error uploading avatar:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to upload avatar", 
+      error: error.message 
+    });
+  }
+};
+
+// Cleanup orphaned avatars (for maintenance purposes)
+const cleanupOrphanedAvatars = async (req, res) => {
+  try {
+    // This function is for admin use only
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Access denied" 
+      });
+    }
+
+    // Get all users with avatars
+    const usersWithAvatars = await prisma.user.findMany({
+      where: { 
+        avatar: { not: null } 
+      },
+      select: { id: true, avatar: true }
+    });
+
+    // Get all avatars from Cloudinary in the edumaniax/avatars/users folder
+    const cloudinaryResources = await cloudinary.api.resources({
+      type: 'upload',
+      prefix: 'edumaniax/avatars/users/',
+      max_results: 500
+    });
+
+    const validPublicIds = new Set();
+    usersWithAvatars.forEach(user => {
+      const publicId = extractPublicIdFromUrl(user.avatar);
+      if (publicId) {
+        validPublicIds.add(publicId);
+      }
+    });
+
+    const orphanedResources = cloudinaryResources.resources.filter(
+      resource => !validPublicIds.has(resource.public_id)
+    );
+
+    // Delete orphaned resources
+    const deletionResults = [];
+    for (const resource of orphanedResources) {
+      try {
+        const result = await cloudinary.uploader.destroy(resource.public_id);
+        deletionResults.push({
+          public_id: resource.public_id,
+          result: result.result
+        });
+      } catch (error) {
+        deletionResults.push({
+          public_id: resource.public_id,
+          error: error.message
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Cleanup completed`,
+      totalCloudinaryResources: cloudinaryResources.resources.length,
+      validAvatars: validPublicIds.size,
+      orphanedFound: orphanedResources.length,
+      deletionResults
+    });
+
+  } catch (error) {
+    console.error("Error during cleanup:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Cleanup failed", 
+      error: error.message 
+    });
+  }
+};
+
 
 export {
   sendOtpForRegistration,
@@ -327,5 +510,7 @@ export {
   verifyOtpAndLogin,
   getMe,
   test,
-  updateProfile
+  updateProfile,
+  uploadAvatar,
+  cleanupOrphanedAvatars
 };
