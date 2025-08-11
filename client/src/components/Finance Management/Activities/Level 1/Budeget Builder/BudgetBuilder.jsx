@@ -360,6 +360,16 @@ Constraints -
       if (!isNaN(scoreNumber) && scoreNumber >= 8) {
         completeFinanceChallenge(0, 0); // mark completed
       }
+
+      // ✅ Scroll up only for small screens so result is visible
+      if (window.innerWidth <= 768) {
+        setTimeout(() => {
+          document.querySelector("#resultBox")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 300);
+      }
     } catch (err) {
       setError("Error fetching AI response");
       console.log(err);
@@ -445,7 +455,7 @@ Constraints -
       >
         {/* Dark Theme Weekly Budget Builder */}
         <div
-          className="w-full main-content bg-[#0A160E] font-sans"
+          className="w-full -mt-15 sm:mt-0 main-content bg-[#0A160E] font-sans"
           style={{
             fontFamily: "'Inter', sans-serif",
             paddingBottom:
@@ -453,7 +463,10 @@ Constraints -
           }}
         >
           {!showVictoryScreen && result && (
-            <div className="w-full lg:max-w-2xl -mt-20 lg:mt-0 p-6 mx-auto flex items-center justify-center">
+            <div
+              id="resultBox"
+              className="w-full lg:max-w-2xl -mt-20 lg:mt-0 p-6 mx-auto flex items-center justify-center"
+            >
               <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
                 <p className="text-lg lilita-one-regular font-semibold text-white">
                   <span role="img" aria-label="target">
@@ -629,7 +642,7 @@ Constraints -
           </DragDropContext>
 
           {/* Footer with Total Wallet and Check Now Button */}
-          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center z-40">
+          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-3 sm:py-6 flex items-center justify-center z-40">
             {/* Kid Celebration Gif + Speech Bubble */}
             {showGif && (
               <div

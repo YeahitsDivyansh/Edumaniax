@@ -114,12 +114,44 @@ const IntroScreen = () => {
 
       {/* Center Content */}
       <div className="relative z-10 text-center flex flex-col items-center justify-start sm:justify-center mt-10 sm:mt-0">
-        <h1 className="text-5xl mt-14 sm:text-6xl lilita-one-regular text-[#FFE303] font-extrabold drop-shadow-lg mb-2 sm:mb-4">
+        <h1
+          className="mt-20 sm:mt-24 lg:mt-28 text-4xl sm:text-6xl lg:text-7xl lilita-one-regular text-[#FFE303] font-extrabold mb-2 sm:mb-4"
+          style={{
+            textShadow: `
+      -2px -2px 0 #000,
+       2px -2px 0 #000,
+      -2px  2px 0 #000,
+       2px  2px 0 #000,
+      -2px  0px 0 #000,
+       2px  0px 0 #000,
+       0px -2px 0 #000,
+       0px  2px 0 #000,
+       0px  4px 3px rgba(0,0,0,0.7)
+    `,
+          }}
+        >
           The Budgeter
         </h1>
-        <h2 className="text-2xl lilita-one-regular sm:text-4xl text-white font-semibold mb-6 sm:mb-10">
+
+        <h2
+          className="lilita-one-regular text-2xl sm:text-4xl lg:text-5xl text-white font-semibold mb-6 sm:mb-10"
+          style={{
+            textShadow: `
+      -2px -2px 0 #000,
+       2px -2px 0 #000,
+      -2px  2px 0 #000,
+       2px  2px 0 #000,
+      -2px  0px 0 #000,
+       2px  0px 0 #000,
+       0px -2px 0 #000,
+       0px  2px 0 #000,
+       0px  4px 3px rgba(0,0,0,0.7)
+    `,
+          }}
+        >
           Challenge 1
         </h2>
+
         <BottomProgressLoader />
       </div>
 

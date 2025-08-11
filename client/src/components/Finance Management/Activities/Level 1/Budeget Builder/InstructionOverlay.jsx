@@ -88,7 +88,8 @@ const InstructionOverlay = ({ onClose }) => {
 
         {/* Content */}
         <div className="flex flex-col lg:flex-row p-6 gap-6">
-          <div className="w-full lg:-ml-6 max-w-5xl mx-auto border border-green-800 rounded-xl p-4 bg-[#00260E]">
+          {/* Game Content — will move below on mobile */}
+          <div className="w-full lg:-ml-6 max-w-5xl mx-auto border border-green-800 rounded-xl p-4 bg-[#00260E] order-2 lg:order-1">
             <div className="flex flex-col lg:flex-row gap-4 w-full justify-center">
               {/* Available Expenses */}
               <div className="w-full lg:w-64">
@@ -196,8 +197,8 @@ const InstructionOverlay = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Right side: Instructions */}
-          <div className="flex flex-col lg:w-1/2 gap-4">
+          {/* Right side: Instructions — moves to top on mobile */}
+          <div className="flex flex-col lg:w-1/2 gap-4 order-1 lg:order-2">
             <p className="text-gray-200 lilita-one-regular leading-snug text-xs sm:text-sm lg:text-base text-left">
               You're a student with ₹2,000 pocket money for the month. You want
               to hang out with friends, save up for a gaming mouse, and also
