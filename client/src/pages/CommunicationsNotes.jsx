@@ -29,7 +29,7 @@ import Senior7 from "./CommunicationNotes/11-12Section7";
 const gradeOptions = [
   { value: "6-8", label: "8th and Below" },
   { value: "9-10", label: "9th to 10th Grade" },
-  { value: "11-12", label: "11th to 12th Grade" },
+  { value: "11-12", label: "11th and above" },
 ];
 
 const notesSidebar6to8 = [
@@ -305,7 +305,7 @@ const DigitalMarketingFullNotes = () => {
                 : "-translate-x-full md:translate-x-0"
             }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-[#09be43] mb-6 px-2">
               Communication
               
             </h2>
@@ -314,10 +314,10 @@ const DigitalMarketingFullNotes = () => {
                 <li
                   key={section.id}
                   data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
                     activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
+                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                      : "hover:bg-green-50 text-gray-800"
                   }`}
                   onClick={() => scrollTo(section.id)}
                 >

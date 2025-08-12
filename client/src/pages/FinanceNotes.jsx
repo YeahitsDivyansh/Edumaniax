@@ -96,10 +96,10 @@ const FinanceFullNotes = () => {
             <li
               key={section.id}
               data-scroll-id={section.id}
-              className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+              className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
                 activeId === section.id
-                  ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                  : "hover:bg-blue-50 text-gray-800"
+                    ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                    : "hover:bg-green-50 text-gray-800"
               }`}
               onClick={() => scrollTo(section.id)}
               title={section.title} 

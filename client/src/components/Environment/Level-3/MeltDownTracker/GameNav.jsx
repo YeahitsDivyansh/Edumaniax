@@ -3,27 +3,16 @@ import { Link } from "react-router-dom";
 import BackButton from "@/components/icon/GreenBudget/BackButton";
 import Vol from "@/components/icon/GreenBudget/Vol.jsx";
 import Heart from "@/components/icon/GreenBudget/Heart.jsx";
-
-// Assume bgMusic is available at this path. You might need to adjust it.
 import bgMusic from "/financeGames6to8/bgMusic.mp3"; 
 
-const GameNav = () => {
+// --- MODIFIED ---
+// The component now accepts `timeLeft` as a prop instead of managing it internally.
+const GameNav = ({ timeLeft }) => {
   const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(true); // Start playing by default
-  const [timeLeft, setTimeLeft] = useState(180);
+  const [isPlaying, setIsPlaying] = useState(true);
 
-  useEffect(() => {
-    // Exit early when we reach 0
-    if (timeLeft <= 0) return;
-
-    // Save intervalId to clear the interval when the component re-renders
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-
-    // Clear interval on re-render to avoid memory leaks
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
+  // --- REMOVED ---
+  // The state and useEffect for the countdown timer have been moved to MeltdownTracker.jsx
 
   // Format the time left into MM:SS format
   const formatTime = (seconds) => {
@@ -36,7 +25,6 @@ const GameNav = () => {
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
-
     try {
       if (isPlaying) {
         audioRef.current.pause();
@@ -66,27 +54,25 @@ const GameNav = () => {
   return (
     <div className="w-full h-[10.5vh] bg-[#28343A] flex items-center justify-between px-[2vw] relative z-10">
       
-      {/* Audio Element - correctly rendered here and linked to the ref */}
       <audio ref={audioRef} loop src={bgMusic} />
 
-      {/* Back Button linked to another page */}
       <Link to="/environmental/games" className="transition transform hover:scale-110 opacity-95 hover:opacity-100 ">
         <BackButton />
       </Link>
       
       <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
-        Green Budget
+        Meltdown Tracker
       </span>
       
       <div className="flex items-center space-x-[1vw]">
         <div className="relative w-[100px] h-[100px] flex items-center justify-center">
           <Heart />
           <span className="absolute text-white font-bold text-[3vh] lilita tracking-[0.05vw] top-[49%] left-[65%] -translate-x-1/2 -translate-y-1/2">
+            {/* --- MODIFIED --- This now uses the timeLeft prop */}
             {formatTime(timeLeft)}
           </span>
         </div>
         
-        {/* Vol component connected to the audio logic */}
         <button onClick={toggleAudio} 
           className={`transition transform active:scale-95 hover:scale-110 ${isPlaying ? 'opacity-100' : 'opacity-90'}`}>
           <Vol isPlaying={isPlaying} />

@@ -90,7 +90,7 @@ const AboutUs = () => {
 
   const teamMembers = [
     {
-      name: "Sharad Raj Ustar",
+      name: "Sharadd Raj Ustar",
       image: "sharad.svg",
       bgColor: "bg-[#66C537]/20",
       linkedin: "https://www.linkedin.com/in/sharadrajutsav/",
@@ -98,7 +98,7 @@ const AboutUs = () => {
       iconbg: "bg-[#236900]"
     },
     {
-      name: "Shreya Sinha",
+      name: "Shreya Sienha",
       image: "shreya.svg",
       bgColor: "bg-[#5CE1E6]/20",
       linkedin: "https://www.linkedin.com/in/shreya-sinha2802/",
@@ -180,7 +180,7 @@ const AboutUs = () => {
                   style={{ fontFamily: '"Sigmar", sans-serif' }}>
                   through smarter 
                   <br className="block md:hidden" />
-                  learning
+                  &nbsp;learning
                 </h1>
               </div>
 
@@ -227,7 +227,7 @@ const AboutUs = () => {
         >
           <div className="text-center text-white mb-8">
             <p className="text-lg opacity-90">
-              Way are is a mission driven company that lives to empower students, they think differently from
+              We are is a mission driven company that lives to empower students, they think differently from
               <br />
               their education journey, and study more interactively
             </p>
@@ -329,10 +329,10 @@ const AboutUs = () => {
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
             {/* Left card - 60% width on desktop, full width on mobile */}
             <AnimatedCard delay={0.1} className="flex-1 lg:flex-[3]">
-              <div className={`${differentiators[0].bgColor} rounded-3xl h-full`}>
+              <div className={`${differentiators[0].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#97F74D] hover:border-[#73D42A]`}>
                 <div className="flex flex-col md:flex-row h-full items-center">
                   {/* Image on mobile/tablet - top */}
-                  <div className="w-full md:hidden mb-4">
+                  <div className="w-full md:hidden mb-4 mr-7">
                     <img
                       src={differentiators[0].image}
                       alt={differentiators[0].title}
@@ -362,10 +362,10 @@ const AboutUs = () => {
 
             {/* Right card - 40% width on desktop, full width on mobile */}
             <AnimatedCard delay={0.2} className="flex-1 lg:flex-[2]">
-              <div className={`${differentiators[1].bgColor} rounded-3xl h-full`}>
+              <div className={`${differentiators[1].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#FFD558] hover:border-[#F1C12F]`}>
                 <div className="flex flex-col md:flex-row h-full items-center">
                   {/* Image on mobile/tablet - top */}
-                  <div className="w-full md:hidden mb-4">
+                  <div className="w-full md:hidden mb-4 mr-7">
                     <img
                       src={differentiators[1].image}
                       alt={differentiators[1].title}
@@ -398,7 +398,7 @@ const AboutUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1 - Image at top */}
             <AnimatedCard delay={0.3}>
-              <div className={`${differentiators[2].bgColor} relative rounded-3xl h-auto md:h-[50vh]`}>
+              <div className={`${differentiators[2].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#92EAFF] hover:border-[#43CCED]`}>
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image at top */}
                   <div className="w-full h-48 md:h-60">
@@ -423,7 +423,7 @@ const AboutUs = () => {
 
             {/* Card 2 - Image at bottom on desktop, top on mobile */}
             <AnimatedCard delay={0.4}>
-              <div className={`${differentiators[3].bgColor} rounded-3xl relative h-auto md:h-[50vh]`}>
+              <div className={`${differentiators[3].bgColor} rounded-3xl relative h-auto md:h-[50vh] border-2 border-white hover:bg-[#D7BDFC] hover:border-[#B681FF]`}>
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image on mobile - top */}
                   <div className="w-full h-48 md:hidden">
@@ -456,7 +456,7 @@ const AboutUs = () => {
 
             {/* Card 3 - Image at top */}
             <AnimatedCard delay={0.3}>
-              <div className={`${differentiators[4].bgColor} relative rounded-3xl h-auto md:h-[50vh]`}>
+              <div className={`${differentiators[4].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#79FFA6] hover:border-[#3AE774]`}>
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image at top */}
                   <div className="w-full h-48 md:h-60">
@@ -545,7 +545,7 @@ const AboutUs = () => {
       <section className="px-4 sm:px-6 lg:px-6 py-8 sm:py-12 lg:py-16">
         <div className="w-full sm:w-[95%] lg:w-[80%] mx-auto">
           <AnimatedCard delay={0.2}>
-            <div className="bg-yellow-400 relative w-full h-auto lg:h-[50vh] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-12 overflow-hidden">
+            <div className="bg-[#FFD86B] relative w-full h-auto lg:h-[50vh] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-12 overflow-hidden">
               <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-8">
                 <div className="flex-1 w-full lg:w-[60%] h-full text-center lg:text-left">
                   <div className="mb-4 sm:mb-6">
@@ -572,7 +572,7 @@ const AboutUs = () => {
                   </div>
                   <button
                     
-                    className="bg-green-600 text-white px-1.5 py-2 sm:px-4 sm:py-2.5 lg:px-5 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-xs sm:text-base absolute bottom-4 right-4 lg:absolute lg:bottom-0 lg:right-1"
+                    className="bg-green-600 text-white px-1.5 py-2 sm:px-4 sm:py-2.5 lg:px-5 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-xs sm:text-base absolute bottom-4 right-4 lg:absolute lg:-bottom-5 lg:right-1"
                   >
                     Book Your Free Demo → 14 days
                   </button>

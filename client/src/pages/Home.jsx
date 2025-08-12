@@ -25,6 +25,8 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+
+
 // List of Indian states
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -917,9 +919,118 @@ const Home = () => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
   const { user } = useAuth();
-
   const [showScroll, setShowScroll] = useState(false);
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
 
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find active subscriptions
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          if (activeSubscriptions.length > 0) {
+            setHasActiveSubscription(true);
+            // Find the highest tier plan
+            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            for (const plan of [...planHierarchy].reverse()) {
+              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              if (subscription) {
+                setUserPlan(subscription.planType);
+                break;
+              }
+            }
+          } else {
+            setHasActiveSubscription(false);
+            setUserPlan(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error);
+        setUserSubscriptions([]);
+        setHasActiveSubscription(false);
+        setUserPlan(null);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
+
+  // Fetch user subscriptions to determine button state
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find active subscriptions
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          if (activeSubscriptions.length > 0) {
+            setHasActiveSubscription(true);
+            // Find the highest tier plan
+            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            for (const plan of [...planHierarchy].reverse()) {
+              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              if (subscription) {
+                setUserPlan(subscription.planType);
+                break;
+              }
+            }
+          } else {
+            setHasActiveSubscription(false);
+            setUserPlan(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error);
+        setUserSubscriptions([]);
+        setHasActiveSubscription(false);
+        setUserPlan(null);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [user?.id]);
+
+const [isZoomed, setIsZoomed] = useState(false);
+// Use useRef to store the initial pixel ratio when the component first loads
+const basePixelRatio = useRef(window.devicePixelRatio);
+
+useEffect(() => {
+  const checkZoom = () => {
+    // Calculate effective zoom by comparing the current ratio to the initial one
+    const effectiveZoom = window.devicePixelRatio / basePixelRatio.current;
+    setIsZoomed(effectiveZoom >= 1.25);
+  };
+
+  checkZoom(); // Check on initial load
+  window.addEventListener('resize', checkZoom); // Check on resize/zoom
+
+  return () => window.removeEventListener('resize', checkZoom);
+}, []);
   // Fetch user subscriptions to determine button state
   useEffect(() => {
     const fetchUserSubscriptions = async () => {

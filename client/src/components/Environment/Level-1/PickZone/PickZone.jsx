@@ -281,10 +281,10 @@ const PickTheZone = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start pt-24 pb-32">
+        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start pb-32">
             <GameNav />
             
-            <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 px-4">
+            <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 px-4 pt-24">
                 <div className="w-full md:w-1/2 bg-[rgba(32,47,54,0.3)] rounded-xl p-6 space-y-4">
                     {options.map((opt) => {
                         const isSelected = state.selected === opt.name;

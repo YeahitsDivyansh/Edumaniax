@@ -33,7 +33,7 @@ const questions = [
       "Your school wants to reduce its environment footprint. Pick 3 items.",
     items: [
       { name: "Solar lights", cost: 250, imageUrl: "/financeGames6to8/level-1/weekend-movie.svg", sustainable: true },
-      { name: "Compost bins", cost: 150, imageUrl: "/financeGames6to8/level-1/lend-to-a-friend.svg", sustainable: true },
+      { name: "Compost bins", cost: 150, imageUrl: "/financeGames6to8/level-1/ice-cream.svg", sustainable: true },
       { name: "Poster printout", cost: 100, imageUrl: "/financeGames6to8/level-1/data-plan.svg", sustainable: false },
       { name: "Packaged water", cost: 100, imageUrl: "/financeGames6to8/level-1/gift.svg", sustainable: false },
       { name: "Plastic Dustin", cost: 100, imageUrl: "/financeGames6to8/level-1/ice-cream.svg", sustainable: false },
