@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const usePayment = () => {
-  const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
+  const [isPaymentEnabled, setIsPaymentEnabled] = useState(null); // null = unknown, true/false = known
   const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState(null);
 
@@ -81,7 +81,7 @@ export const usePayment = () => {
   };
 
   const getUserSubscriptions = async (userId) => {
-    setLoading(true);
+    // Don't modify global loading state - use local loading in components
     setError(null);
 
     try {
@@ -96,8 +96,6 @@ export const usePayment = () => {
       const errorMessage = err.response?.data?.message || err.message;
       setError(errorMessage);
       throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -140,6 +138,17 @@ export const usePayment = () => {
           };
 
           const verificationResult = await verifyPayment(verificationData);
+          
+          // Force subscription refresh by clearing cached data
+          if (window.refreshSubscriptions) {
+            console.log('Payment successful - refreshing subscriptions');
+            window.refreshSubscriptions();
+            
+            // Also clear any cached data that might prevent UI updates
+            localStorage.removeItem('userSubscriptions');
+            localStorage.removeItem('userAccessControl');
+          }
+          
           onSuccess && onSuccess(verificationResult);
         } catch (error) {
           console.error('Payment verification error:', error);

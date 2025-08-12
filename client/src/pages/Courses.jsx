@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { Link } from "react-router-dom";
-import { useAccessControl } from "../utils/accessControl";
+import { useAccessControl, AccessController } from "../utils/accessControl";
 import { useAuth } from "../contexts/AuthContext";
 
 import {
@@ -31,15 +31,6 @@ const MODULE_MAPPING = {
   'Leadership & Adaptability': 'leadership', 
   'Environmental Sustainability': 'environment',
   'Wellness & Mental Health': 'sel',
-  // Display name mappings for subscription notes
-  'Finance Management': 'finance',
-  'Digital Marketing': 'digital-marketing',
-  'Communication Skills': 'communication',
-  'Entrepreneurship': 'entrepreneurship',
-  'Environmental Science': 'environment',
-  'Legal Awareness': 'law',
-  'Leadership Skills': 'leadership',
-  'Social Emotional Learning': 'sel'
 };
 
 const courses = [
@@ -184,13 +175,14 @@ const courses = [
 const categories = ["All", "Finance", "Technology", "Legal", "Soft Skills", "Business", "Marketing", "Leadership", "Environment", "Health"];
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
 
-const CourseCard = ({ course, index, userSubscriptions, userSelectedModule }) => {
+const CourseCard = ({ course, index, userSubscriptions, userSelectedModule, isLoading }) => {
   const { 
     hasModuleAccess, 
     hasGameAccess, 
     currentPlan: cardCurrentPlan, 
     getRemainingTrialDays: cardGetRemainingTrialDays,
-    shouldShowUpgradePrompt 
+    shouldShowUpgradePrompt,
+    isModulePurchased
   } = useAccessControl(userSubscriptions, userSelectedModule);
   
   const moduleKey = MODULE_MAPPING[course.title] || course.category?.toLowerCase();
@@ -199,6 +191,7 @@ const CourseCard = ({ course, index, userSubscriptions, userSelectedModule }) =>
   const hasGamesAccess = hasGameAccess(moduleKey);
   const needsUpgrade = shouldShowUpgradePrompt(moduleKey); // eslint-disable-line no-unused-vars
   const remainingDays = cardGetRemainingTrialDays();
+  const isPurchased = isModulePurchased(moduleKey);
 
   // Helper function to get level icon
   const getLevelIcon = (level) => {
@@ -315,10 +308,21 @@ const CourseCard = ({ course, index, userSubscriptions, userSelectedModule }) =>
                 className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
               >
                 <img src="/game.png" alt="Game" className="w-5 h-5" />
-                {cardCurrentPlan === 'STARTER' && remainingDays !== null 
-                  ? `Play (${remainingDays} days left)` 
-                  : 'Let\'s Play >'
-                }
+                {(() => {
+                  if (isLoading) {
+                    return 'Loading...';
+                  }
+                  // Show "Play Now" for purchased modules (SOLO users who bought this module)
+                  if (isPurchased) {
+                    return 'Play >';
+                  }
+                  // Show "Play (X days left)" for STARTER users with trial access
+                  if (cardCurrentPlan === 'STARTER' && remainingDays !== null && remainingDays > 0) {
+                    return `Play (${remainingDays} days left)`;
+                  }
+                  // Default text for PRO/INSTITUTIONAL with access
+                  return 'Play Now >';
+                })()}
               </motion.button>
             </Link>
           ) : (
@@ -430,13 +434,27 @@ const Courses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [subscriptions, setSubscriptions] = useState([]);
   const [selectedModule, setSelectedModule] = useState(null);
+  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const coursesRef = useRef(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [hasAutoExpanded, setHasAutoExpanded] = useState(false);
   const filtersRef = useRef(null);
+  const [forceRefresh, setForceRefresh] = useState(0);
+  const [_accessControl, setAccessControl] = useState(null);
 
   // Access control hook for trial banner
   const { currentPlan, getRemainingTrialDays, isTrialValid } = useAccessControl(subscriptions, selectedModule);
+
+  // Initialize accessControl class instance for more complex operations when needed
+  useEffect(() => {
+    if (user?.id && subscriptions.length > 0) {
+      const newAccessControl = new AccessController(
+        subscriptions, 
+        user?.registrationDate
+      );
+      setAccessControl(newAccessControl);
+    }
+  }, [subscriptions, user?.id, user?.registrationDate]);
 
   // Fetch user subscription data
   useEffect(() => {
@@ -444,55 +462,77 @@ const Courses = () => {
       if (!user?.id) return;
 
       try {
+        setIsLoadingSubscriptions(true);
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
         );
         
         if (response.ok) {
-          const subscriptionData = await response.json();
-          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          const data = await response.json();
+          const subscriptionArray = data.success ? data.subscriptions : [];
+          setSubscriptions(subscriptionArray);
           
           // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
-              )
-            : [];
+          const activeSubscriptions = subscriptionArray.filter(sub => 
+            sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          );
           
-          // Define plan hierarchy to find the highest plan
-          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+          // For multiple SOLO subscriptions, we don't need to set a single selectedModule
+          // The AccessController will handle all purchased modules through getSoloModules()
           
-          let highestActiveSubscription = null;
-          
-          // Find the highest tier among active and valid subscriptions (don't mutate original array)
-          for (const plan of [...planHierarchy].reverse()) {
-            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
-            if (subscription) {
-              highestActiveSubscription = subscription;
-              break;
-            }
-          }
-          
-          if (highestActiveSubscription && highestActiveSubscription.notes) {
+          // If there's at least one SOLO subscription, we can set selectedModule to the first one
+          // This is mainly for backward compatibility with existing code
+          const soloSubscription = activeSubscriptions.find(sub => sub.planType === 'SOLO');
+          if (soloSubscription && soloSubscription.notes) {
             try {
-              const parsedNotes = JSON.parse(highestActiveSubscription.notes);
+              const parsedNotes = JSON.parse(soloSubscription.notes);
               const rawModule = parsedNotes.selectedModule;
               
               // Use the centralized module mapping
               setSelectedModule(MODULE_MAPPING[rawModule] || rawModule?.toLowerCase());
             } catch {
-              setSelectedModule(highestActiveSubscription.notes?.toLowerCase());
+              setSelectedModule(soloSubscription.notes?.toLowerCase());
             }
           }
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
         setSubscriptions([]);
+      } finally {
+        setIsLoadingSubscriptions(false);
       }
     };
 
     fetchUserSubscriptions();
-  }, [user?.id]);
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('Courses: Subscription updated event received:', event.detail);
+      setIsLoadingSubscriptions(true);
+      fetchUserSubscriptions(); // Re-fetch subscription data
+      
+      // Force re-initialization of access control
+      if (event.detail?.subscriptions) {
+        // Initialize access control with updated subscription data
+        const newAccessControl = new AccessController(
+          event.detail.subscriptions, 
+          user?.registrationDate
+        );
+        
+        setAccessControl(newAccessControl);
+        
+        // Force UI refresh
+        setForceRefresh(prevRefresh => prevRefresh + 1);
+      }
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
+  }, [user?.id, user?.registrationDate, forceRefresh]);
 
   const filteredCourses = courses.filter(course => {
     const matchesCategory = selectedCategory === "All" || course.category === selectedCategory;
@@ -795,6 +835,7 @@ const Courses = () => {
                 index={index}
                 userSubscriptions={subscriptions}
                 userSelectedModule={selectedModule}
+                isLoading={isLoadingSubscriptions}
               />
             ))}
           </motion.div>

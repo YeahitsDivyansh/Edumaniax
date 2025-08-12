@@ -11,15 +11,15 @@ import { useAccessControl } from '../utils/accessControl';
 
 // Module mapping for all courses
 const MODULE_MAPPING = {
-  'Leadership': 'leadership',
-  'Entrepreneurship': 'entrepreneurship', 
-  'Finance': 'finance',
-  'Digital Marketing': 'digital-marketing',
-  'Communication': 'communication',
+  'Fundamentals of Finance': 'finance',
   'Computer Science': 'computers',
-  'Environmental Science': 'environment',
-  'Legal Awareness': 'law',
-  'Social Emotional Learning': 'sel'
+  'Fundamentals of Law': 'law',
+  'Communication Mastery': 'communication',
+  'Entrepreneurship Bootcamp': 'entrepreneurship',
+  'Digital Marketing Pro': 'digital-marketing',
+  'Leadership & Adaptability': 'leadership',
+  'Environmental Sustainability': 'environment',
+  'Wellness & Mental Health': 'sel'
 };
 
 /**
@@ -53,21 +53,49 @@ export const useGameAccess = (moduleKey, progress = []) => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          // Handle the API response format {success: true, subscriptions: [...]}
+          const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(userSubscriptions);
           
-          // Set selected module from active subscription
-          const activeSubscription = Array.isArray(subscriptionData) 
-            ? subscriptionData.find(sub => sub.status === 'ACTIVE') 
-            : null;
-          
-          if (activeSubscription && activeSubscription.notes) {
-            try {
-              const parsedNotes = JSON.parse(activeSubscription.notes);
-              const rawModule = parsedNotes.selectedModule;
-              
-              setSelectedModule(MODULE_MAPPING[rawModule] || rawModule?.toLowerCase());
-            } catch {
-              setSelectedModule(activeSubscription.notes?.toLowerCase());
+          // For multiple SOLO subscriptions, check if current module is purchased
+          // Set selectedModule to the first purchased module
+          if (userSubscriptions.length > 0) {
+            const activeSubscriptions = userSubscriptions.filter(sub => 
+              sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+            );
+            
+            // Check if the current module is purchased
+            const currentModuleSubscription = activeSubscriptions.find(sub => {
+              if (sub.notes && sub.planType === 'SOLO') {
+                try {
+                  const parsedNotes = JSON.parse(sub.notes);
+                  const rawModule = parsedNotes.selectedModule;
+                  const mappedModule = MODULE_MAPPING[rawModule] || rawModule?.toLowerCase();
+                  return mappedModule === moduleKey;
+                } catch {
+                  console.error('Error parsing subscription notes');
+                  return false;
+                }
+              }
+              return false;
+            });
+            
+            if (currentModuleSubscription) {
+              // Current module is purchased
+              setSelectedModule(moduleKey);
+            } else {
+              // Use the first active subscription's module as selectedModule
+              const firstActiveSubscription = activeSubscriptions[0];
+              if (firstActiveSubscription && firstActiveSubscription.notes) {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
+                  setSelectedModule(MODULE_MAPPING[rawModule] || rawModule?.toLowerCase());
+                } catch (error) {
+                  console.error('Error parsing subscription notes:', error);
+                  setSelectedModule(firstActiveSubscription.notes?.toLowerCase());
+                }
+              }
             }
           }
         }
@@ -80,7 +108,45 @@ export const useGameAccess = (moduleKey, progress = []) => {
     };
 
     fetchUserSubscriptions();
-  }, [user?.id]);
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('useGameAccess: Subscription update detected');
+      if (event.detail?.subscriptions) {
+        const userSubscriptions = event.detail.subscriptions;
+        setSubscriptions(userSubscriptions);
+        
+        // Update selected module based on current module purchase
+        const activeSubscriptions = userSubscriptions.filter(sub => 
+          sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+        );
+        
+        const currentModuleSubscription = activeSubscriptions.find(sub => {
+          if (sub.notes && sub.planType === 'SOLO') {
+            try {
+              const parsedNotes = JSON.parse(sub.notes);
+              const rawModule = parsedNotes.selectedModule;
+              const mappedModule = MODULE_MAPPING[rawModule] || rawModule?.toLowerCase();
+              return mappedModule === moduleKey;
+            } catch (error) {
+              return false;
+            }
+          }
+          return false;
+        });
+        
+        if (currentModuleSubscription) {
+          setSelectedModule(moduleKey);
+        }
+      }
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
+  }, [user?.id, moduleKey]);
 
   // Helper function to check if a challenge is completed
   const isChallengeCompleted = (moduleIndex, challengeIndex) => {
@@ -104,7 +170,21 @@ export const useGameAccess = (moduleKey, progress = []) => {
       return false;
     }
 
-    // Use access control system for subscription-based access
+    // SOLO plan users have different access based on whether it's their selected module
+    if (currentPlan === 'SOLO') {
+      // For their selected module, they have full access to all levels and challenges
+      if (selectedModule === moduleKey) {
+        const levelNumber = moduleIndex + 1;
+        const hasSubscriptionAccess = hasLevelAccess(moduleKey, levelNumber);
+        if (hasSubscriptionAccess) return true;
+      } else {
+        // For other modules (trial access), only allow Challenge 1 of Level 1
+        if (moduleIndex === 0 && challengeIndex === 0) return true;
+        return false;
+      }
+    }
+
+    // Use access control system for subscription-based access (PRO, INSTITUTIONAL)
     const levelNumber = moduleIndex + 1; // Convert 0-based index to 1-based level
     const hasSubscriptionAccess = hasLevelAccess(moduleKey, levelNumber);
     

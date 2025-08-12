@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import dotenv from 'dotenv';
+import authenticateUser from "../middlewares/authMiddleware.js";
 
 dotenv.config();
 
@@ -33,8 +34,39 @@ if (process.env.PAYMENT_ENABLED === 'true') {
 const PLANS = {
   STARTER: { amount: 0, duration: 7, name: "Starter Plan" }, // Free trial
   SOLO: { amount: 199, duration: 30, name: "Solo Plan" }, // ₹199 for 1 month
-  PRO: { amount: 1433, duration: 180, name: "Pro Plan" }, // ₹1433 for 6 months
+  PRO: { amount: 1433, duration: 90, name: "Pro Plan" }, // ₹1433 for 3 months
   INSTITUTIONAL: { amount: 0, duration: 0, name: "Institutional Plan" } // Custom pricing
+};
+
+// Calculate upgrade pricing for PRO plans
+const calculateUpgradePrice = async (userId, targetPlan = 'PRO') => {
+  if (targetPlan !== 'PRO') {
+    return { amount: PLANS[targetPlan].amount, discount: 0, soloCount: 0 };
+  }
+
+  // Get user's active SOLO subscriptions
+  const activeSoloSubscriptions = await prisma.subscription.findMany({
+    where: {
+      userId: userId,
+      planType: 'SOLO',
+      status: 'ACTIVE',
+      endDate: {
+        gt: new Date()
+      }
+    }
+  });
+
+  const soloCount = activeSoloSubscriptions.length;
+  const soloDiscount = soloCount * PLANS.SOLO.amount;
+  const finalAmount = Math.max(0, PLANS.PRO.amount - soloDiscount);
+
+  return {
+    amount: finalAmount,
+    originalAmount: PLANS.PRO.amount,
+    discount: soloDiscount,
+    soloCount: soloCount,
+    savings: soloDiscount > 0 ? `You save ₹${soloDiscount} from your ${soloCount} SOLO plan${soloCount > 1 ? 's' : ''}!` : null
+  };
 };
 
 // Test endpoint to check users (for debugging)
@@ -53,6 +85,44 @@ router.get("/test-users", async (req, res) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// Debug endpoint to check recent payments
+router.get("/test-payments", async (req, res) => {
+  try {
+    const payments = await prisma.payment.findMany({
+      include: {
+        user: {
+          select: { name: true, phonenumber: true }
+        }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10
+    });
+
+    res.json({ payments });
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    res.status(500).json({ error: "Failed to fetch payments" });
+  }
+});
+
+// Debug endpoint to check current authenticated user
+router.get("/whoami", authenticateUser, async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        phonenumber: req.user.phonenumber,
+        email: req.user.email
+      }
+    });
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    res.status(500).json({ error: "Failed to get current user" });
   }
 });
 
@@ -95,6 +165,10 @@ router.post("/create-order", checkPaymentFeature, async (req, res) => {
       });
     }
 
+    // Calculate pricing (with upgrade discounts if applicable)
+    const pricingInfo = await calculateUpgradePrice(userId, planType);
+    const finalAmount = pricingInfo.amount;
+
     // Create Razorpay order
     // Generate a short receipt (max 40 chars for Razorpay)
     const timestamp = Date.now().toString().slice(-8); // Last 8 digits
@@ -102,7 +176,7 @@ router.post("/create-order", checkPaymentFeature, async (req, res) => {
     const receipt = `ord_${shortUserId}_${timestamp}`;
     
     const orderOptions = {
-      amount: plan.amount * 100, // Convert rupees to paisa for Razorpay
+      amount: finalAmount * 100, // Convert rupees to paisa for Razorpay
       currency: "INR",
       receipt: receipt,
       notes: {
@@ -110,7 +184,13 @@ router.post("/create-order", checkPaymentFeature, async (req, res) => {
         planType,
         planName: plan.name,
         country: "IN",
-        selectedModule: selectedModule || null
+        selectedModule: selectedModule || null,
+        ...(pricingInfo.discount > 0 && {
+          originalAmount: pricingInfo.originalAmount,
+          discount: pricingInfo.discount,
+          soloCount: pricingInfo.soloCount,
+          upgradeDiscount: true
+        })
       }
     };
 
@@ -118,17 +198,8 @@ router.post("/create-order", checkPaymentFeature, async (req, res) => {
 
     const order = await razorpay.orders.create(orderOptions);
 
-    // Save payment record in database - store amount in rupees
-    const payment = await prisma.payment.create({
-      data: {
-        userId,
-        razorpayOrderId: order.id,
-        amount: plan.amount, // Store in rupees
-        planType,
-        status: "PENDING",
-        notes: selectedModule ? JSON.stringify({ selectedModule }) : null
-      }
-    });
+    // Don't store payment record in database until completion
+    // Only return order information for frontend processing
 
     res.json({
       success: true,
@@ -136,11 +207,11 @@ router.post("/create-order", checkPaymentFeature, async (req, res) => {
       amount: order.amount, // Amount in paisa for Razorpay frontend
       currency: order.currency,
       keyId: process.env.RAZORPAY_KEY_ID,
-      paymentId: payment.id,
       userId: userId,
       planType: planType,
       selectedModule: selectedModule || null,
-      amountInRupees: plan.amount // Amount in rupees for display
+      amountInRupees: finalAmount, // Final amount in rupees for display
+      pricingInfo: pricingInfo // Include upgrade pricing details
     });
 
   } catch (error) {
@@ -174,63 +245,117 @@ router.post("/verify-payment", checkPaymentFeature, async (req, res) => {
       return res.status(400).json({ error: "Invalid payment signature" });
     }
 
-    // Find payment record
-    const payment = await prisma.payment.findUnique({
-      where: { razorpayOrderId: razorpay_order_id },
-      select: {
-        id: true,
-        userId: true,
-        amount: true,
-        planType: true,
-        notes: true
-      }
-    });
+    // Get order details from Razorpay to extract information
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const { userId: orderUserId, planType, selectedModule, originalAmount, discount, soloCount } = order.notes;
 
-    if (!payment) {
-      return res.status(404).json({ error: "Payment record not found" });
-    }
+    // Calculate the final amount (for verification)
+    const pricingInfo = await calculateUpgradePrice(orderUserId, planType);
+    const finalAmount = pricingInfo.amount;
 
-    // Update payment status
-    const updatedPayment = await prisma.payment.update({
-      where: { id: payment.id },
+    // Create payment record only after successful verification
+    const payment = await prisma.payment.create({
       data: {
+        userId: orderUserId,
+        razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
-        status: "COMPLETED"
+        amount: finalAmount, // Store final amount paid
+        planType: planType,
+        status: "COMPLETED", // Only store completed payments
+        notes: selectedModule ? JSON.stringify({ 
+          selectedModule,
+          ...(pricingInfo.discount > 0 && {
+            originalAmount: pricingInfo.originalAmount,
+            discount: pricingInfo.discount,
+            soloCount: pricingInfo.soloCount,
+            upgradeDiscount: true
+          })
+        }) : null
       }
     });
 
     // Create or update subscription
-    const plan = PLANS[payment.planType];
+    const plan = PLANS[planType];
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + plan.duration);
 
     // Get notes from payment for SOLO plans that have a selected module
     let subscriptionNotes = null;
-    if (payment.planType === 'SOLO' && payment.notes) {
-      subscriptionNotes = payment.notes; // Pass through the JSON notes with selectedModule
+    if (planType === 'SOLO' && selectedModule) {
+      subscriptionNotes = JSON.stringify({ selectedModule });
     }
 
-    const subscription = await prisma.subscription.upsert({
-      where: {
-        userId_planType: {
-          userId: payment.userId,
-          planType: payment.planType
+    // For PRO upgrades, expire existing SOLO subscriptions
+    if (planType === 'PRO' && pricingInfo.soloCount > 0) {
+      await prisma.subscription.updateMany({
+        where: {
+          userId: orderUserId,
+          planType: 'SOLO',
+          status: 'ACTIVE'
+        },
+        data: {
+          status: 'CANCELLED',
+          updatedAt: new Date()
         }
-      },
-      update: {
-        status: "ACTIVE",
-        endDate,
-        amount: payment.amount,
-        notes: subscriptionNotes
-      },
-      create: {
-        userId: payment.userId,
-        planType: payment.planType,
-        status: "ACTIVE",
-        endDate,
-        amount: payment.amount,
-        notes: subscriptionNotes
+      });
+    }
+
+    // For SOLO plans, create a new subscription each time (multiple SOLO subscriptions allowed)
+    // For other plans, check for existing subscription and update or create
+    let subscription;
+    
+    if (planType === 'SOLO') {
+      // Create a new SOLO subscription (allow multiple per user)
+      subscription = await prisma.subscription.create({
+        data: {
+          userId: orderUserId,
+          planType: planType,
+          status: "ACTIVE",
+          endDate,
+          amount: finalAmount,
+          notes: subscriptionNotes
+        }
+      });
+    } else {
+      // For PRO/INSTITUTIONAL, check for existing and update or create
+      const existingSubscription = await prisma.subscription.findFirst({
+        where: {
+          userId: orderUserId,
+          planType: planType
+        }
+      });
+
+      if (existingSubscription) {
+        subscription = await prisma.subscription.update({
+          where: { id: existingSubscription.id },
+          data: {
+            status: "ACTIVE",
+            endDate,
+            amount: finalAmount,
+            notes: subscriptionNotes
+          }
+        });
+      } else {
+        subscription = await prisma.subscription.create({
+          data: {
+            userId: orderUserId,
+            planType: planType,
+            status: "ACTIVE",
+            endDate,
+            amount: finalAmount,
+            notes: subscriptionNotes
+          }
+        });
       }
+    }
+
+    console.log('Created/Updated subscription:', {
+      subscriptionId: subscription.id,
+      userId: orderUserId,
+      planType: planType,
+      status: subscription.status,
+      endDate: subscription.endDate,
+      notes: subscription.notes
     });
 
     // Link payment to subscription
@@ -266,11 +391,18 @@ router.get("/subscriptions/:userId", async (req, res) => {
       orderBy: { createdAt: "desc" }
     });
 
-    res.json(subscriptions);
+    res.json({
+      success: true,
+      subscriptions: subscriptions || []
+    });
 
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
-    res.status(500).json({ error: "Failed to fetch subscriptions" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch subscriptions",
+      message: error.message
+    });
   }
 });
 

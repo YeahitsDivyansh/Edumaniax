@@ -505,7 +505,7 @@ const ProgressCardComponent = () => {
           onMouseEnter={isMobile ? undefined : handleButtonHover}
           onMouseLeave={isMobile ? undefined : handleButtonLeave}
         >
-          ✨ Let's Play
+          ✨ Play Now
         </button>
       </div>
     </div>
@@ -965,6 +965,19 @@ const Home = () => {
     };
 
     fetchUserSubscriptions();
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('Home: Subscription updated event received:', event.detail);
+      fetchUserSubscriptions(); // Re-fetch subscription data
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
   }, [user?.id]);
 
   // Fetch user subscriptions to determine button state
@@ -2071,16 +2084,30 @@ useEffect(() => {
 
                   {/* Buttons Row - Improved Spacing */}
                   <div className="flex gap-2 mt-auto">
-                    <Link to={course.gamesLink} className="flex-1">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
-                      >
-                        <img src="/game.png" alt="Game" className="w-5 h-5" />
-                        Let's Play &gt;
-                      </motion.button>
-                    </Link>
+                    {hasActiveSubscription ? (
+                      <Link to={course.gamesLink} className="flex-1">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+                        >
+                          <img src="/game.png" alt="Game" className="w-5 h-5" />
+                          Play &gt;
+                        </motion.button>
+                      </Link>
+                    ) : (
+                      <Link to="/pricing" className="flex-1">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-gray-400 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-gray-500 transition duration-300 text-sm flex items-center justify-center gap-2"
+                          title="Upgrade to access games"
+                        >
+                          <img src="/game.png" alt="Game" className="w-5 h-5 opacity-70" />
+                          Upgrade &gt;
+                        </motion.button>
+                      </Link>
+                    )}
 
                     <Link to={course.notesLink}>
                       <motion.button

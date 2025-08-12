@@ -24,7 +24,6 @@ const Dashboard = () => {
   const [payments, setPayments] = useState([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const [userSubscription, setUserSubscription] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   
   // Image cropping states
@@ -101,125 +100,63 @@ const Dashboard = () => {
         setLoadingSubscriptions(true);
         setLoadingPayments(true);
 
-        // Fetch user subscriptions
-        const subscriptionResponse = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
-        );
+        // Use Promise.all to fetch both subscription and payment data in parallel
+        const [subscriptionResponse, paymentResponse] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`),
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`)
+        ]);
         
+        // Process subscription data
         if (subscriptionResponse.ok) {
           const subscriptionData = await subscriptionResponse.json();
-          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          // Handle the API response format {success: true, subscriptions: [...]}
+          const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(userSubscriptions);
           
-          // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
-              )
-            : [];
-          
-          // Define plan hierarchy to find the highest plan
-          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
-          
-          let highestActiveSubscription = null;
-          
-          // Find the highest tier among active and valid subscriptions
-          for (const plan of planHierarchy.reverse()) {
-            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
-            if (subscription) {
-              highestActiveSubscription = subscription;
-              break;
-            }
-          }
-          
-          if (highestActiveSubscription) {
-            // Parse notes to get selectedModule if it exists
-            let selectedModuleFromSub = null;
-            if (highestActiveSubscription.notes) {
-              try {
-                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
-                const rawModule = parsedNotes.selectedModule;
-                
-                // Map the display name to the correct module key
-                const moduleMapping = {
-                  // Full display names from UI
-                  'Finance Management': 'finance',
-                  'Digital Marketing': 'digital-marketing',
-                  'Communication Skills': 'communication',
-                  'Computer Science': 'computers',
-                  'Entrepreneurship': 'entrepreneurship',
-                  'Environmental Science': 'environment',
-                  'Legal Awareness': 'law',
-                  'Leadership Skills': 'leadership',
-                  'Social Emotional Learning': 'sel',
+          // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+          // but the access control will handle all purchased modules
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(sub => 
+              sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+            );
+            
+            if (firstActiveSubscription) {
+              
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
                   
-                  // Short names (legacy support)
-                  'Leadership': 'leadership',
-                  'Finance': 'finance',
-                  'Communication': 'communication',
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    'Fundamentals of Finance': 'finance',
+                    'Computer Science': 'computers', 
+                    'Fundamentals of Law': 'law',
+                    'Communication Mastery': 'communication',
+                    'Entrepreneurship Bootcamp': 'entrepreneurship',
+                    'Digital Marketing Pro': 'digital-marketing',
+                    'Leadership & Adaptability': 'leadership', 
+                    'Environmental Sustainability': 'environment',
+                    'Wellness & Mental Health': 'sel'
+                  };
                   
-                  // Course-specific names from screenshots
-                  'Fundamentals of Finance': 'finance',
-                  'Fundamentals of Law': 'law',
-                  'Communication Mastery': 'communication',
-                  'Entrepreneurship Bootcamp': 'entrepreneurship',
-                  'Digital Marketing Pro': 'digital-marketing',
-                  'Leadership & Adaptability': 'leadership',
-                  'Environmental Sustainability': 'environment'
-                };
-                
-                selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
-              } catch {
-                // If notes is not JSON, treat as plain text and map it
-                const moduleMapping = {
-                  // Full display names from UI
-                  'Finance Management': 'finance',
-                  'Digital Marketing': 'digital-marketing',
-                  'Communication Skills': 'communication',
-                  'Computer Science': 'computers',
-                  'Entrepreneurship': 'entrepreneurship',
-                  'Environmental Science': 'environment',
-                  'Legal Awareness': 'law',
-                  'Leadership Skills': 'leadership',
-                  'Social Emotional Learning': 'sel',
-                  
-                  // Short names (legacy support)
-                  'Leadership': 'leadership',
-                  'Finance': 'finance',
-                  'Communication': 'communication',
-                  
-                  // Course-specific names from screenshots
-                  'Fundamentals of Finance': 'finance',
-                  'Fundamentals of Law': 'law',
-                  'Communication Mastery': 'communication',
-                  'Entrepreneurship Bootcamp': 'entrepreneurship',
-                  'Digital Marketing Pro': 'digital-marketing',
-                  'Leadership & Adaptability': 'leadership',
-                  'Environmental Sustainability': 'environment'
-                };
-                
-                selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error('Error parsing subscription notes:', error);
+                }
               }
             }
-            
-            setSelectedModule(selectedModuleFromSub);
-            setUserSubscription({
-              plan: highestActiveSubscription.planType,
-              status: highestActiveSubscription.status,
-              startDate: highestActiveSubscription.startDate,
-              endDate: highestActiveSubscription.endDate,
-              selectedModule: selectedModuleFromSub
-            });
+          } else {
+            setSelectedModule(null);
           }
         } else {
           console.log('Failed to fetch subscriptions:', subscriptionResponse.statusText);
           setSubscriptions([]);
         }
 
-        // Fetch user payments
-        const paymentResponse = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`
-        );
-        
+        // Process payment data
         if (paymentResponse.ok) {
           const paymentData = await paymentResponse.json();
           setPayments(Array.isArray(paymentData) ? paymentData : []);
@@ -239,6 +176,19 @@ const Dashboard = () => {
     };
 
     fetchUserSubscriptionData();
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('Subscription updated event received:', event.detail);
+      fetchUserSubscriptionData(); // Re-fetch subscription data
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
   }, [user?.id]);
 
   // Refresh comments when user returns to the dashboard (page focus)
@@ -270,6 +220,68 @@ const Dashboard = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id, user?.name, getUserComments]);
+
+  // Listen for subscription updates from payment completion
+  useEffect(() => {
+    const handleSubscriptionUpdate = async (event) => {
+      console.log('Dashboard: Subscription update detected', event.detail);
+      
+      if (user?.id && event.detail?.subscriptions) {
+        // Set loading state
+        setLoadingSubscriptions(true);
+        
+        try {
+          // Update subscription state with the new data
+          const userSubscriptions = event.detail.subscriptions;
+          setSubscriptions(userSubscriptions);
+          
+          // Update selected module if needed
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(sub => 
+              sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+            );
+            
+            if (firstActiveSubscription) {
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
+                  
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    'Fundamentals of Finance': 'finance',
+                    'Computer Science': 'computers', 
+                    'Fundamentals of Law': 'law',
+                    'Communication Mastery': 'communication',
+                    'Entrepreneurship Bootcamp': 'entrepreneurship',
+                    'Digital Marketing Pro': 'digital-marketing',
+                    'Leadership & Adaptability': 'leadership', 
+                    'Environmental Sustainability': 'environment',
+                    'Wellness & Mental Health': 'sel'
+                  };
+                  
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error('Error parsing subscription notes:', error);
+                }
+              }
+            }
+          }
+        } finally {
+          // Clear loading state
+          setLoadingSubscriptions(false);
+        }
+      }
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user && role !== "admin" && role !== "ADMIN" && role !== "SALES") {
@@ -716,15 +728,15 @@ const Dashboard = () => {
                               <p className="text-green-800 font-semibold">Modules Unlocked</p>
                               <p className="text-2xl font-bold text-green-600">
                                 {[
-                                  { key: 'finance', name: 'Finance Management' },
-                                  { key: 'digital-marketing', name: 'Digital Marketing' },
-                                  { key: 'communication', name: 'Communication Skills' },
+                                  { key: 'finance', name: 'Fundamentals of Finance' },
                                   { key: 'computers', name: 'Computer Science' },
-                                  { key: 'entrepreneurship', name: 'Entrepreneurship' },
-                                  { key: 'environment', name: 'Environmental Science' },
-                                  { key: 'law', name: 'Legal Awareness' },
-                                  { key: 'leadership', name: 'Leadership Skills' },
-                                  { key: 'sel', name: 'Social Emotional Learning' }
+                                  { key: 'law', name: 'Fundamentals of Law' },
+                                  { key: 'communication', name: 'Communication Mastery' },
+                                  { key: 'entrepreneurship', name: 'Entrepreneurship Bootcamp' },
+                                  { key: 'digital-marketing', name: 'Digital Marketing Pro' },
+                                  { key: 'leadership', name: 'Leadership & Adaptability' },
+                                  { key: 'environment', name: 'Environmental Sustainability' },
+                                  { key: 'sel', name: 'Wellness & Mental Health' },
                                 ].filter(module => hasModuleAccess(module.key)).length}
                               </p>
                             </div>
@@ -1393,72 +1405,93 @@ const Dashboard = () => {
 
                 {/* Current Plan Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Current Plan</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Current Plans</h3>
                   {loadingSubscriptions ? (
                     <div className="flex justify-center items-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                       <span className="ml-2 text-gray-600">Loading subscription data...</span>
                     </div>
-                  ) : userSubscription ? (
-                    <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="text-xl font-semibold text-green-800">
-                            {userSubscription.plan.toUpperCase()} PLAN
-                          </h4>
-                          <p className="text-gray-600 text-sm">
-                            Subscribed on: {new Date(userSubscription.startDate).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            userSubscription.status === 'ACTIVE' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {userSubscription.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Valid Until:</p>
-                          <p className="font-semibold">
-                            {new Date(userSubscription.endDate).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Plan Type:</p>
-                          <p className="font-semibold">{userSubscription.plan}</p>
-                        </div>
-                        {userSubscription.selectedModule && (
-                          <div className="md:col-span-2">
-                            <p className="text-gray-500">Selected Module:</p>
-                            <p className="font-semibold">{userSubscription.selectedModule}</p>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Add upgrade button for STARTER and PRO plans */}
-                      {(userSubscription.plan === 'STARTER' || userSubscription.plan === 'PRO') && (
-                        <div className="mt-4 pt-4 border-t border-green-200">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm text-gray-600">
-                                {userSubscription.plan === 'STARTER' 
-                                  ? 'Unlock premium modules and certificates' 
-                                  : 'Get institutional features and live sessions'}
-                              </p>
+                  ) : subscriptions && subscriptions.length > 0 ? (
+                    <div className="space-y-4">
+                      {subscriptions
+                        .filter(sub => sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date())
+                        .map((subscription, index) => {
+                          let selectedModule = null;
+                          if (subscription.notes && subscription.planType === 'SOLO') {
+                            try {
+                              const parsedNotes = JSON.parse(subscription.notes);
+                              selectedModule = parsedNotes.selectedModule;
+                            } catch (error) {
+                              console.error('Error parsing subscription notes:', error);
+                            }
+                          }
+                          
+                          return (
+                            <div key={subscription.id || index} className="border border-green-200 rounded-lg p-4 bg-green-50">
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h4 className="text-xl font-semibold text-green-800">
+                                    {subscription.planType.toUpperCase()} PLAN
+                                  </h4>
+                                  <p className="text-gray-600 text-sm">
+                                    Subscribed on: {new Date(subscription.startDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                    subscription.status === 'ACTIVE' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {subscription.status}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-500">Valid Until:</p>
+                                  <p className="font-semibold">
+                                    {new Date(subscription.endDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">Plan Type:</p>
+                                  <p className="font-semibold">{subscription.planType}</p>
+                                </div>
+                                {selectedModule && (
+                                  <div className="md:col-span-2">
+                                    <p className="text-gray-500">Selected Module:</p>
+                                    <p className="font-semibold">{selectedModule}</p>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Show remaining days */}
+                              <div className="mt-3 pt-3 border-t border-green-200">
+                                {(() => {
+                                  const endDate = new Date(subscription.endDate);
+                                  const currentDate = new Date();
+                                  const timeDiff = endDate.getTime() - currentDate.getTime();
+                                  const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                                  
+                                  if (remainingDays > 0) {
+                                    return (
+                                      <p className="text-green-600 text-sm font-medium">
+                                        {remainingDays} day{remainingDays !== 1 ? 's' : ''} remaining
+                                      </p>
+                                    );
+                                  } else {
+                                    return (
+                                      <p className="text-red-600 text-sm font-medium">
+                                        Expired
+                                      </p>
+                                    );
+                                  }
+                                })()}
+                              </div>
                             </div>
-                            <button
-                              onClick={() => navigate(`/payment?plan=${userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}`)}
-                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
-                            >
-                             Upgrade to {userSubscription.plan === 'STARTER' ? 'SOLO' : 'INSTITUTIONAL'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                          );
+                        })}
                     </div>
                   ) : (
                     <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
@@ -1478,15 +1511,15 @@ const Dashboard = () => {
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">Accessible Modules</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { name: 'Finance Management', key: 'finance' },
-                      { name: 'Digital Marketing', key: 'digital-marketing' },
-                      { name: 'Communication Skills', key: 'communication' },
+                      { name: 'Fundamentals of Finance', key: 'finance' },
                       { name: 'Computer Science', key: 'computers' },
-                      { name: 'Entrepreneurship', key: 'entrepreneurship' },
-                      { name: 'Environmental Science', key: 'environment' },
-                      { name: 'Legal Awareness', key: 'law' },
-                      { name: 'Leadership Skills', key: 'leadership' },
-                      { name: 'Social Emotional Learning', key: 'sel' }
+                      { name: 'Fundamentals of Law', key: 'law' },
+                      { name: 'Communication Mastery', key: 'communication' },
+                      { name: 'Entrepreneurship Bootcamp', key: 'entrepreneurship' },
+                      { name: 'Digital Marketing Pro', key: 'digital-marketing' },
+                      { name: 'Leadership & Adaptability', key: 'leadership' },
+                      { name: 'Environmental Sustainability', key: 'environment' },
+                      { name: 'Wellness & Mental Health', key: 'sel' },
                     ].map((module) => {
                       const hasAccess = hasModuleAccess(module.key);
                       return (
