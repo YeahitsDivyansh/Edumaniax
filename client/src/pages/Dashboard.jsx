@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, NavLink, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
@@ -91,7 +91,135 @@ const Dashboard = () => {
     fetchUserComments();
   }, [user?.id, user?.name, getUserComments]);
 
-  // Fetch user subscription and payment data
+  // Auto-refresh subscription data daily and handle real-time updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Function to refresh subscription data
+    const refreshSubscriptionData = async () => {
+      console.log('🔄 Auto-refreshing subscription data...');
+      await fetchUserSubscriptionData();
+    };
+
+    // Set up daily refresh (24 hours)
+    const dailyRefreshInterval = setInterval(refreshSubscriptionData, 24 * 60 * 60 * 1000);
+
+    // Set up hourly refresh for more frequent updates during active usage
+    const hourlyRefreshInterval = setInterval(refreshSubscriptionData, 60 * 60 * 1000);
+
+    // Refresh on window focus (when user returns to the tab)
+    const handleWindowFocus = () => {
+      console.log('👁️ Window focused, refreshing subscription data...');
+      refreshSubscriptionData();
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Cleanup intervals and event listeners on unmount
+    return () => {
+      clearInterval(dailyRefreshInterval);
+      clearInterval(hourlyRefreshInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [user?.id]);
+
+  // Move fetchUserSubscriptionData function outside useEffect so it can be reused
+  const fetchUserSubscriptionData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoadingSubscriptions(true);
+      setLoadingPayments(true);
+
+      // Use Promise.all to fetch both subscription and payment data in parallel
+      const [subscriptionResponse, paymentResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`)
+      ]);
+      
+      // Process subscription data
+      if (subscriptionResponse.ok) {
+        const subscriptionData = await subscriptionResponse.json();
+        // Handle the API response format {success: true, subscriptions: [...]}
+        const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+        setSubscriptions(userSubscriptions);
+        
+        console.log('📊 Updated subscription data:', userSubscriptions);
+        
+        // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+        // but the access control will handle all purchased modules
+        if (userSubscriptions.length > 0) {
+          const firstActiveSubscription = userSubscriptions.find(sub => 
+            (sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()) || 
+            (sub.isExpired === false && sub.remainingDays > 0)
+          );
+          
+          if (firstActiveSubscription) {
+            // Parse notes to get selectedModule if it exists (for SOLO plans)
+            if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+              try {
+                const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                const rawModule = parsedNotes.selectedModule;
+                
+                // Map the display name to the correct module key
+                const moduleMapping = {
+                  'Fundamentals of Finance': 'finance',
+                  'Computer Science': 'computers', 
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership', 
+                  'Environmental Sustainability': 'environment',
+                  'Wellness & Mental Health': 'sel',
+                };
+                
+                const mappedModule = moduleMapping[rawModule] || rawModule?.toLowerCase();
+                setSelectedModule(mappedModule);
+              } catch {
+                // If notes is not JSON, treat as plain text and map it
+                const moduleMapping = {
+                  'Fundamentals of Finance': 'finance',
+                  'Computer Science': 'computers', 
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership', 
+                  'Environmental Sustainability': 'environment',
+                  'Wellness & Mental Health': 'sel',
+                };
+                
+                const mappedModule = moduleMapping[firstActiveSubscription.notes] || firstActiveSubscription.notes?.toLowerCase();
+                setSelectedModule(mappedModule);
+              }
+            }
+          }
+        }
+      }
+      
+      // Process payment data
+      if (paymentResponse.ok) {
+        const paymentData = await paymentResponse.json();
+        setPayments(Array.isArray(paymentData) ? paymentData : []);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching user subscription/payment data:', error);
+      setSubscriptions([]);
+      setPayments([]);
+    } finally {
+      setLoadingSubscriptions(false);
+      setLoadingPayments(false);
+    }
+  }, [user?.id]);
+
+  // Fetch user subscription and payment data on component mount
+  useEffect(() => {
+    fetchUserSubscriptionData();
+  }, [user?.id]);
+
+  // Original fetch useEffect (keeping for compatibility but moving logic to function above)
   useEffect(() => {
     const fetchUserSubscriptionData = async () => {
       if (!user?.id) return;
@@ -1468,25 +1596,63 @@ const Dashboard = () => {
                                 )}
                               </div>
                               
-                              {/* Show remaining days */}
+                              {/* Show remaining days with enhanced display */}
                               <div className="mt-3 pt-3 border-t border-green-200">
                                 {(() => {
-                                  const endDate = new Date(subscription.endDate);
-                                  const currentDate = new Date();
-                                  const timeDiff = endDate.getTime() - currentDate.getTime();
-                                  const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                                  // Use enriched data if available, otherwise calculate manually
+                                  let remainingDays;
+                                  let isExpired = false;
                                   
-                                  if (remainingDays > 0) {
+                                  if (subscription.remainingDays !== undefined) {
+                                    // Use enriched data from subscription manager
+                                    remainingDays = subscription.remainingDays;
+                                    isExpired = subscription.isExpired || remainingDays <= 0;
+                                  } else {
+                                    // Fallback to manual calculation
+                                    const endDate = new Date(subscription.endDate);
+                                    const currentDate = new Date();
+                                    const timeDiff = endDate.getTime() - currentDate.getTime();
+                                    remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                                    isExpired = remainingDays <= 0;
+                                  }
+                                  
+                                  if (!isExpired && remainingDays > 0) {
+                                    // Active subscription
+                                    let textColor = 'text-green-600';
+                                    let bgColor = 'bg-green-50';
+                                    
+                                    // Change color based on urgency
+                                    if (remainingDays <= 3) {
+                                      textColor = 'text-red-600';
+                                      bgColor = 'bg-red-50';
+                                    } else if (remainingDays <= 7) {
+                                      textColor = 'text-yellow-600';
+                                      bgColor = 'bg-yellow-50';
+                                    }
+                                    
                                     return (
-                                      <p className="text-green-600 text-sm font-medium">
-                                        {remainingDays} day{remainingDays !== 1 ? 's' : ''} remaining
-                                      </p>
+                                      <div className={`p-2 rounded-lg ${bgColor}`}>
+                                        <p className={`${textColor} text-sm font-medium flex items-center gap-2`}>
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          {remainingDays} day{remainingDays !== 1 ? 's' : ''} remaining
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expires on {new Date(subscription.endDate).toLocaleDateString()}
+                                        </p>
+                                      </div>
                                     );
                                   } else {
+                                    // Expired subscription
                                     return (
-                                      <p className="text-red-600 text-sm font-medium">
-                                        Expired
-                                      </p>
+                                      <div className="p-2 rounded-lg bg-red-50">
+                                        <p className="text-red-600 text-sm font-medium flex items-center gap-2">
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          Expired
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expired on {new Date(subscription.endDate).toLocaleDateString()}
+                                        </p>
+                                      </div>
                                     );
                                   }
                                 })()}

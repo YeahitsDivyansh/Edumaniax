@@ -171,10 +171,15 @@ class AccessController {
       return 'STARTER';
     }
 
-    // Find the highest active subscription
-    const activeSubscriptions = this.userSubscription.filter(sub => 
-      sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
-    );
+    // Find the highest active subscription (using enriched data)
+    const activeSubscriptions = this.userSubscription.filter(sub => {
+      // Check if subscription is active and not expired
+      const isActive = sub.status === 'ACTIVE';
+      const isNotExpired = sub.isExpired === false || new Date(sub.endDate) > new Date();
+      const hasRemainingDays = !Object.prototype.hasOwnProperty.call(sub, 'remainingDays') || sub.remainingDays > 0;
+      
+      return isActive && isNotExpired && hasRemainingDays;
+    });
 
     console.log('AccessController: Found', activeSubscriptions.length, 'active subscriptions');
 
@@ -204,26 +209,46 @@ class AccessController {
       return [];
     }
 
-    // Find all active SOLO subscriptions and extract their modules
-    const activeSoloSubscriptions = this.userSubscription.filter(sub => 
-      sub.status === 'ACTIVE' && 
-      sub.planType === 'SOLO' && 
-      new Date(sub.endDate) > new Date()
-    );
+    // Find all active SOLO subscriptions using enriched data
+    const activeSoloSubscriptions = this.userSubscription.filter(sub => {
+      const isActive = sub.status === 'ACTIVE';
+      const isSolo = sub.planType === 'SOLO';
+      const isNotExpired = sub.isExpired === false || new Date(sub.endDate) > new Date();
+      const hasRemainingDays = !Object.prototype.hasOwnProperty.call(sub, 'remainingDays') || sub.remainingDays > 0;
+      
+      return isActive && isSolo && isNotExpired && hasRemainingDays;
+    });
 
     console.log('AccessController: Found', activeSoloSubscriptions.length, 'active SOLO subscriptions');
 
     // Extract module names from SOLO subscriptions
-    // Module info is stored in the subscription notes as JSON
     const modules = activeSoloSubscriptions.map(sub => {
-      console.log('AccessController: Processing subscription', sub.id, 'with notes:', sub.notes);
+      console.log('AccessController: Processing subscription', sub.id);
       
-      // If notes field exists, try to parse it as JSON
+      // First try to get from enriched selectedModule field (from server)
+      if (sub.selectedModule) {
+        const moduleMapping = {
+          'Fundamentals of Finance': 'finance',
+          'Computer Science': 'computers', 
+          'Fundamentals of Law': 'law',
+          'Communication Mastery': 'communication',
+          'Entrepreneurship Bootcamp': 'entrepreneurship',
+          'Digital Marketing Pro': 'digital-marketing',
+          'Leadership & Adaptability': 'leadership', 
+          'Environmental Sustainability': 'environment',
+          'Wellness & Mental Health': 'sel',
+        };
+        
+        const moduleKey = moduleMapping[sub.selectedModule] || sub.selectedModule?.toLowerCase();
+        console.log('AccessController: From enriched data, mapped', sub.selectedModule, 'to', moduleKey);
+        return moduleKey;
+      }
+      
+      // Fallback to parsing notes field
       if (sub.notes) {
         try {
           const parsedNotes = JSON.parse(sub.notes);
           if (parsedNotes.selectedModule) {
-            // Map display names to module keys
             const moduleMapping = {
               'Fundamentals of Finance': 'finance',
               'Computer Science': 'computers', 
@@ -237,7 +262,7 @@ class AccessController {
             };
             
             const moduleKey = moduleMapping[parsedNotes.selectedModule] || parsedNotes.selectedModule?.toLowerCase();
-            console.log('AccessController: Mapped', parsedNotes.selectedModule, 'to', moduleKey);
+            console.log('AccessController: From notes JSON, mapped', parsedNotes.selectedModule, 'to', moduleKey);
             return moduleKey;
           }
         } catch {
@@ -255,13 +280,13 @@ class AccessController {
           };
           
           const moduleKey = moduleMapping[sub.notes] || sub.notes?.toLowerCase();
-          console.log('AccessController: Direct mapped', sub.notes, 'to', moduleKey);
+          console.log('AccessController: From notes directly, mapped', sub.notes, 'to', moduleKey);
           return moduleKey;
         }
       }
       
-      // Fallback to module or selectedModule fields if they exist
-      const fallback = sub.module || sub.selectedModule;
+      // Fallback to module field if it exists
+      const fallback = sub.module;
       console.log('AccessController: Using fallback', fallback);
       return fallback;
     }).filter(Boolean);

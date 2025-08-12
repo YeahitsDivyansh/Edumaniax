@@ -4,6 +4,15 @@ import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import dotenv from 'dotenv';
 import authenticateUser from "../middlewares/authMiddleware.js";
+import { 
+  getUserSubscriptionsWithStatus, 
+  getActiveUserSubscriptions,
+  enrichSubscriptionData,
+  markExpiredSubscriptions,
+  getSubscriptionAnalytics,
+  runManualSubscriptionCheck
+} from "../utils/subscriptionManager.js";
+import { subscriptionCheckMiddleware } from "../middlewares/subscriptionMiddleware.js";
 
 dotenv.config();
 
@@ -377,23 +386,22 @@ router.post("/verify-payment", checkPaymentFeature, async (req, res) => {
 });
 
 // Get user subscriptions
-router.get("/subscriptions/:userId", async (req, res) => {
+router.get("/subscriptions/:userId", subscriptionCheckMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const subscriptions = await prisma.subscription.findMany({
-      where: { userId },
-      include: {
-        payments: {
-          orderBy: { createdAt: "desc" }
-        }
-      },
-      orderBy: { createdAt: "desc" }
-    });
+    // Use the new utility function to get enriched subscription data
+    const subscriptions = await getUserSubscriptionsWithStatus(userId);
 
     res.json({
       success: true,
-      subscriptions: subscriptions || []
+      subscriptions: subscriptions || [],
+      metadata: {
+        total: subscriptions.length,
+        active: subscriptions.filter(sub => !sub.isExpired && sub.status === 'ACTIVE').length,
+        expired: subscriptions.filter(sub => sub.isExpired || sub.status === 'EXPIRED').length,
+        lastChecked: new Date().toISOString()
+      }
     });
 
   } catch (error) {
@@ -407,31 +415,139 @@ router.get("/subscriptions/:userId", async (req, res) => {
 });
 
 // Check if user has active subscription for a plan
-router.get("/check-subscription/:userId/:planType", async (req, res) => {
+router.get("/check-subscription/:userId/:planType", subscriptionCheckMiddleware, async (req, res) => {
   try {
     const { userId, planType } = req.params;
 
-    const subscription = await prisma.subscription.findUnique({
-      where: {
-        userId_planType: {
-          userId,
-          planType
-        }
-      }
-    });
-
-    const isActive = subscription && 
-                    subscription.status === "ACTIVE" && 
-                    subscription.endDate > new Date();
+    // Get active subscriptions for the user
+    const activeSubscriptions = await getActiveUserSubscriptions(userId);
+    
+    // Check if user has an active subscription of the specified type
+    const hasActiveSubscription = activeSubscriptions.some(sub => 
+      sub.planType === planType && !sub.isExpired
+    );
+    
+    const subscription = activeSubscriptions.find(sub => sub.planType === planType);
 
     res.json({ 
-      hasAccess: isActive || planType === "STARTER",
-      subscription: isActive ? subscription : null
+      hasAccess: hasActiveSubscription || planType === "STARTER",
+      subscription: hasActiveSubscription ? enrichSubscriptionData(subscription) : null,
+      remainingDays: subscription ? subscription.remainingDays : 0,
+      isExpired: subscription ? subscription.isExpired : false
     });
 
   } catch (error) {
     console.error("Error checking subscription:", error);
     res.status(500).json({ error: "Failed to check subscription" });
+  }
+});
+
+// Get active subscriptions only
+router.get("/active-subscriptions/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const activeSubscriptions = await getActiveUserSubscriptions(userId);
+
+    res.json({
+      success: true,
+      subscriptions: activeSubscriptions,
+      count: activeSubscriptions.length
+    });
+
+  } catch (error) {
+    console.error("Error fetching active subscriptions:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch active subscriptions",
+      message: error.message
+    });
+  }
+});
+
+// Admin endpoint: Get subscription analytics
+router.get("/admin/analytics", async (req, res) => {
+  try {
+    const analytics = await getSubscriptionAnalytics();
+    
+    res.json({
+      success: true,
+      analytics
+    });
+
+  } catch (error) {
+    console.error("Error fetching subscription analytics:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch analytics",
+      message: error.message
+    });
+  }
+});
+
+// Admin endpoint: Manual subscription check
+router.post("/admin/check-expired", async (req, res) => {
+  try {
+    const result = await runManualSubscriptionCheck();
+    
+    res.json({
+      success: true,
+      message: "Manual subscription check completed",
+      result
+    });
+
+  } catch (error) {
+    console.error("Error running manual subscription check:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to run subscription check",
+      message: error.message
+    });
+  }
+});
+
+// Get subscription details with remaining days
+router.get("/subscription-details/:subscriptionId", async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        payments: {
+          orderBy: { createdAt: "desc" }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phonenumber: true
+          }
+        }
+      }
+    });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        error: "Subscription not found"
+      });
+    }
+
+    const enrichedSubscription = enrichSubscriptionData(subscription);
+
+    res.json({
+      success: true,
+      subscription: enrichedSubscription
+    });
+
+  } catch (error) {
+    console.error("Error fetching subscription details:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch subscription details",
+      message: error.message
+    });
   }
 });
 
@@ -626,6 +742,50 @@ router.delete("/delete-all-user-data/:userId", async (req, res) => {
   } catch (error) {
     console.error("Error performing complete cleanup:", error);
     res.status(500).json({ error: "Failed to perform complete cleanup" });
+  }
+});
+
+// Test endpoint for subscription expiry functionality
+router.get("/test-expiry-system", async (req, res) => {
+  try {
+    console.log('🧪 Running subscription expiry system test...');
+    
+    // Get analytics
+    const analytics = await getSubscriptionAnalytics();
+    
+    // Check for expired subscriptions
+    const expiredResult = await runManualSubscriptionCheck();
+    
+    // Get subscriptions expiring soon
+    const expiringSoon = await getSubscriptionsExpiringSoon(7);
+    
+    res.json({
+      success: true,
+      message: "Subscription expiry system test completed",
+      results: {
+        analytics: analytics,
+        expiredCheck: expiredResult,
+        expiringSoon: {
+          count: expiringSoon.length,
+          subscriptions: expiringSoon.map(sub => ({
+            userId: sub.userId,
+            userName: sub.user?.name,
+            planType: sub.planType,
+            remainingDays: sub.remainingDays,
+            endDate: sub.endDate,
+            selectedModule: sub.selectedModule
+          }))
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error testing expiry system:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to test expiry system",
+      message: error.message 
+    });
   }
 });
 
