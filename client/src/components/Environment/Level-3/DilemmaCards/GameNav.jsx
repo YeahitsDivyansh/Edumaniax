@@ -75,7 +75,7 @@ const GameNav = () => {
       </Link>
       
       <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
-        Green Budget
+        Dilemma Cards
       </span>
       
       <div className="flex items-center space-x-[1vw]">

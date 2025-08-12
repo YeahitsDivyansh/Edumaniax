@@ -15,7 +15,7 @@ const Hero = () => {
 
       <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10">
         {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold sigmar-font leading-tight">
           <div>Pick the plan that powers</div>
           <div className="inline-flex items-center justify-center">
             your progress

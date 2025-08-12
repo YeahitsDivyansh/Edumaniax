@@ -418,6 +418,12 @@ const MobileFilterDropdown = ({
 };
 
 const Courses = () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []); 
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
@@ -528,7 +534,7 @@ const Courses = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="h-[80vh] w-full -mt-15 bg-[url('/coursesBG.png')] object-contain bg-cover bg-center bg-no-repeat">
+      <div className="h-[100vh] w-full -mt-15 bg-[url('/coursesBG.png')] object-contain bg-cover bg-center bg-no-repeat">
         <div className="relative max-w-6xl mx-auto px-6 py-20  flex justify-center min-h-screen">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

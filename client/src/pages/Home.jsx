@@ -25,6 +25,8 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+
+
 // List of Indian states
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -914,8 +916,24 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
   const { user } = useAuth();
-
   const [showScroll, setShowScroll] = useState(false);
+
+const [isZoomed, setIsZoomed] = useState(false);
+// Use useRef to store the initial pixel ratio when the component first loads
+const basePixelRatio = useRef(window.devicePixelRatio);
+
+useEffect(() => {
+  const checkZoom = () => {
+    // Calculate effective zoom by comparing the current ratio to the initial one
+    const effectiveZoom = window.devicePixelRatio / basePixelRatio.current;
+    setIsZoomed(effectiveZoom >= 1.25);
+  };
+
+  checkZoom(); // Check on initial load
+  window.addEventListener('resize', checkZoom); // Check on resize/zoom
+
+  return () => window.removeEventListener('resize', checkZoom);
+}, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1435,7 +1453,7 @@ const Home = () => {
               </button>
               <button
                 onClick={() => setIsTrialModalOpen(true)}
-                className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                className={`border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2 ${isZoomed ? 'force-white-bg' : ''}`}
               >
                 Book a trial
               </button>

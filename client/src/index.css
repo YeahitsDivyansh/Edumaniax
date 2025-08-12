@@ -3,6 +3,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
+
+
 @keyframes floating-card {
   0% {
     transform: translateY(0px);
@@ -300,4 +303,8 @@ a.blog-hyperlink:hover,
   color: #1d4ed8 !important;
   text-decoration-color: #1d4ed8 !important;
   text-decoration-thickness: 2px !important;
+}
+.force-white-bg {
+  background-color: white !important;
+  color: black !important; /* This changes text to green-600 for visibility */
 }
