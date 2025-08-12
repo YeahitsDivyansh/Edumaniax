@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import Hero from "@/PricingDesign/Hero";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccessControl } from "../utils/accessControl";
+import PricingSkeleton from "@/PricingDesign/PricingSkeleton";
 
 const plans = [
   {
@@ -151,6 +152,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentPlan } = useAccessControl(subscriptions, selectedModule);
+  const [loading, setLoading] = useState(true);
 
   // Fetch user subscription data
   useEffect(() => {
@@ -159,34 +161,41 @@ const Pricing = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
         );
-        
+
         if (response.ok) {
           const subscriptionData = await response.json();
-          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
-          
+          setSubscriptions(
+            Array.isArray(subscriptionData) ? subscriptionData : []
+          );
+
           // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = Array.isArray(subscriptionData)
+            ? subscriptionData.filter(
+                (sub) =>
+                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
               )
             : [];
-          
+
           // Define plan hierarchy to find the highest plan
-          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
-          
+          const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
+
           let highestActiveSubscription = null;
-          
+
           // Find the highest tier among active and valid subscriptions
           for (const plan of planHierarchy.reverse()) {
-            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            const subscription = activeSubscriptions.find(
+              (sub) => sub.planType === plan
+            );
             if (subscription) {
               highestActiveSubscription = subscription;
               break;
             }
           }
-          
+
           // If we found a highest active subscription, handle module selection for SOLO plans
           if (highestActiveSubscription && highestActiveSubscription.notes) {
             // Parse notes to get selectedModule if it exists
@@ -194,80 +203,88 @@ const Pricing = () => {
             try {
               const parsedNotes = JSON.parse(highestActiveSubscription.notes);
               const rawModule = parsedNotes.selectedModule;
-              
+
               // Map the display name to the correct module key
               const moduleMapping = {
                 // Full display names from UI
-                'Finance Management': 'finance',
-                'Digital Marketing': 'digital-marketing',
-                'Communication Skills': 'communication',
-                'Computer Science': 'computers',
-                'Entrepreneurship': 'entrepreneurship',
-                'Environmental Science': 'environment',
-                'Legal Awareness': 'law',
-                'Leadership Skills': 'leadership',
-                'Social Emotional Learning': 'sel',
-                
+                "Finance Management": "finance",
+                "Digital Marketing": "digital-marketing",
+                "Communication Skills": "communication",
+                "Computer Science": "computers",
+                Entrepreneurship: "entrepreneurship",
+                "Environmental Science": "environment",
+                "Legal Awareness": "law",
+                "Leadership Skills": "leadership",
+                "Social Emotional Learning": "sel",
+
                 // Short names (legacy support)
-                'Leadership': 'leadership',
-                'Finance': 'finance',
-                'Communication': 'communication',
-                
+                Leadership: "leadership",
+                Finance: "finance",
+                Communication: "communication",
+
                 // Course-specific names from screenshots
-                'Fundamentals of Finance': 'finance',
-                'Fundamentals of Law': 'law',
-                'Communication Mastery': 'communication',
-                'Entrepreneurship Bootcamp': 'entrepreneurship',
-                'Digital Marketing Pro': 'digital-marketing',
-                'Leadership & Adaptability': 'leadership',
-                'Environmental Sustainability': 'environment'
+                "Fundamentals of Finance": "finance",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
               };
-              
-              selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+
+              selectedModuleFromSub =
+                moduleMapping[rawModule] || rawModule?.toLowerCase();
             } catch {
               // If notes is not JSON, treat as plain text and map it
               const moduleMapping = {
                 // Full display names from UI
-                'Finance Management': 'finance',
-                'Digital Marketing': 'digital-marketing',
-                'Communication Skills': 'communication',
-                'Computer Science': 'computers',
-                'Entrepreneurship': 'entrepreneurship',
-                'Environmental Science': 'environment',
-                'Legal Awareness': 'law',
-                'Leadership Skills': 'leadership',
-                'Social Emotional Learning': 'sel',
-                
+                "Finance Management": "finance",
+                "Digital Marketing": "digital-marketing",
+                "Communication Skills": "communication",
+                "Computer Science": "computers",
+                Entrepreneurship: "entrepreneurship",
+                "Environmental Science": "environment",
+                "Legal Awareness": "law",
+                "Leadership Skills": "leadership",
+                "Social Emotional Learning": "sel",
+
                 // Short names (legacy support)
-                'Leadership': 'leadership',
-                'Finance': 'finance',
-                'Communication': 'communication',
-                
+                Leadership: "leadership",
+                Finance: "finance",
+                Communication: "communication",
+
                 // Course-specific names from screenshots
-                'Fundamentals of Finance': 'finance',
-                'Fundamentals of Law': 'law',
-                'Communication Mastery': 'communication',
-                'Entrepreneurship Bootcamp': 'entrepreneurship',
-                'Digital Marketing Pro': 'digital-marketing',
-                'Leadership & Adaptability': 'leadership',
-                'Environmental Sustainability': 'environment'
+                "Fundamentals of Finance": "finance",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
               };
-              
-              selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+
+              selectedModuleFromSub =
+                moduleMapping[highestActiveSubscription.notes] ||
+                highestActiveSubscription.notes?.toLowerCase();
             }
-            
+
             setSelectedModule(selectedModuleFromSub);
           }
         }
       } catch (error) {
-        console.error('Error fetching subscriptions in pricing:', error);
+        console.error("Error fetching subscriptions in pricing:", error);
         setSubscriptions([]);
       }
     };
 
     fetchUserSubscriptions();
   }, [user?.id]);
-  
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => setLoading(false), 2000);
+  }, []);
+
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -275,22 +292,22 @@ const Pricing = () => {
   // Function to check if a plan is the user's current plan
   const isCurrentPlan = (planTitle) => {
     if (!user || !currentPlan) return false;
-    
-    const planType = planTitle.replace(' PLAN', '');
+
+    const planType = planTitle.replace(" PLAN", "");
     return currentPlan === planType;
   };
 
   // Function to check if a plan should be grayed out (already purchased or lower tier)
   const shouldGrayOut = (planTitle) => {
     if (!user || !currentPlan) return false;
-    
-    const targetPlanType = planTitle.replace(' PLAN', '');
-    
+
+    const targetPlanType = planTitle.replace(" PLAN", "");
+
     // Define plan hierarchy
-    const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+    const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
     const currentIndex = planHierarchy.indexOf(currentPlan);
     const targetIndex = planHierarchy.indexOf(targetPlanType);
-    
+
     // Gray out current plan and all lower tier plans
     return targetIndex <= currentIndex;
   };
@@ -311,7 +328,7 @@ const Pricing = () => {
   // Function to get upgrade suggestion for current plan users
   const getUpgradeSuggestion = (plan) => {
     if (!isCurrentPlan(plan.title)) return null;
-    
+
     if (plan.title === "STARTER PLAN") {
       return "Upgrade to SOLO for premium access";
     }
@@ -333,241 +350,272 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <section className="relative z-10 bg-transparent -mt-40 px-4 pt-16 pb-20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {plans.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${
-                isCurrentPlan(plan.title)
-                  ? "border-green-500 ring-2 ring-green-200 bg-green-50"
-                  : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
-                  ? "border-gray-400 bg-gray-50"
-                  : plan.title === "PRO PLAN"
-                  ? "border-[#068F36]"
-                  : "border-gray-200 hover:border-[#068F36]"
-              }`}
-            >
-              {/* Tags */}
-              <div className="relative mb-4">
-                {isCurrentPlan(plan.title) && (
-                  <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
-                    ✓ Current Plan
-                  </div>
-                )}
-                {shouldGrayOut(plan.title) && !isCurrentPlan(plan.title) && (
-                  <div className="absolute -top-3 -right-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
-                    ✓ Owned
-                  </div>
-                )}
-                {plan.title === "PRO PLAN" && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
-                  <img
-                    src="/pricingDesign/save20.svg"
-                    alt="Save 20%"
-                    className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
-                  />
-                )}
-                {plan.tag && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
-                  <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
-                    {plan.tag}
-                  </span>
-                )}
-              </div>
-
-              {/* Title & Price */}
-              <div className="flex justify-start">
-                <h3
-                  className="text-xs font-bold uppercase text-[#007127] px-3 py-1 rounded"
-                  style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
+        {loading ? (
+          <PricingSkeleton />
+        ) : (
+          <>
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {plans.map((plan, idx) => (
+                <div
+                  key={idx}
+                  className={`bg-white shadow-xl rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative ${
+                    isCurrentPlan(plan.title)
+                      ? "border-green-500 ring-2 ring-green-200 bg-green-50"
+                      : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
+                      ? "border-gray-400 bg-gray-50"
+                      : plan.title === "PRO PLAN"
+                      ? "border-[#068F36]"
+                      : "border-gray-200 hover:border-[#068F36]"
+                  }`}
                 >
-                  {plan.title}
-                </h3>
-              </div>
-              <p className="text-sm text-black mt-2">{plan.description}</p>
-              <hr className="my-3 border-gray-300" />
-              <p className="text-4xl font-extrabold text-[#042038] mt-1">
-                {plan.price}
-              </p>
-              <p className="text-xs text-black font-semibold mt-1">
-                {plan.frequency}
-              </p>
-              <hr className="my-3 border-gray-300 mt-5" />
-
-              {/* Features */}
-              <ul className="text-sm space-y-2 flex-1 mt-2">
-                {plan.features.map((feat, i) => {
-                  const text = typeof feat === "string" ? feat : feat.text;
-                  const excluded =
-                    typeof feat === "object" && feat.excluded === true;
-
-                  return (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="w-4 h-4 flex-shrink-0 mt-1">
+                  {/* Tags */}
+                  <div className="relative mb-4">
+                    {isCurrentPlan(plan.title) && (
+                      <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                        ✓ Current Plan
+                      </div>
+                    )}
+                    {shouldGrayOut(plan.title) &&
+                      !isCurrentPlan(plan.title) && (
+                        <div className="absolute -top-3 -right-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                          ✓ Owned
+                        </div>
+                      )}
+                    {plan.title === "PRO PLAN" &&
+                      !isCurrentPlan(plan.title) &&
+                      !shouldGrayOut(plan.title) && (
                         <img
-                          src={
-                            excluded
-                              ? "/pricingDesign/cross.svg"
-                              : "/pricingDesign/tick.svg"
-                          }
-                          alt={excluded ? "Not included" : "Included"}
-                          className={`w-full h-full object-contain ${
-                            excluded ? "" : "p-[1px]"
-                          }`}
+                          src="/pricingDesign/save20.svg"
+                          alt="Save 20%"
+                          className="absolute -top-6 -right-6 w-[90px] sm:w-[100px] md:w-[113px] h-auto z-10"
                         />
-                      </span>
-                      <span className={excluded ? "text-red-600" : ""}>
-                        {text}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+                      )}
+                    {plan.tag &&
+                      !isCurrentPlan(plan.title) &&
+                      !shouldGrayOut(plan.title) && (
+                        <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
+                          {plan.tag}
+                        </span>
+                      )}
+                  </div>
 
-              {/* Button */}
-              <button
-                onClick={() => !isButtonDisabled(plan) && navigate(`/payment?plan=${plan.title.replace(' PLAN', '')}`)}
-                className={`font-semibold py-2 px-4 rounded-md transition mt-4 inline-block text-center w-full ${
-                  isCurrentPlan(plan.title)
-                    ? "bg-green-500 text-white cursor-default"
-                    : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
-                    ? "bg-gray-500 text-white cursor-not-allowed"
-                    : isButtonDisabled(plan)
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-[#068F36] text-white hover:brightness-110"
-                }`}
-                disabled={isButtonDisabled(plan)}
-              >
-                {getButtonText(plan)}
-              </button>
+                  {/* Title & Price */}
+                  <div className="flex justify-start">
+                    <h3
+                      className="text-xs font-bold uppercase text-[#007127] px-3 py-1 rounded"
+                      style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
+                    >
+                      {plan.title}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-black mt-2">{plan.description}</p>
+                  <hr className="my-3 border-gray-300" />
+                  <p className="text-4xl font-extrabold text-[#042038] mt-1">
+                    {plan.price}
+                  </p>
+                  <p className="text-xs text-black font-semibold mt-1">
+                    {plan.frequency}
+                  </p>
+                  <hr className="my-3 border-gray-300 mt-5" />
 
-              {/* Upgrade suggestion for current plan users */}
-              {isCurrentPlan(plan.title) && getUpgradeSuggestion(plan) && (
-                <div className="mt-3 text-center">
-                  <p className="text-xs text-gray-600 mb-2">{getUpgradeSuggestion(plan)}</p>
+                  {/* Features */}
+                  <ul className="text-sm space-y-2 flex-1 mt-2">
+                    {plan.features.map((feat, i) => {
+                      const text = typeof feat === "string" ? feat : feat.text;
+                      const excluded =
+                        typeof feat === "object" && feat.excluded === true;
+
+                      return (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="w-4 h-4 flex-shrink-0 mt-1">
+                            <img
+                              src={
+                                excluded
+                                  ? "/pricingDesign/cross.svg"
+                                  : "/pricingDesign/tick.svg"
+                              }
+                              alt={excluded ? "Not included" : "Included"}
+                              className={`w-full h-full object-contain ${
+                                excluded ? "" : "p-[1px]"
+                              }`}
+                            />
+                          </span>
+                          <span className={excluded ? "text-red-600" : ""}>
+                            {text}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {/* Button */}
                   <button
-                    onClick={() => navigate(`/payment?plan=${
-                      plan.title === "STARTER PLAN" ? "SOLO" :
-                      plan.title === "SOLO PLAN" ? "PRO" :
-                      plan.title === "PRO PLAN" ? "INSTITUTIONAL" : ""
-                    }`)}
-                    className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                    onClick={() =>
+                      !isButtonDisabled(plan) &&
+                      navigate(
+                        `/payment?plan=${plan.title.replace(" PLAN", "")}`
+                      )
+                    }
+                    className={`font-semibold py-2 px-4 rounded-md transition mt-4 inline-block text-center w-full ${
+                      isCurrentPlan(plan.title)
+                        ? "bg-green-500 text-white cursor-default"
+                        : shouldGrayOut(plan.title) &&
+                          !isCurrentPlan(plan.title)
+                        ? "bg-gray-500 text-white cursor-not-allowed"
+                        : isButtonDisabled(plan)
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-[#068F36] text-white hover:brightness-110"
+                    }`}
+                    disabled={isButtonDisabled(plan)}
                   >
-                   Upgrade Now
+                    {getButtonText(plan)}
                   </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
 
-        {/* Payment Methods */}
-        <div className="text-center mt-16">
-          <h4 className="text-2xl lg:text-3xl text-black mb-2">
-            Payment Methods
-          </h4>
-          <div className="flex justify-center items-center gap-4 mb-1">
-            <img
-              src="/pricingDesign/cards.svg"
-              alt="Payment Methods"
-              className="h-6 object-contain"
-            />
-            <img
-              src="/pricingDesign/UPI-Logo-vector.svg"
-              alt="UPI"
-              className="h-6 object-contain -ml-2"
-            />
-          </div>
-          <p className="text-2xs mt-2 text-gray-400">
-            We accept Visa, American Express, Mastercard,
-            <br className="block sm:hidden" />
-            Paypal, UPI and more.
-          </p>
-        </div>
-
-        {/* FAQ Section */}
-        <section className="py-1 sm:py-2 mt-62">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
-              Frequently Asked
-            </h2>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
-              Questions
-            </h2>
-            <p className="text-black text-sm sm:text-lg mb-8 sm:mb-16">
-              Everything you need to know before getting started
-            </p>
-
-            {/* Split FAQs into two equal columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {faqData
-                .reduce((result, item, index) => {
-                  const colIndex =
-                    index < Math.ceil(faqData.length / 2) ? 0 : 1;
-                  if (!result[colIndex]) result[colIndex] = [];
-                  result[colIndex].push(item);
-                  return result;
-                }, [])
-                .map((column, colIndex) => (
-                  <div key={colIndex} className="flex flex-col gap-4">
-                    {column.map((faq, index) => (
-                      <motion.div
-                        key={index}
+                  {/* Upgrade suggestion for current plan users */}
+                  {isCurrentPlan(plan.title) && getUpgradeSuggestion(plan) && (
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-gray-600 mb-2">
+                        {getUpgradeSuggestion(plan)}
+                      </p>
+                      <button
                         onClick={() =>
-                          toggleFAQ(
-                            index + colIndex * Math.ceil(faqData.length / 2)
+                          navigate(
+                            `/payment?plan=${
+                              plan.title === "STARTER PLAN"
+                                ? "SOLO"
+                                : plan.title === "SOLO PLAN"
+                                ? "PRO"
+                                : plan.title === "PRO PLAN"
+                                ? "INSTITUTIONAL"
+                                : ""
+                            }`
                           )
                         }
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: index * 0.1 }}
-                        className="cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl"
+                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
                       >
-                        {/* Wrapper for Question + Answer */}
-                        <div className="rounded-2xl overflow-hidden">
-                          {/* Question Section */}
-                          <div
-                            className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
+                        Upgrade Now
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Payment Methods */}
+            <div className="text-center mt-16">
+              <h4 className="text-2xl lg:text-3xl text-black mb-2">
+                Payment Methods
+              </h4>
+              <div className="flex justify-center items-center gap-4 mb-1">
+                <img
+                  src="/pricingDesign/cards.svg"
+                  alt="Payment Methods"
+                  className="h-6 object-contain"
+                />
+                <img
+                  src="/pricingDesign/UPI-Logo-vector.svg"
+                  alt="UPI"
+                  className="h-6 object-contain -ml-2"
+                />
+              </div>
+              <p className="text-2xs mt-2 text-gray-400">
+                We accept Visa, American Express, Mastercard,
+                <br className="block sm:hidden" />
+                Paypal, UPI and more.
+              </p>
+            </div>
+
+            {/* FAQ Section */}
+            <section className="py-1 sm:py-2 mt-62">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
+                  Frequently Asked
+                </h2>
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
+                  Questions
+                </h2>
+                <p className="text-black text-sm sm:text-lg mb-8 sm:mb-16">
+                  Everything you need to know before getting started
+                </p>
+
+                {/* Split FAQs into two equal columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {faqData
+                    .reduce((result, item, index) => {
+                      const colIndex =
+                        index < Math.ceil(faqData.length / 2) ? 0 : 1;
+                      if (!result[colIndex]) result[colIndex] = [];
+                      result[colIndex].push(item);
+                      return result;
+                    }, [])
+                    .map((column, colIndex) => (
+                      <div key={colIndex} className="flex flex-col gap-4">
+                        {column.map((faq, index) => (
+                          <motion.div
+                            key={index}
+                            onClick={() =>
+                              toggleFAQ(
+                                index + colIndex * Math.ceil(faqData.length / 2)
+                              )
+                            }
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: index * 0.1 }}
+                            className="cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl"
                           >
-                            <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
-                              {faq.question}
-                            </h3>
-                            <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                              <ChevronDown
-                                className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                            {/* Wrapper for Question + Answer */}
+                            <div className="rounded-2xl overflow-hidden">
+                              {/* Question Section */}
+                              <div
+                                className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
+                              >
+                                <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
+                                  {faq.question}
+                                </h3>
+                                <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                                  <ChevronDown
+                                    className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                                      openFAQ ===
+                                      index +
+                                        colIndex * Math.ceil(faqData.length / 2)
+                                        ? "rotate-180"
+                                        : ""
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Answer Section */}
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={
                                   openFAQ ===
                                   index +
                                     colIndex * Math.ceil(faqData.length / 2)
-                                    ? "rotate-180"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Answer Section */}
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={
-                              openFAQ ===
-                              index + colIndex * Math.ceil(faqData.length / 2)
-                                ? { height: "auto", opacity: 1 }
-                                : { height: 0, opacity: 0 }
-                            }
-                            transition={{ duration: 0.4, ease: "easeInOut" }}
-                            className={`overflow-hidden ${faq.AbgColor}`}
-                          >
-                            <div className="p-4 pt-6 text-sm text-black text-left">
-                              {faq.answer}
+                                    ? { height: "auto", opacity: 1 }
+                                    : { height: 0, opacity: 0 }
+                                }
+                                transition={{
+                                  duration: 0.4,
+                                  ease: "easeInOut",
+                                }}
+                                className={`overflow-hidden ${faq.AbgColor}`}
+                              >
+                                <div className="p-4 pt-6 text-sm text-black text-left">
+                                  {faq.answer}
+                                </div>
+                              </motion.div>
                             </div>
                           </motion.div>
-                        </div>
-                      </motion.div>
+                        ))}
+                      </div>
                     ))}
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
       </section>
     </div>
   );

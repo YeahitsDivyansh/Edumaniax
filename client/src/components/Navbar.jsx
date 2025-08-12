@@ -67,16 +67,18 @@ const Navbar = () => {
       return "/dashboardDesign/boy.png";
     }
 
-    const gender = (user.characterGender === "Boy" || user.characterGender === "Male")
-      ? "male"
-      : "female";
+    const gender =
+      user.characterGender === "Boy" || user.characterGender === "Male"
+        ? "male"
+        : "female";
 
-    const style = user.characterStyle.toLowerCase().replace(/\s/g, '');
+    const style = user.characterStyle.toLowerCase().replace(/\s/g, "");
 
     return `/dashboardDesign/${style}_${gender}.png`;
   };
 
-  const dropdownLinkClasses = "block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300";
+  const dropdownLinkClasses =
+    "block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300";
 
   return (
     <nav className="bg-white text-black sticky top-0 z-200 w-full rounded-bl-4xl rounded-br-4xl shadow-lg">
@@ -123,25 +125,43 @@ const Navbar = () => {
                 <img
                   src={getCharacterIconPath()}
                   alt="User Dashboard"
-                  className={`${user?.avatar ? 'h-10 w-10 object-cover rounded-full' : 'h-10 w-9'}`}
+                  className={`${
+                    user?.avatar
+                      ? "h-10 w-10 object-cover rounded-full"
+                      : "h-10 w-9"
+                  }`}
                 />
                 <span className="text-green-700 font-medium">{user.name}</span>
                 <ChevronDown
                   size={20}
-                  className={`text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`text-gray-500 transition-transform duration-300 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-100">
                   <div className="py-1">
-                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                    <Link
+                      to="/dashboard"
+                      className={dropdownLinkClasses}
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
                       My Profile
                     </Link>
-                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                    <Link
+                      to="/dashboard"
+                      className={dropdownLinkClasses}
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
                       My Courses
                     </Link>
-                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                    <Link
+                      to="/dashboard"
+                      className={dropdownLinkClasses}
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
                       My Blogs
                     </Link>
                   </div>
@@ -156,12 +176,20 @@ const Navbar = () => {
               )}
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
-            >
-              Log In
-            </Link>
+            <>
+              <Link
+                to="/login"
+                className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/register"
+                className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+              >
+                Register
+              </Link>
+            </>
           )}
         </div>
 
@@ -194,19 +222,59 @@ const Navbar = () => {
 
             {/* Navigation Links */}
             <div className="space-y-4">
-              <Link to="/" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/") ? "text-green-600" : "text-black hover:text-green-600"}`}>
+              <Link
+                to="/"
+                onClick={handleItemClick}
+                className={`block text-lg font-medium transition duration-300 ${
+                  isActive("/")
+                    ? "text-green-600"
+                    : "text-black hover:text-green-600"
+                }`}
+              >
                 Home
               </Link>
-              <Link to="/about" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/about") ? "text-green-600" : "text-black hover:text-green-600"}`}>
+              <Link
+                to="/about"
+                onClick={handleItemClick}
+                className={`block text-lg font-medium transition duration-300 ${
+                  isActive("/about")
+                    ? "text-green-600"
+                    : "text-black hover:text-green-600"
+                }`}
+              >
                 About Us
               </Link>
-              <Link to="/courses" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/courses") ? "text-green-600" : "text-black hover:text-green-600"}`}>
+              <Link
+                to="/courses"
+                onClick={handleItemClick}
+                className={`block text-lg font-medium transition duration-300 ${
+                  isActive("/courses")
+                    ? "text-green-600"
+                    : "text-black hover:text-green-600"
+                }`}
+              >
                 Courses
               </Link>
-              <Link to="/pricing" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/pricing") ? "text-green-600" : "text-black hover:text-green-600"}`}>
+              <Link
+                to="/pricing"
+                onClick={handleItemClick}
+                className={`block text-lg font-medium transition duration-300 ${
+                  isActive("/pricing")
+                    ? "text-green-600"
+                    : "text-black hover:text-green-600"
+                }`}
+              >
                 Pricing
               </Link>
-              <Link to="/blogs" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/blogs") ? "text-green-600" : "text-black hover:text-green-600"}`}>
+              <Link
+                to="/blogs"
+                onClick={handleItemClick}
+                className={`block text-lg font-medium transition duration-300 ${
+                  isActive("/blogs")
+                    ? "text-green-600"
+                    : "text-black hover:text-green-600"
+                }`}
+              >
                 Blogs
               </Link>
             </div>
@@ -224,7 +292,11 @@ const Navbar = () => {
                   <img
                     src={getCharacterIconPath()}
                     alt="User Dashboard"
-                    className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-6 w-6'}`}
+                    className={`${
+                      user?.avatar
+                        ? "h-8 w-8 object-cover rounded-full"
+                        : "h-6 w-6"
+                    }`}
                   />
                   <span className="ml-2">{user.name}</span>
                 </Link>
@@ -243,6 +315,13 @@ const Navbar = () => {
                   className="block bg-green-600 text-white text-center hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
                   Log In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={handleItemClick}
+                  className="block bg-green-600 text-white text-center hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                >
+                  Register
                 </Link>
               </div>
             )}
