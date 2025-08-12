@@ -49,12 +49,9 @@ const Navbar = () => {
   // --- START OF CHANGES ---
 
   const getCharacterIconPath = () => {
-    // If user has uploaded an avatar, use that
     if (user?.avatar) {
       return user.avatar;
     }
-    
-    // Otherwise, use character icon based on selected char
     if (!user || !user.characterGender || !user.characterStyle) {
       // Fallback to a generic icon if data is not present
       return "/dashboardDesign/boy.png";
