@@ -53,7 +53,7 @@ const Navbar = () => {
     if (user?.avatar) {
       return user.avatar;
     }
-    
+
     // Otherwise, use character icon based on selected char
     if (!user || !user.characterGender || !user.characterStyle) {
       // Fallback to a generic icon if data is not present
@@ -61,13 +61,14 @@ const Navbar = () => {
     }
 
     // Normalize gender to 'male' or 'female'
-    const gender = (user.characterGender === "Boy" || user.characterGender === "Male") 
-      ? "male" 
-      : "female";
-    
+    const gender =
+      user.characterGender === "Boy" || user.characterGender === "Male"
+        ? "male"
+        : "female";
+
     // Normalize style to a lowercase, single-word string
     // e.g., "Smart thinker" -> "smartthinker"
-    const style = user.characterStyle.toLowerCase().replace(/\s/g, '');
+    const style = user.characterStyle.toLowerCase().replace(/\s/g, "");
 
     // Construct the path based on your naming convention
     // Example: /dashboardDesign/casual_male.png
@@ -121,11 +122,21 @@ const Navbar = () => {
               <img
                 src={getCharacterIconPath()}
                 alt="User Dashboard"
-                className={`${user?.avatar ? 'h-10 w-10 object-cover rounded-full' : 'h-6 w-6'}`}
+                className={`${
+                  user?.avatar
+                    ? "h-10 w-10 object-cover rounded-full"
+                    : "h-6 w-6"
+                }`}
               />
             </Link>
           ) : (
             <>
+              <Link
+                to="/register"
+                className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+              >
+                Register
+              </Link>
               <Link
                 to="/login"
                 className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
@@ -235,7 +246,11 @@ const Navbar = () => {
                   <img
                     src={getCharacterIconPath()}
                     alt="User Dashboard"
-                    className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-10 w-10'}`}
+                    className={`${
+                      user?.avatar
+                        ? "h-8 w-8 object-cover rounded-full"
+                        : "h-10 w-10"
+                    }`}
                   />
                 </Link>
                 <button
@@ -250,6 +265,13 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="space-y-3">
+                <Link
+                  to="/register"
+                  onClick={handleItemClick}
+                  className="block bg-green-600 text-white text-center hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                >
+                  Register
+                </Link>
                 <Link
                   to="/login"
                   onClick={handleItemClick}
