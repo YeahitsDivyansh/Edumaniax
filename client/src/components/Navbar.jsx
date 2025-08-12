@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
@@ -9,26 +9,39 @@ const Navbar = () => {
   const location = useLocation();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // New state for dropdown
   const sidebarRef = useRef(null);
+  const dropdownRef = useRef(null); // New ref for dropdown
 
+  // Effect to handle clicks outside the sidebar and dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Check if click is outside the sidebar
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsSidebarOpen(false);
       }
+      // Check if click is outside the dropdown
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
     };
 
-    if (isSidebarOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen]);
+  }, []); // Run this effect only once on mount
 
   const handleItemClick = () => {
     setIsSidebarOpen(false);
+    // Optional: Close dropdown when a sidebar link is clicked
+    setIsDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout(navigate);
+    setIsDropdownOpen(false); // Close dropdown after logout
   };
 
   const isActive = (path) => {
@@ -46,32 +59,24 @@ const Navbar = () => {
     return `${baseClasses} text-black hover:text-green-600`;
   };
 
-  // --- START OF CHANGES ---
-
   const getCharacterIconPath = () => {
     if (user?.avatar) {
       return user.avatar;
     }
     if (!user || !user.characterGender || !user.characterStyle) {
-      // Fallback to a generic icon if data is not present
       return "/dashboardDesign/boy.png";
     }
 
-    // Normalize gender to 'male' or 'female'
-    const gender = (user.characterGender === "Boy" || user.characterGender === "Male") 
-      ? "male" 
+    const gender = (user.characterGender === "Boy" || user.characterGender === "Male")
+      ? "male"
       : "female";
-    
-    // Normalize style to a lowercase, single-word string
-    // e.g., "Smart thinker" -> "smartthinker"
+
     const style = user.characterStyle.toLowerCase().replace(/\s/g, '');
 
-    // Construct the path based on your naming convention
-    // Example: /dashboardDesign/casual_male.png
     return `/dashboardDesign/${style}_${gender}.png`;
   };
 
-  // --- END OF CHANGES ---
+  const dropdownLinkClasses = "block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300";
 
   return (
     <nav className="bg-white text-black sticky top-0 z-200 w-full rounded-bl-4xl rounded-br-4xl shadow-lg">
@@ -107,28 +112,56 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Right Side Buttons */}
+        {/* Right Side Buttons (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
-          {user || role === "admin" ? (
-            <Link
-              to="/dashboard"
-              className="w-10 h-10 flex items-center justify-center bg-green-600 rounded-full hover:bg-green-700 transition duration-300 overflow-hidden"
-            >
-              <img
-                src={getCharacterIconPath()}
-                alt="User Dashboard"
-                className={`${user?.avatar ? 'h-10 w-10 object-cover rounded-full' : 'h-6 w-6'}`}
-              />
-            </Link>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+          {user ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition duration-300 focus:outline-none"
               >
-                Log In
-              </Link>
-            </>
+                <img
+                  src={getCharacterIconPath()}
+                  alt="User Dashboard"
+                  className={`${user?.avatar ? 'h-10 w-10 object-cover rounded-full' : 'h-10 w-9'}`}
+                />
+                <span className="text-green-700 font-medium">{user.name}</span>
+                <ChevronDown
+                  size={20}
+                  className={`text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-100">
+                  <div className="py-1">
+                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                      My Profile
+                    </Link>
+                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                      My Courses
+                    </Link>
+                    <Link to="/dashboard" className={dropdownLinkClasses} onClick={() => setIsDropdownOpen(false)}>
+                      My Blogs
+                    </Link>
+                  </div>
+                  <hr className="my-1 border-gray-200" />
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+            >
+              Log In
+            </Link>
           )}
         </div>
 
@@ -143,7 +176,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar (This part remains largely the same) */}
       {isSidebarOpen && (
         <div
           ref={sidebarRef}
@@ -161,67 +194,27 @@ const Navbar = () => {
 
             {/* Navigation Links */}
             <div className="space-y-4">
-              <Link
-                to="/"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
+              <Link to="/" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/") ? "text-green-600" : "text-black hover:text-green-600"}`}>
                 Home
               </Link>
-              <Link
-                to="/about"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/about")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
+              <Link to="/about" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/about") ? "text-green-600" : "text-black hover:text-green-600"}`}>
                 About Us
               </Link>
-              <Link
-                to="/courses"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/courses")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
+              <Link to="/courses" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/courses") ? "text-green-600" : "text-black hover:text-green-600"}`}>
                 Courses
               </Link>
-              <Link
-                to="/pricing"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/pricing")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
+              <Link to="/pricing" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/pricing") ? "text-green-600" : "text-black hover:text-green-600"}`}>
                 Pricing
               </Link>
-              <Link
-                to="/blogs"
-                onClick={handleItemClick}
-                className={`block text-lg font-medium transition duration-300 ${
-                  isActive("/blogs")
-                    ? "text-green-600"
-                    : "text-black hover:text-green-600"
-                }`}
-              >
+              <Link to="/blogs" onClick={handleItemClick} className={`block text-lg font-medium transition duration-300 ${isActive("/blogs") ? "text-green-600" : "text-black hover:text-green-600"}`}>
                 Blogs
               </Link>
             </div>
           </div>
 
-          {/* Bottom Buttons */}
+          {/* Bottom Buttons for Mobile */}
           <div className="px-6 py-6 border-t border-gray-200">
-            {user || role === "admin" ? (
+            {user ? (
               <div className="space-y-3">
                 <Link
                   to="/dashboard"
@@ -233,12 +226,10 @@ const Navbar = () => {
                     alt="User Dashboard"
                     className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-6 w-6'}`}
                   />
+                  <span className="ml-2">{user.name}</span>
                 </Link>
                 <button
-                  onClick={() => {
-                    logout(navigate);
-                    handleItemClick();
-                  }}
+                  onClick={handleLogout}
                   className="w-full border border-green-600 text-green-600 hover:bg-green-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
                   Logout

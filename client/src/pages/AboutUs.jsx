@@ -90,7 +90,7 @@ const AboutUs = () => {
 
   const teamMembers = [
     {
-      name: "Sharadd Raj Ustar",
+      name: "Sharadd Raaj Ustav",
       image: "sharad.svg",
       bgColor: "bg-[#66C537]/20",
       linkedin: "https://www.linkedin.com/in/sharadrajutsav/",

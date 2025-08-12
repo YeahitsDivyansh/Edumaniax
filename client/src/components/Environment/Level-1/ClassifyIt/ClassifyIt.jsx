@@ -421,7 +421,7 @@ const ClassifyIt = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center">
       <GameNav />
-      <div className="w-full flex flex-col items-center pt-2 pb-8">
+      <div className="w-full flex flex-col items-center pt-2 pb-8 ">
         {/* Word Section */}
         <div className="w-full max-w-5xl flex items-center justify-center mt-12 mb-16">
           <div className="flex items-center space-x-4">
@@ -431,7 +431,7 @@ const ClassifyIt = () => {
         </div>
 
         {/* Cards Section */}
-        <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 lg:px-0">
+        <div className="w-full mx-[10vw] max-w-7xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 px-4 lg:px-0">
           {categories.map((cat) => {
             const isSelected = state.selected === cat.name;
             const currentQuestion = data[state.currentIndex];
@@ -466,9 +466,9 @@ const ClassifyIt = () => {
                   ${interactionClass}
                 `}
               >
-                <img src={cat.image} alt={cat.name} className="w-48 h-60 object-contain" />
+                <img src={cat.image} alt={cat.name} className="md:w-40 md:h-50 lg:w-48 lg:h-60 object-contain" />
                 <div className="w-full inline-flex justify-center items-center">
-                  <span className="text-center justify-center text-slate-100 text-3xl font-medium font-['Inter'] leading-relaxed">
+                  <span className="text-center justify-center text-slate-100 md:text-xl lg:text-3xl  font-medium font-['Inter'] leading-relaxed">
                     {cat.name}
                   </span>
                 </div>
