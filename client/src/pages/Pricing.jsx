@@ -155,6 +155,16 @@ const Pricing = () => {
   // Use access control with full subscription data
   const accessControl = useAccessControl(subscriptions, selectedModule);
 
+  // Debug log to see the access control state changes
+  useEffect(() => {
+    console.log('Pricing: Access control updated:', {
+      currentPlan: accessControl.currentPlan,
+      subscriptionsLength: subscriptions.length,
+      subscriptions: subscriptions,
+      selectedModule: selectedModule
+    });
+  }, [accessControl.currentPlan, subscriptions, selectedModule]);
+
   // Fetch user subscription data
   useEffect(() => {
     const fetchUserSubscriptions = async () => {
@@ -168,11 +178,14 @@ const Pricing = () => {
         if (response.ok) {
           const subscriptionData = await response.json();
           console.log('Pricing: Raw subscription data received:', subscriptionData);
-          setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Extract subscriptions from the response object
+          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
           
           // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptions) 
+            ? subscriptions.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];

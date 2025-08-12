@@ -937,11 +937,14 @@ const Home = () => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Extract subscriptions from the response object
+          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptions) 
+            ? subscriptions.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -964,7 +967,7 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setUserSubscriptions([]);
+        setSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }
@@ -1014,11 +1017,14 @@ useEffect(() => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Extract subscriptions from the response object
+          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptions) 
+            ? subscriptions.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -1041,7 +1047,7 @@ useEffect(() => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setUserSubscriptions([]);
+        setSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }

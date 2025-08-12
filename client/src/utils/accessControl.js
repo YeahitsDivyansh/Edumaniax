@@ -16,6 +16,8 @@
  * - PRO/INSTITUTIONAL plans still provide access to all modules
  */
 
+import React from 'react';
+
 // Plan hierarchy for upgrade calculations
 const PLAN_HIERARCHY = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
 
@@ -918,9 +920,13 @@ class AccessController {
  * Hook for React components to use access control
  */
 export const useAccessControl = (userSubscription = null, selectedModule = null) => {
-  const accessController = new AccessController(userSubscription, selectedModule);
+  // Use React.useMemo to recreate the AccessController only when dependencies change
+  const accessController = React.useMemo(() => {
+    return new AccessController(userSubscription, selectedModule);
+  }, [userSubscription, selectedModule]);
 
-  return {
+  // Use React.useMemo for the return object to avoid recreating it on every render
+  return React.useMemo(() => ({
     currentPlan: accessController.currentPlan,
     soloModules: accessController.soloModules,
     isTrialValid: () => accessController.isTrialValid(),
@@ -947,7 +953,7 @@ export const useAccessControl = (userSubscription = null, selectedModule = null)
     getPlanBenefits: (planType) => accessController.getPlanBenefits(planType),
     calculateUpgradePrice: (targetPlan) => accessController.calculateUpgradePrice(targetPlan),
     qualifiesForUpgradePrice: (targetPlan) => accessController.qualifiesForUpgradePrice(targetPlan)
-  };
+  }), [accessController]);
 };
 
 // Export configurations and utilities
