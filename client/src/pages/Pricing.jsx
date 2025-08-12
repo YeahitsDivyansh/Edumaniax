@@ -387,7 +387,7 @@ const Pricing = () => {
                         <img
                           src="/pricingDesign/save20.svg"
                           alt="Save 20%"
-                          className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
+                          className="absolute -top-6 -right-6 w-[90px] sm:w-[100px] md:w-[113px] h-auto z-10"
                         />
                       )}
                     {plan.tag &&
