@@ -71,7 +71,8 @@ const Navbar = () => {
 
     // Construct the path based on your naming convention
     // Example: /dashboardDesign/casual_male.png
-    return `/dashboardDesign/${style}_${gender}.png`;
+    //return `/dashboardDesign/${style}_${gender}.png`;
+    return "/dashboardDesign/boy.png";
   };
 
   // --- END OF CHANGES ---
