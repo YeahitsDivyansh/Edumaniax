@@ -109,7 +109,7 @@ export const usePayment = () => {
     });
   };
 
-  const processPayment = async (orderData, onSuccess, onError) => {
+  const processPayment = async (orderData, onSuccess, onError, userDetails = {}) => {
     if (!isPaymentEnabled) {
       throw new Error('Payment feature is currently disabled');
     }
@@ -155,11 +155,7 @@ export const usePayment = () => {
           onError && onError(error);
         }
       },
-      prefill: {
-        name: 'Test User',
-        email: 'test@edumaniax.com',
-        contact: '9999999999'
-      },
+      prefill: userDetails,
       notes: {
         country: 'IN',
         currency: 'INR'
