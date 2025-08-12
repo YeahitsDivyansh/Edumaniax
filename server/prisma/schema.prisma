@@ -21,6 +21,7 @@ model User {
   email                      String?
   selectedModule             String?
   role                       UserRole                    @default(USER)
+  avatar                     String?
   communicationChallenges    CommunicationChallenge[]
   computersChallenges        ComputersChallenge[]
   dmChallenges               DMChallenge[]
@@ -253,23 +254,23 @@ model Payment {
 }
 
 model InstitutionalInquiry {
-  id               String        @id
+  id               String        @id @default(cuid())
   contactName      String
   contactEmail     String
   contactPhone     String
   organizationName String
   organizationType String
-  studentCount     Int
+  studentCount     String
   message          String
   status           InquiryStatus @default(NEW)
   notes            String?
   followUpDate     DateTime?
   createdAt        DateTime      @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime      @updatedAt
 }
 
 model SalesNotification {
-  id        String             @id
+  id        String             @id @default(cuid())
   type      String
   message   String
   data      String
@@ -278,7 +279,6 @@ model SalesNotification {
   paymentId String?
   createdAt DateTime           @default(now())
   readAt    DateTime?
-  readBy    String[]
 }
 
 enum SubscriptionStatus {

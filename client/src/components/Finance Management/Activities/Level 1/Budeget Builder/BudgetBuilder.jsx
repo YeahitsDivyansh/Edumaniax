@@ -229,6 +229,28 @@ const BudgetBuilder = () => {
   const [showGif, setShowGif] = useState(false);
   const [gifCount, setGifCount] = useState(0);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [showResultBox, setShowResultBox] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  useEffect(() => {
+    if (result) {
+      setShowResultBox(true);
+      setIsFadingOut(false);
+
+      const fadeTimer = setTimeout(() => {
+        setIsFadingOut(true);
+      }, 14000); // fade after 20s
+
+      const hideTimer = setTimeout(() => {
+        setShowResultBox(false);
+      }, 15000); // remove after fade
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [result]);
 
   useEffect(() => {
     if (parseInt(result?.spendingScore?.split("/")[0]) >= 7) {
@@ -360,6 +382,16 @@ Constraints -
       if (!isNaN(scoreNumber) && scoreNumber >= 8) {
         completeFinanceChallenge(0, 0); // mark completed
       }
+
+      // ✅ Scroll up only for small screens so result is visible
+      if (window.innerWidth <= 768) {
+        setTimeout(() => {
+          document.querySelector("#resultBox")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 300);
+      }
     } catch (err) {
       setError("Error fetching AI response");
       console.log(err);
@@ -379,29 +411,29 @@ Constraints -
 
   if (isGameOver) {
     return (
-      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center">
+      <div className="flex flex-col justify-between h-screen bg-[#0A160E] text-center overflow-hidden">
         {/* Game Over Content */}
-        <div className="flex flex-col items-center justify-center flex-1 p-6">
+        <div className="flex flex-col items-center justify-center flex-1 p-4">
           {/* Game Over GIF */}
           <img
             src="/financeGames6to8/game-over-game.gif"
             alt="Game Over"
-            className="w-64 h-auto mb-6"
+            className="w-48 sm:w-64 h-auto mb-4"
           />
 
           {/* Text */}
-          <p className="text-yellow-400 lilita-one-regular text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center">
+          <p className="text-yellow-400 lilita-one-regular text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center">
             Oops! That was close! Wanna Retry?
           </p>
         </div>
 
         {/* Footer Buttons */}
-        <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+        <div className="bg-[#2f3e46] border-t border-gray-700 py-3 px-4 flex flex-wrap justify-center gap-3">
           <img
             src="/financeGames6to8/feedback.svg"
             alt="Feedback"
             onClick={handleViewFeedback}
-            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+            className="cursor-pointer w-28 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
           />
           <img
             src="/financeGames6to8/retry.svg"
@@ -414,13 +446,13 @@ Constraints -
               setIsGameOver(false);
               setShowIntro(false);
             }}
-            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+            className="cursor-pointer w-28 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
           />
           <img
             src="/financeGames6to8/next-challenge.svg"
             alt="Next Challenge"
             onClick={handleNextChallenge}
-            className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+            className="cursor-pointer w-34 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
           />
         </div>
       </div>
@@ -440,17 +472,54 @@ Constraints -
       <div
         className={`flex flex-col bg-[#0A160E] lg:flex-row justify-center items-start gap-8 lg:gap-6 p-4 sm:p-6 lg:p-8 ${
           showInstructions ? "brightness-50" : ""
-        } pb-28`} // <-- add padding bottom here
+        }`}
+        style={{ paddingTop: "180px" }} // ✅ Inline style works for quick testing
       >
         {/* Dark Theme Weekly Budget Builder */}
         <div
-          className="w-full main-content bg-[#0A160E] font-sans"
+          className="w-full -mt-22 sm:mt-0 main-content bg-[#0A160E] font-sans"
           style={{
             fontFamily: "'Inter', sans-serif",
             paddingBottom:
               document.body.scrollHeight > window.innerHeight ? "8rem" : "0rem",
           }}
         >
+          {!showVictoryScreen && result && showResultBox && (
+            <div
+              id="resultBox"
+              className={`w-full lg:max-w-2xl lg:mt-0 p-6 mx-auto flex items-center justify-center transition-opacity duration-1000 ${
+                isFadingOut ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <div className="bg-[#594500CC] border border-[#FFCC00] p-6 rounded-xl shadow-lg text-center space-y-4">
+                <p className="text-lg lilita-one-regular font-semibold text-white">
+                  <span role="img" aria-label="target">
+                    🎯
+                  </span>{" "}
+                  <span className="text-outline">
+                    Spending Score: {result?.spendingScore}
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-300 lilita-one-regular">
+                  <span role="img" aria-label="tip">
+                    💡
+                  </span>{" "}
+                  <span className="text-outline">Tip: {result?.tip}</span>
+                </p>
+
+                <p className="text-sm text-red-400 lilita-one-regular">
+                  <span role="img" aria-label="cut">
+                    ✂️
+                  </span>{" "}
+                  <span className="text-outline">
+                    Cut this category: {result?.categoryToCut}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex flex-col lg:flex-row justify-center items-stretch gap-12 lg:gap-16 px-4 lg:px-8">
               {/* Available Expenses Section */}
@@ -474,29 +543,25 @@ Constraints -
                         >
                           {(provided, snapshot) => (
                             <div
-                              className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
-                                snapshot.isDragging
-                                  ? "border-[#5F8428]"
-                                  : "border-gray-600"
-                              } bg-[#131F24] hover:bg-[#202F36]`}
+                              className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+    ${snapshot.isDragging ? "border-[#5F8428]" : "border-gray-600"}
+  bg-[#131F24] hover:bg-[#202F36]`}
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                             >
-                              {/* Left: Coin + Cost (inside bordered box) */}
+                              {/* Left: Coin + Cost */}
                               <div
-                                className={`flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border ${
-                                  snapshot.isDragging
-                                    ? "border-[#5F8428]"
-                                    : "border-gray-600"
-                                }`}
+                                className={`flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border bg-[#1E2A30] shadow-inner
+      ${snapshot.isDragging ? "border-[#5F8428]" : "border-white/20"}`}
+                                style={{ margin: "4px" }}
                               >
                                 <img
                                   src="/financeGames6to8/coin.svg"
                                   alt="coin"
                                   className="w-5 h-5"
                                 />
-                                <span className="text-yellow-400 font-bold">
+                                <span className="text-white font-extrabold drop-shadow-sm">
                                   ₹{item.cost}
                                 </span>
                               </div>
@@ -550,17 +615,22 @@ Constraints -
                           >
                             {(provided, snapshot) => (
                               <div
-                                className={`transition-all duration-200 p-4 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border ${
-                                  snapshot.isDragging
-                                    ? "border-[#5F8428]"
-                                    : "border-[#5F8428]"
-                                } bg-[#131F24] hover:bg-[#202F36]`}
+                                className={`transition-all duration-200 mb-3 rounded-lg flex justify-between items-center shadow-sm cursor-grab border pr-2
+                  ${
+                    snapshot.isDragging
+                      ? "border-[#5F8428]"
+                      : "border-[#5F8428]"
+                  }
+                  bg-[#131F24] hover:bg-[#202F36]`}
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
                                 {/* Left: Coin + Cost */}
-                                <div className="flex items-center gap-1 min-w-[70px] px-2 py-1 rounded-md border border-[#5F8428]">
+                                <div
+                                  className="flex items-center justify-center gap-1 w-[90px] px-2 py-1 rounded-lg border border-[#5F8428] bg-[#1E2A30]"
+                                  style={{ margin: "4px" }}
+                                >
                                   <img
                                     src="/financeGames6to8/coin.svg"
                                     alt="coin"
@@ -571,7 +641,7 @@ Constraints -
                                   </span>
                                 </div>
 
-                                {/* Center: Label with green color */}
+                                {/* Center: Label */}
                                 <div className="text-[#5F8428] font-medium text-sm text-center flex-1">
                                   {item.label}
                                 </div>
@@ -595,78 +665,41 @@ Constraints -
             </div>
           </DragDropContext>
 
-          {!showVictoryScreen && result && (
-            <div className="mt-10">
-              <div className="w-full lg:w-2/3 p-6 mx-auto mt-4 flex items-center justify-center">
-                <div className="bg-[#243324] border border-gray-600 p-6 rounded-xl shadow-lg text-center space-y-4">
-                  {parseInt(result?.spendingScore?.split("/")[0]) >= 7 ? (
-                    // Victory Mode
-                    <>
-                      <h3 className="text-2xl font-semibold text-green-400">
-                        🎉 Challenge Complete!
-                      </h3>
-                      <p className="text-lg text-gray-300">
-                        🎯 Accuracy Score:{" "}
-                        <span className="font-bold text-yellow-400">
-                          {parseInt(result?.spendingScore?.split("/")[0]) * 10}%
-                        </span>
-                      </p>
-                      <div className="flex justify-center gap-4 pt-4">
-                        <button
-                          onClick={handleViewFeedback}
-                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          🔍 View Feedback
-                        </button>
-                        <button
-                          onClick={handleNextChallenge}
-                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200"
-                        >
-                          ➡️ Next Challenge
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    // Normal Feedback Mode
-                    <>
-                      <p className="text-lg font-semibold text-green-400">
-                        🎯 Spending Score: {result?.spendingScore}
-                      </p>
-                      <p className="text-sm text-gray-300">
-                        💡 Tip: {result?.tip}
-                      </p>
-                      <p className="text-sm text-red-400">
-                        ✂️ Cut this category: {result?.categoryToCut}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Footer with Total Wallet and Check Now Button */}
-          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-6 flex items-center justify-center z-40">
+          <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-3 sm:py-6 flex items-center justify-center z-40">
             {/* Kid Celebration Gif + Speech Bubble */}
             {showGif && (
-              <div className="absolute -top-28 left-[83%] transform -translate-x-1/2 z-50 flex items-start">
+              <div
+                className="
+    absolute
+    -top-27 sm:-top-28 md:-top-29 lg:-top-30
+    left-[83%] transform -translate-x-1/2
+    z-50 flex items-start
+  "
+              >
                 {/* Kid gif */}
                 <img
                   src="/financeGames6to8/kid-gif.gif"
                   alt="Kid Celebration"
-                  className="w-28 h-28"
+                  className="object-contain"
+                  style={{
+                    maxHeight: "120px",
+                    height: "auto",
+                    width: "auto",
+                  }}
                 />
-                {/* Speech bubble */}
+
+                {/* Speech bubble — hidden on small screens */}
                 <img
                   src="/financeGames6to8/kid-saying.svg"
                   alt="Kid Saying"
-                  className="absolute top-2 left-24 w-24"
+                  className="absolute top-2 left-[90px] w-24 hidden md:block"
                 />
               </div>
             )}
 
             <div className="w-full max-w-4xl px-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+              <div className="flex flex-row justify-between items-center gap-6 flex-wrap">
                 {/* Wallet Info */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center">
@@ -738,10 +771,10 @@ Constraints -
                   Challenge Complete!
                 </h2>
 
-                {/* Accuracy + Insight Boxes Side by Side */}
-                <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                {/* Accuracy + Insight Boxes */}
+                <div className="mt-6 flex flex-col items-center sm:flex-row sm:items-start sm:gap-4">
                   {/* Accuracy Box */}
-                  <div className="w-64 bg-[#09BE43] rounded-xl p-1 flex flex-col items-center">
+                  <div className="bg-[#09BE43] rounded-xl p-1 flex flex-col items-center w-64">
                     <p className="text-black text-sm font-bold mb-1 mt-2">
                       TOTAL ACCURACY
                     </p>
@@ -758,12 +791,19 @@ Constraints -
                   </div>
 
                   {/* Insight Box */}
-                  <div className="w-74 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center">
+                  <div className="mt-4 sm:mt-0 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center w-74">
                     <p className="text-black text-sm font-bold mb-1 mt-2">
                       INSIGHT
                     </p>
-                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center">
-                      <span className="text-[#FFCC00] lilita-one-regular text-sm font-medium italic">
+                    <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center overflow-hidden">
+                      <span
+                        className="text-[#FFCC00] lilita-one-regular font-medium italic leading-tight"
+                        style={{
+                          fontSize: "clamp(0.65rem, 1.2vw, 0.85rem)",
+                          lineHeight: "1.1",
+                          whiteSpace: "normal",
+                        }}
+                      >
                         {result?.tip || "Analyzing your results..."}
                       </span>
                     </div>
