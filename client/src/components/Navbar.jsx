@@ -235,7 +235,7 @@ const Navbar = () => {
                   <img
                     src={getCharacterIconPath()}
                     alt="User Dashboard"
-                    className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-6 w-6'}`}
+                    className={`${user?.avatar ? 'h-8 w-8 object-cover rounded-full' : 'h-10 w-10'}`}
                   />
                 </Link>
                 <button
