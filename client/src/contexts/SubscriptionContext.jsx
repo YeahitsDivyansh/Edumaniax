@@ -1,15 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import usePayment from '../hooks/usePayment';
+import { forceRefreshSubscriptions } from '../utils/subscriptionRefresh';
 
 const SubscriptionContext = createContext();
-
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  if (!context) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  return context;
-};
 
 export const SubscriptionProvider = ({ children }) => {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -82,6 +75,26 @@ export const SubscriptionProvider = ({ children }) => {
     if (requiredPlan === 'STARTER') return false;
     return !hasAccess(requiredPlan);
   };
+
+  // Set up global refreshSubscriptions function for use in other components
+  useEffect(() => {
+    // Make the refresh function globally available for payment completion
+    window.refreshSubscriptions = async () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        if (user.id) {
+          // Use the utility function to refresh and broadcast the update
+          await forceRefreshSubscriptions(user.id);
+        }
+      }
+    };
+
+    return () => {
+      // Clean up global function when component unmounts
+      window.refreshSubscriptions = undefined;
+    };
+  }, []);
 
   const value = {
     subscriptions,

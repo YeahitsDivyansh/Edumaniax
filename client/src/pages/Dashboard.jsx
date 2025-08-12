@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, NavLink, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
 import { useBlog } from "@/contexts/BlogContext";
 import { useAccessControl } from "../utils/accessControl";
-import ReactCrop from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,11 +13,9 @@ const Dashboard = () => {
   const { user, logout, role, updateUser, updateUserState } = useAuth();
   const fileInputRef = useRef(null);
   const imageRef = useRef(null);
-  const [avatar, setAvatar] = useState(
-    user?.avatar || "/dashboardDesign/uploadPic.svg"
-  );
+  const [avatar, setAvatar] = useState(user?.avatar || "/dashboardDesign/uploadPic.svg");
   const [selectedSection, setSelectedSection] = useState(
-    searchParams.get("section") || "profile"
+    searchParams.get('section') || "profile"
   );
   const [userComments, setUserComments] = useState([]);
   const [editingField, setEditingField] = useState(null);
@@ -26,27 +24,23 @@ const Dashboard = () => {
   const [payments, setPayments] = useState([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const [userSubscription, setUserSubscription] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
-
+  
   // Image cropping states
   const [showCropModal, setShowCropModal] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [crop, setCrop] = useState({
-    unit: "%",
+    unit: '%',
     width: 90,
     height: 90,
     x: 5,
-    y: 5,
+    y: 5
   });
   const [completedCrop, setCompletedCrop] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const { getUserComments } = useBlog();
-  const { accessStatus, hasModuleAccess } = useAccessControl(
-    subscriptions,
-    selectedModule
-  );
+  const { accessStatus, hasModuleAccess } = useAccessControl(subscriptions, selectedModule);
 
   // Sync avatar state with user context (fixes issue after page refresh)
   useEffect(() => {
@@ -59,7 +53,7 @@ const Dashboard = () => {
 
   // Additional effect to handle cases where user is loaded after component mount
   useEffect(() => {
-    if (user && !avatar.includes("http") && user.avatar) {
+    if (user && !avatar.includes('http') && user.avatar) {
       setAvatar(user.avatar);
     }
   }, [user, avatar]);
@@ -77,11 +71,7 @@ const Dashboard = () => {
           console.log("Failed to fetch user comments:", error);
           setUserComments([]);
         }
-      } else if (
-        user?.name &&
-        typeof user.name === "string" &&
-        user.name.trim()
-      ) {
+      } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
         // Fallback to name-based fetching for backward compatibility
         // console.log("Fetching comments for user name:", user.name);
         try {
@@ -101,7 +91,135 @@ const Dashboard = () => {
     fetchUserComments();
   }, [user?.id, user?.name, getUserComments]);
 
-  // Fetch user subscription and payment data
+  // Auto-refresh subscription data daily and handle real-time updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Function to refresh subscription data
+    const refreshSubscriptionData = async () => {
+      console.log('🔄 Auto-refreshing subscription data...');
+      await fetchUserSubscriptionData();
+    };
+
+    // Set up daily refresh (24 hours)
+    const dailyRefreshInterval = setInterval(refreshSubscriptionData, 24 * 60 * 60 * 1000);
+
+    // Set up hourly refresh for more frequent updates during active usage
+    const hourlyRefreshInterval = setInterval(refreshSubscriptionData, 60 * 60 * 1000);
+
+    // Refresh on window focus (when user returns to the tab)
+    const handleWindowFocus = () => {
+      console.log('👁️ Window focused, refreshing subscription data...');
+      refreshSubscriptionData();
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Cleanup intervals and event listeners on unmount
+    return () => {
+      clearInterval(dailyRefreshInterval);
+      clearInterval(hourlyRefreshInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [user?.id]);
+
+  // Move fetchUserSubscriptionData function outside useEffect so it can be reused
+  const fetchUserSubscriptionData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoadingSubscriptions(true);
+      setLoadingPayments(true);
+
+      // Use Promise.all to fetch both subscription and payment data in parallel
+      const [subscriptionResponse, paymentResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`)
+      ]);
+      
+      // Process subscription data
+      if (subscriptionResponse.ok) {
+        const subscriptionData = await subscriptionResponse.json();
+        // Handle the API response format {success: true, subscriptions: [...]}
+        const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+        setSubscriptions(userSubscriptions);
+        
+        console.log('📊 Updated subscription data:', userSubscriptions);
+        
+        // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+        // but the access control will handle all purchased modules
+        if (userSubscriptions.length > 0) {
+          const firstActiveSubscription = userSubscriptions.find(sub => 
+            (sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()) || 
+            (sub.isExpired === false && sub.remainingDays > 0)
+          );
+          
+          if (firstActiveSubscription) {
+            // Parse notes to get selectedModule if it exists (for SOLO plans)
+            if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+              try {
+                const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                const rawModule = parsedNotes.selectedModule;
+                
+                // Map the display name to the correct module key
+                const moduleMapping = {
+                  'Fundamentals of Finance': 'finance',
+                  'Computer Science': 'computers', 
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership', 
+                  'Environmental Sustainability': 'environment',
+                  'Wellness & Mental Health': 'sel',
+                };
+                
+                const mappedModule = moduleMapping[rawModule] || rawModule?.toLowerCase();
+                setSelectedModule(mappedModule);
+              } catch {
+                // If notes is not JSON, treat as plain text and map it
+                const moduleMapping = {
+                  'Fundamentals of Finance': 'finance',
+                  'Computer Science': 'computers', 
+                  'Fundamentals of Law': 'law',
+                  'Communication Mastery': 'communication',
+                  'Entrepreneurship Bootcamp': 'entrepreneurship',
+                  'Digital Marketing Pro': 'digital-marketing',
+                  'Leadership & Adaptability': 'leadership', 
+                  'Environmental Sustainability': 'environment',
+                  'Wellness & Mental Health': 'sel',
+                };
+                
+                const mappedModule = moduleMapping[firstActiveSubscription.notes] || firstActiveSubscription.notes?.toLowerCase();
+                setSelectedModule(mappedModule);
+              }
+            }
+          }
+        }
+      }
+      
+      // Process payment data
+      if (paymentResponse.ok) {
+        const paymentData = await paymentResponse.json();
+        setPayments(Array.isArray(paymentData) ? paymentData : []);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching user subscription/payment data:', error);
+      setSubscriptions([]);
+      setPayments([]);
+    } finally {
+      setLoadingSubscriptions(false);
+      setLoadingPayments(false);
+    }
+  }, [user?.id]);
+
+  // Fetch user subscription and payment data on component mount
+  useEffect(() => {
+    fetchUserSubscriptionData();
+  }, [user?.id]);
+
+  // Original fetch useEffect (keeping for compatibility but moving logic to function above)
   useEffect(() => {
     const fetchUserSubscriptionData = async () => {
       if (!user?.id) return;
@@ -110,149 +228,73 @@ const Dashboard = () => {
         setLoadingSubscriptions(true);
         setLoadingPayments(true);
 
-        // Fetch user subscriptions
-        const subscriptionResponse = await fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/subscriptions/${user.id}`
-        );
-
+        // Use Promise.all to fetch both subscription and payment data in parallel
+        const [subscriptionResponse, paymentResponse] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`),
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/payments/${user.id}`)
+        ]);
+        
+        // Process subscription data
         if (subscriptionResponse.ok) {
           const subscriptionData = await subscriptionResponse.json();
-          setSubscriptions(
-            Array.isArray(subscriptionData) ? subscriptionData : []
-          );
-
-          // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData)
-            ? subscriptionData.filter(
-                (sub) =>
-                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
-              )
-            : [];
-
-          // Define plan hierarchy to find the highest plan
-          const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
-
-          let highestActiveSubscription = null;
-
-          // Find the highest tier among active and valid subscriptions
-          for (const plan of planHierarchy.reverse()) {
-            const subscription = activeSubscriptions.find(
-              (sub) => sub.planType === plan
+          // Handle the API response format {success: true, subscriptions: [...]}
+          const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(userSubscriptions);
+          
+          // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+          // but the access control will handle all purchased modules
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(sub => 
+              sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
             );
-            if (subscription) {
-              highestActiveSubscription = subscription;
-              break;
-            }
-          }
-
-          if (highestActiveSubscription) {
-            // Parse notes to get selectedModule if it exists
-            let selectedModuleFromSub = null;
-            if (highestActiveSubscription.notes) {
-              try {
-                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
-                const rawModule = parsedNotes.selectedModule;
-
-                // Map the display name to the correct module key
-                const moduleMapping = {
-                  // Full display names from UI
-                  "Finance Management": "finance",
-                  "Digital Marketing": "digital-marketing",
-                  "Communication Skills": "communication",
-                  "Computer Science": "computers",
-                  Entrepreneurship: "entrepreneurship",
-                  "Environmental Science": "environment",
-                  "Legal Awareness": "law",
-                  "Leadership Skills": "leadership",
-                  "Social Emotional Learning": "sel",
-
-                  // Short names (legacy support)
-                  Leadership: "leadership",
-                  Finance: "finance",
-                  Communication: "communication",
-
-                  // Course-specific names from screenshots
-                  "Fundamentals of Finance": "finance",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                };
-
-                selectedModuleFromSub =
-                  moduleMapping[rawModule] || rawModule?.toLowerCase();
-              } catch {
-                // If notes is not JSON, treat as plain text and map it
-                const moduleMapping = {
-                  // Full display names from UI
-                  "Finance Management": "finance",
-                  "Digital Marketing": "digital-marketing",
-                  "Communication Skills": "communication",
-                  "Computer Science": "computers",
-                  Entrepreneurship: "entrepreneurship",
-                  "Environmental Science": "environment",
-                  "Legal Awareness": "law",
-                  "Leadership Skills": "leadership",
-                  "Social Emotional Learning": "sel",
-
-                  // Short names (legacy support)
-                  Leadership: "leadership",
-                  Finance: "finance",
-                  Communication: "communication",
-
-                  // Course-specific names from screenshots
-                  "Fundamentals of Finance": "finance",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                };
-
-                selectedModuleFromSub =
-                  moduleMapping[highestActiveSubscription.notes] ||
-                  highestActiveSubscription.notes?.toLowerCase();
+            
+            if (firstActiveSubscription) {
+              
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
+                  
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    'Fundamentals of Finance': 'finance',
+                    'Computer Science': 'computers', 
+                    'Fundamentals of Law': 'law',
+                    'Communication Mastery': 'communication',
+                    'Entrepreneurship Bootcamp': 'entrepreneurship',
+                    'Digital Marketing Pro': 'digital-marketing',
+                    'Leadership & Adaptability': 'leadership', 
+                    'Environmental Sustainability': 'environment',
+                    'Wellness & Mental Health': 'sel'
+                  };
+                  
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error('Error parsing subscription notes:', error);
+                }
               }
             }
-
-            setSelectedModule(selectedModuleFromSub);
-            setUserSubscription({
-              plan: highestActiveSubscription.planType,
-              status: highestActiveSubscription.status,
-              startDate: highestActiveSubscription.startDate,
-              endDate: highestActiveSubscription.endDate,
-              selectedModule: selectedModuleFromSub,
-            });
+          } else {
+            setSelectedModule(null);
           }
         } else {
-          console.log(
-            "Failed to fetch subscriptions:",
-            subscriptionResponse.statusText
-          );
+          console.log('Failed to fetch subscriptions:', subscriptionResponse.statusText);
           setSubscriptions([]);
         }
 
-        // Fetch user payments
-        const paymentResponse = await fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/payments/${user.id}`
-        );
-
+        // Process payment data
         if (paymentResponse.ok) {
           const paymentData = await paymentResponse.json();
           setPayments(Array.isArray(paymentData) ? paymentData : []);
         } else {
-          console.log("Failed to fetch payments:", paymentResponse.statusText);
+          console.log('Failed to fetch payments:', paymentResponse.statusText);
           setPayments([]);
         }
+
       } catch (error) {
-        console.error("Error fetching subscription/payment data:", error);
+        console.error('Error fetching subscription/payment data:', error);
         setSubscriptions([]);
         setPayments([]);
       } finally {
@@ -262,6 +304,19 @@ const Dashboard = () => {
     };
 
     fetchUserSubscriptionData();
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('Subscription updated event received:', event.detail);
+      fetchUserSubscriptionData(); // Re-fetch subscription data
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
   }, [user?.id]);
 
   // Refresh comments when user returns to the dashboard (page focus)
@@ -271,48 +326,101 @@ const Dashboard = () => {
         if (user?.id) {
           // Use user ID for refreshing comments
           // console.log("Refreshing comments due to page focus for user ID:", user.id);
-          getUserComments(user.id, true)
-            .then((comments) => {
-              // console.log("Refreshed comments:", comments);
-              setUserComments(Array.isArray(comments) ? comments : []);
-            })
-            .catch((error) => {
-              console.log("Failed to refresh comments:", error);
-            });
-        } else if (
-          user?.name &&
-          typeof user.name === "string" &&
-          user.name.trim()
-        ) {
+          getUserComments(user.id, true).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
+        } else if (user?.name && typeof user.name === 'string' && user.name.trim()) {
           // Fallback to name-based refreshing
           // console.log("Refreshing comments due to page focus for user name:", user.name);
-          getUserComments(user.name.trim(), false)
-            .then((comments) => {
-              // console.log("Refreshed comments:", comments);
-              setUserComments(Array.isArray(comments) ? comments : []);
-            })
-            .catch((error) => {
-              console.log("Failed to refresh comments:", error);
-            });
+          getUserComments(user.name.trim(), false).then((comments) => {
+            // console.log("Refreshed comments:", comments);
+            setUserComments(Array.isArray(comments) ? comments : []);
+          }).catch((error) => {
+            console.log("Failed to refresh comments:", error);
+          });
         }
       }
     };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id, user?.name, getUserComments]);
+
+  // Listen for subscription updates from payment completion
+  useEffect(() => {
+    const handleSubscriptionUpdate = async (event) => {
+      console.log('Dashboard: Subscription update detected', event.detail);
+      
+      if (user?.id && event.detail?.subscriptions) {
+        // Set loading state
+        setLoadingSubscriptions(true);
+        
+        try {
+          // Update subscription state with the new data
+          const userSubscriptions = event.detail.subscriptions;
+          setSubscriptions(userSubscriptions);
+          
+          // Update selected module if needed
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(sub => 
+              sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+            );
+            
+            if (firstActiveSubscription) {
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (firstActiveSubscription.notes && firstActiveSubscription.planType === 'SOLO') {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
+                  
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    'Fundamentals of Finance': 'finance',
+                    'Computer Science': 'computers', 
+                    'Fundamentals of Law': 'law',
+                    'Communication Mastery': 'communication',
+                    'Entrepreneurship Bootcamp': 'entrepreneurship',
+                    'Digital Marketing Pro': 'digital-marketing',
+                    'Leadership & Adaptability': 'leadership', 
+                    'Environmental Sustainability': 'environment',
+                    'Wellness & Mental Health': 'sel'
+                  };
+                  
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error('Error parsing subscription notes:', error);
+                }
+              }
+            }
+          }
+        } finally {
+          // Clear loading state
+          setLoadingSubscriptions(false);
+        }
+      }
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user && role !== "admin" && role !== "ADMIN" && role !== "SALES") {
       navigate("/login");
     }
-
+    
     // Set avatar from user data
     if (user?.avatar) {
       setAvatar(user.avatar);
     }
-
+    
     // If user is a sales team member, update the page title
     if (role === "SALES") {
       document.title = "Sales Team Dashboard | Edumaniax";
@@ -334,7 +442,7 @@ const Dashboard = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.type.startsWith("image/")) {
+      if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = () => {
           setImageToCrop(reader.result);
@@ -342,17 +450,17 @@ const Dashboard = () => {
         };
         reader.readAsDataURL(file);
       } else {
-        alert("Please select an image file");
+        alert('Please select an image file');
       }
     }
   };
 
   const getCroppedImg = (image, crop) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
     if (!crop || !ctx) {
-      return Promise.reject(new Error("Canvas context not available"));
+      return Promise.reject(new Error('Canvas context not available'));
     }
 
     const scaleX = image.naturalWidth / image.width;
@@ -374,7 +482,7 @@ const Dashboard = () => {
     );
 
     return new Promise((resolve) => {
-      canvas.toBlob(resolve, "image/jpeg", 0.9);
+      canvas.toBlob(resolve, 'image/jpeg', 0.9);
     });
   };
 
@@ -383,38 +491,28 @@ const Dashboard = () => {
 
     try {
       setIsUploading(true);
-      const croppedImageBlob = await getCroppedImg(
-        imageRef.current,
-        completedCrop
-      );
-
+      const croppedImageBlob = await getCroppedImg(imageRef.current, completedCrop);
+      
       // Convert blob to file
-      const file = new File([croppedImageBlob], "avatar.jpg", {
-        type: "image/jpeg",
-      });
-
+      const file = new File([croppedImageBlob], 'avatar.jpg', { type: 'image/jpeg' });
+      
       const formData = new FormData();
-      formData.append("avatar", file);
+      formData.append('avatar', file);
 
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_API_URL || "http://localhost:3000"
-        }/upload-avatar`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/upload-avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         // Update local avatar state immediately for UI responsiveness
         setAvatar(data.avatarUrl);
-
+        
         // The backend returns the complete updated user object
         if (data.user) {
           // Use the new updateUserState function to update both context and localStorage
@@ -422,19 +520,19 @@ const Dashboard = () => {
         } else {
           // Fallback: if no user data returned, use updateUser method
           if (updateUser) {
-            await updateUser("avatar", data.avatarUrl);
+            await updateUser('avatar', data.avatarUrl);
           }
         }
-
+        
         setShowCropModal(false);
         setImageToCrop(null);
-        alert("Profile picture updated successfully!");
+        alert('Profile picture updated successfully!');
       } else {
-        throw new Error(data.message || "Failed to upload avatar");
+        throw new Error(data.message || 'Failed to upload avatar');
       }
     } catch (error) {
-      console.error("Error uploading avatar:", error);
-      alert("Failed to upload profile picture. Please try again.");
+      console.error('Error uploading avatar:', error);
+      alert('Failed to upload profile picture. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -444,11 +542,11 @@ const Dashboard = () => {
     setShowCropModal(false);
     setImageToCrop(null);
     setCrop({
-      unit: "%",
+      unit: '%',
       width: 90,
       height: 90,
       x: 5,
-      y: 5,
+      y: 5
     });
   };
 
@@ -458,7 +556,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Navigation failed:", error);
       // Fallback: could show an error message or redirect to all blogs
-      navigate("/blogs");
+      navigate('/blogs');
     }
   };
 
@@ -466,14 +564,14 @@ const Dashboard = () => {
     setEditingField(field);
     setEditValues({
       ...editValues,
-      [field]: user[field] || "",
+      [field]: user[field] || ""
     });
   };
 
   const handleSaveClick = async (field) => {
     try {
       const value = editValues[field];
-
+      
       // Basic validation
       if (!value || value.toString().trim() === "") {
         alert("Please enter a valid value");
@@ -506,7 +604,7 @@ const Dashboard = () => {
 
       // Call the updateUser function from AuthContext
       const result = await updateUser(field, value);
-
+      
       if (result.success) {
         setEditingField(null);
         setEditValues({});
@@ -529,14 +627,14 @@ const Dashboard = () => {
   const handleInputChange = (field, value) => {
     setEditValues({
       ...editValues,
-      [field]: value,
+      [field]: value
     });
   };
 
   const handleKeyPress = (e, field) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSaveClick(field);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       handleCancelClick();
     }
   };
@@ -645,26 +743,15 @@ const Dashboard = () => {
                 <span className="font-bold">My Modules</span>
               </button>
             )}
-
+            
             {/* Sales Dashboard Link - Only for SALES role */}
-            {role === "SALES" && (
+            {(role === "SALES") && (
               <Link
                 to="/sales/dashboard"
                 className="flex items-center gap-3 text-blue-500 hover:text-blue-700"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <span className="font-bold">Sales Dashboard</span>
               </Link>
@@ -752,20 +839,17 @@ const Dashboard = () => {
                             My Learning Journey
                           </h3>
                           <p className="text-gray-600 text-sm">
-                            {accessStatus.subscription.plan.toUpperCase()} Plan
-                            - Continue your progress
+                            {accessStatus.subscription.plan.toUpperCase()} Plan - Continue your progress
                           </p>
                         </div>
-                        {accessStatus.subscription.plan !== "PRO" &&
-                          accessStatus.subscription.plan !==
-                            "INSTITUTIONAL" && (
-                            <Link
-                              to="/pricing"
-                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
-                            >
-                              Upgrade Plan
-                            </Link>
-                          )}
+                        {accessStatus.subscription.plan !== 'PRO' && accessStatus.subscription.plan !== 'INSTITUTIONAL' && (
+                          <Link
+                            to="/pricing"
+                            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+                          >
+                            Upgrade Plan
+                          </Link>
+                        )}
                       </div>
 
                       {/* Progress Overview */}
@@ -773,78 +857,40 @@ const Dashboard = () => {
                         <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-green-800 font-semibold">
-                                Modules Unlocked
-                              </p>
+                              <p className="text-green-800 font-semibold">Modules Unlocked</p>
                               <p className="text-2xl font-bold text-green-600">
-                                {
-                                  [
-                                    {
-                                      key: "finance",
-                                      name: "Finance Management",
-                                    },
-                                    {
-                                      key: "digital-marketing",
-                                      name: "Digital Marketing",
-                                    },
-                                    {
-                                      key: "communication",
-                                      name: "Communication Skills",
-                                    },
-                                    {
-                                      key: "computers",
-                                      name: "Computer Science",
-                                    },
-                                    {
-                                      key: "entrepreneurship",
-                                      name: "Entrepreneurship",
-                                    },
-                                    {
-                                      key: "environment",
-                                      name: "Environmental Science",
-                                    },
-                                    { key: "law", name: "Legal Awareness" },
-                                    {
-                                      key: "leadership",
-                                      name: "Leadership Skills",
-                                    },
-                                    {
-                                      key: "sel",
-                                      name: "Social Emotional Learning",
-                                    },
-                                  ].filter((module) =>
-                                    hasModuleAccess(module.key)
-                                  ).length
-                                }
+                                {[
+                                  { key: 'finance', name: 'Fundamentals of Finance' },
+                                  { key: 'computers', name: 'Computer Science' },
+                                  { key: 'law', name: 'Fundamentals of Law' },
+                                  { key: 'communication', name: 'Communication Mastery' },
+                                  { key: 'entrepreneurship', name: 'Entrepreneurship Bootcamp' },
+                                  { key: 'digital-marketing', name: 'Digital Marketing Pro' },
+                                  { key: 'leadership', name: 'Leadership & Adaptability' },
+                                  { key: 'environment', name: 'Environmental Sustainability' },
+                                  { key: 'sel', name: 'Wellness & Mental Health' },
+                                ].filter(module => hasModuleAccess(module.key)).length}
                               </p>
                             </div>
                             <div className="text-3xl">📚</div>
                           </div>
                         </div>
-
+                        
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-blue-800 font-semibold">
-                                Overall Progress
-                              </p>
-                              <p className="text-2xl font-bold text-blue-600">
-                                65%
-                              </p>
+                              <p className="text-blue-800 font-semibold">Overall Progress</p>
+                              <p className="text-2xl font-bold text-blue-600">65%</p>
                             </div>
                             <div className="text-3xl">🎯</div>
                           </div>
                         </div>
-
+                        
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-purple-800 font-semibold">
-                                Certificates Earned
-                              </p>
-                              <p className="text-2xl font-bold text-purple-600">
-                                3
-                              </p>
+                              <p className="text-purple-800 font-semibold">Certificates Earned</p>
+                              <p className="text-2xl font-bold text-purple-600">3</p>
                             </div>
                             <div className="text-3xl">🏆</div>
                           </div>
@@ -854,96 +900,35 @@ const Dashboard = () => {
                       {/* Module Cards with Progress */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
-                          {
-                            key: "finance",
-                            name: "Finance Management",
-                            icon: "💰",
-                            progress: 85,
-                            color: "green",
-                          },
-                          {
-                            key: "digital-marketing",
-                            name: "Digital Marketing",
-                            icon: "📱",
-                            progress: 60,
-                            color: "blue",
-                          },
-                          {
-                            key: "communication",
-                            name: "Communication Skills",
-                            icon: "🗣️",
-                            progress: 45,
-                            color: "orange",
-                          },
-                          {
-                            key: "computers",
-                            name: "Computer Science",
-                            icon: "💻",
-                            progress: 30,
-                            color: "purple",
-                          },
-                          {
-                            key: "entrepreneurship",
-                            name: "Entrepreneurship",
-                            icon: "🚀",
-                            progress: 0,
-                            color: "red",
-                          },
-                          {
-                            key: "environment",
-                            name: "Environmental Science",
-                            icon: "🌍",
-                            progress: 0,
-                            color: "green",
-                          },
-                          {
-                            key: "law",
-                            name: "Legal Awareness",
-                            icon: "⚖️",
-                            progress: 0,
-                            color: "indigo",
-                          },
-                          {
-                            key: "leadership",
-                            name: "Leadership Skills",
-                            icon: "👑",
-                            progress: 75,
-                            color: "yellow",
-                          },
-                          {
-                            key: "sel",
-                            name: "Social Emotional Learning",
-                            icon: "❤️",
-                            progress: 90,
-                            color: "pink",
-                          },
+                          { key: 'finance', name: 'Finance Management', icon: '💰', progress: 85, color: 'green' },
+                          { key: 'digital-marketing', name: 'Digital Marketing', icon: '📱', progress: 60, color: 'blue' },
+                          { key: 'communication', name: 'Communication Skills', icon: '🗣️', progress: 45, color: 'orange' },
+                          { key: 'computers', name: 'Computer Science', icon: '💻', progress: 30, color: 'purple' },
+                          { key: 'entrepreneurship', name: 'Entrepreneurship', icon: '🚀', progress: 0, color: 'red' },
+                          { key: 'environment', name: 'Environmental Science', icon: '🌍', progress: 0, color: 'green' },
+                          { key: 'law', name: 'Legal Awareness', icon: '⚖️', progress: 0, color: 'indigo' },
+                          { key: 'leadership', name: 'Leadership Skills', icon: '👑', progress: 75, color: 'yellow' },
+                          { key: 'sel', name: 'Social Emotional Learning', icon: '❤️', progress: 90, color: 'pink' }
                         ].map((module) => {
                           const hasAccess = hasModuleAccess(module.key);
                           const colorClasses = {
-                            green:
-                              "border-green-200 bg-green-50 hover:border-green-300",
-                            blue: "border-blue-200 bg-blue-50 hover:border-blue-300",
-                            orange:
-                              "border-orange-200 bg-orange-50 hover:border-orange-300",
-                            purple:
-                              "border-purple-200 bg-purple-50 hover:border-purple-300",
-                            red: "border-red-200 bg-red-50 hover:border-red-300",
-                            indigo:
-                              "border-indigo-200 bg-indigo-50 hover:border-indigo-300",
-                            yellow:
-                              "border-yellow-200 bg-yellow-50 hover:border-yellow-300",
-                            pink: "border-pink-200 bg-pink-50 hover:border-pink-300",
+                            green: 'border-green-200 bg-green-50 hover:border-green-300',
+                            blue: 'border-blue-200 bg-blue-50 hover:border-blue-300',
+                            orange: 'border-orange-200 bg-orange-50 hover:border-orange-300',
+                            purple: 'border-purple-200 bg-purple-50 hover:border-purple-300',
+                            red: 'border-red-200 bg-red-50 hover:border-red-300',
+                            indigo: 'border-indigo-200 bg-indigo-50 hover:border-indigo-300',
+                            yellow: 'border-yellow-200 bg-yellow-50 hover:border-yellow-300',
+                            pink: 'border-pink-200 bg-pink-50 hover:border-pink-300'
                           };
-
+                          
                           return (
                             <div
                               key={module.key}
                               className={`border-2 rounded-xl p-6 transition-all duration-300 ${
                                 hasAccess
-                                  ? `${
-                                      colorClasses[module.color]
-                                    } hover:shadow-lg cursor-pointer transform hover:-translate-y-1`
-                                  : "border-gray-200 bg-gray-50 opacity-60"
+                                  ? `${colorClasses[module.color]} hover:shadow-lg cursor-pointer transform hover:-translate-y-1`
+                                  : 'border-gray-200 bg-gray-50 opacity-60'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-4">
@@ -951,77 +936,61 @@ const Dashboard = () => {
                                 {hasAccess ? (
                                   <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                                    <span className="text-xs text-green-600 font-medium">
-                                      Active
-                                    </span>
+                                    <span className="text-xs text-green-600 font-medium">Active</span>
                                   </div>
                                 ) : (
                                   <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 bg-gray-400 rounded-full"></span>
-                                    <span className="text-xs text-gray-500 font-medium">
-                                      Locked
-                                    </span>
+                                    <span className="text-xs text-gray-500 font-medium">Locked</span>
                                   </div>
                                 )}
                               </div>
-
-                              <h4 className="font-bold text-gray-800 mb-2 text-lg">
-                                {module.name}
-                              </h4>
-
+                              
+                              <h4 className="font-bold text-gray-800 mb-2 text-lg">{module.name}</h4>
+                              
                               {hasAccess ? (
                                 <>
                                   {/* Progress Bar */}
                                   <div className="mb-4">
                                     <div className="flex justify-between items-center mb-2">
-                                      <span className="text-sm text-gray-600">
-                                        Progress
-                                      </span>
-                                      <span className="text-sm font-semibold text-gray-800">
-                                        {module.progress}%
-                                      </span>
+                                      <span className="text-sm text-gray-600">Progress</span>
+                                      <span className="text-sm font-semibold text-gray-800">{module.progress}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
-                                      <div
+                                      <div 
                                         className={`h-2 rounded-full transition-all duration-500 ${
-                                          module.progress >= 80
-                                            ? "bg-green-500"
-                                            : module.progress >= 50
-                                            ? "bg-yellow-500"
-                                            : "bg-blue-500"
+                                          module.progress >= 80 ? 'bg-green-500' :
+                                          module.progress >= 50 ? 'bg-yellow-500' : 'bg-blue-500'
                                         }`}
                                         style={{ width: `${module.progress}%` }}
                                       ></div>
                                     </div>
                                   </div>
-
+                                  
                                   {/* Action Buttons */}
                                   <div className="space-y-2">
                                     <Link
                                       to={`/courses?module=${module.key}`}
                                       className="w-full bg-[#068F36] hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                     >
-                                      {module.progress > 0
-                                        ? "Continue Learning"
-                                        : "Start Learning"}
+                                      {module.progress > 0 ? 'Continue Learning' : 'Start Learning'}
                                       <ChevronRight size={16} />
                                     </Link>
-
+                                    
                                     {module.progress > 50 && (
                                       <Link
                                         to={`/${module.key}/games`}
                                         className="w-full border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                       >
-                                        Practice Games 🎮
+                                        Practice Games
+                                        🎮
                                       </Link>
                                     )}
                                   </div>
                                 </>
                               ) : (
                                 <div className="text-center py-4">
-                                  <p className="text-gray-500 text-sm mb-3">
-                                    Premium Required
-                                  </p>
+                                  <p className="text-gray-500 text-sm mb-3">Premium Required</p>
                                   <Link
                                     to="/pricing"
                                     className="text-[#068F36] hover:text-green-700 text-sm font-medium"
@@ -1036,32 +1005,20 @@ const Dashboard = () => {
                       </div>
 
                       {/* Special message for SOLO plan */}
-                      {accessStatus.subscription.plan === "SOLO" &&
-                        accessStatus.subscription.selectedModule && (
-                          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="text-2xl">⭐</div>
-                              <h4 className="font-bold text-blue-800">
-                                Your Selected Module
-                              </h4>
-                            </div>
-                            <p className="text-blue-700">
-                              With your SOLO plan, you have premium access to:{" "}
-                              <strong>
-                                {accessStatus.subscription.selectedModule}
-                              </strong>
-                            </p>
-                            <p className="text-blue-600 text-sm mt-2">
-                              Want access to all modules?{" "}
-                              <Link
-                                to="/pricing"
-                                className="underline font-medium"
-                              >
-                                Upgrade to PRO
-                              </Link>
-                            </p>
+                      {accessStatus.subscription.plan === 'SOLO' && accessStatus.subscription.selectedModule && (
+                        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="text-2xl">⭐</div>
+                            <h4 className="font-bold text-blue-800">Your Selected Module</h4>
                           </div>
-                        )}
+                          <p className="text-blue-700">
+                            With your SOLO plan, you have premium access to: <strong>{accessStatus.subscription.selectedModule}</strong>
+                          </p>
+                          <p className="text-blue-600 text-sm mt-2">
+                            Want access to all modules? <Link to="/pricing" className="underline font-medium">Upgrade to PRO</Link>
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center p-10">
@@ -1099,94 +1056,36 @@ const Dashboard = () => {
 
                 {/* ROLE INFO BANNER - Only visible for ADMIN and SALES roles */}
                 {(role === "admin" || role === "ADMIN" || role === "SALES") && (
-                  <div
-                    className={`mb-6 p-4 rounded-lg shadow-md ${
-                      role === "admin" || role === "ADMIN"
-                        ? "bg-purple-100 border-l-4 border-purple-500"
-                        : "bg-blue-100 border-l-4 border-blue-500"
-                    }`}
-                  >
+                  <div className={`mb-6 p-4 rounded-lg shadow-md ${role === "admin" || role === "ADMIN" ? "bg-purple-100 border-l-4 border-purple-500" : "bg-blue-100 border-l-4 border-blue-500"}`}>
                     <div className="flex items-center">
-                      <div
-                        className={`p-2 rounded-full ${
-                          role === "admin" || role === "ADMIN"
-                            ? "bg-purple-200"
-                            : "bg-blue-200"
-                        } mr-4`}
-                      >
+                      <div className={`p-2 rounded-full ${role === "admin" || role === "ADMIN" ? "bg-purple-200" : "bg-blue-200"} mr-4`}>
                         {role === "admin" || role === "ADMIN" ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 text-purple-700"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                            />
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 text-blue-700"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                            />
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                           </svg>
                         )}
                       </div>
                       <div>
-                        <h2
-                          className={`text-lg font-semibold ${
-                            role === "admin" || role === "ADMIN"
-                              ? "text-purple-800"
-                              : "text-blue-800"
-                          }`}
-                        >
-                          {role === "admin" || role === "ADMIN"
-                            ? "Administrator Account"
-                            : "Sales Team Account"}
+                        <h2 className={`text-lg font-semibold ${role === "admin" || role === "ADMIN" ? "text-purple-800" : "text-blue-800"}`}>
+                          {role === "admin" || role === "ADMIN" ? "Administrator Account" : "Sales Team Account"}
                         </h2>
-                        <p
-                          className={`text-sm ${
-                            role === "admin" || role === "ADMIN"
-                              ? "text-purple-600"
-                              : "text-blue-600"
-                          }`}
-                        >
-                          {role === "admin" || role === "ADMIN"
+                        <p className={`text-sm ${role === "admin" || role === "ADMIN" ? "text-purple-600" : "text-blue-600"}`}>
+                          {role === "admin" || role === "ADMIN" 
                             ? "You have administrative privileges and can access all system features."
                             : "You have sales team privileges and can access sales dashboard and related features."}
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 flex justify-end">
-                      <a
-                        href={
-                          role === "admin" || role === "ADMIN"
-                            ? "/"
-                            : "/sales/dashboard"
-                        }
-                        className={`text-sm px-4 py-1 rounded ${
-                          role === "admin" || role === "ADMIN"
-                            ? "bg-purple-500 hover:bg-purple-600 text-white"
-                            : "bg-blue-500 hover:bg-blue-600 text-white"
-                        }`}
+                      <a 
+                        href={role === "admin" || role === "ADMIN" ? "/" : "/sales/dashboard"} 
+                        className={`text-sm px-4 py-1 rounded ${role === "admin" || role === "ADMIN" ? "bg-purple-500 hover:bg-purple-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
                       >
-                        {role === "admin" || role === "ADMIN"
-                          ? "Admin Portal"
-                          : "Sales Dashboard"}
+                        {role === "admin" || role === "ADMIN" ? "Admin Portal" : "Sales Dashboard"}
                       </a>
                     </div>
                   </div>
@@ -1236,23 +1135,21 @@ const Dashboard = () => {
                                   <input
                                     type="text"
                                     value={editValues.name || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("name", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("name", e.target.value)}
                                     onKeyDown={(e) => handleKeyPress(e, "name")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter your name"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
+                                    <button 
                                       onClick={() => handleSaveClick("name")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button
+                                    <button 
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -1266,7 +1163,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "name" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("name")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -1283,29 +1180,20 @@ const Dashboard = () => {
                                   <input
                                     type="text"
                                     value={editValues.userClass || ""}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        "userClass",
-                                        e.target.value
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "userClass")
-                                    }
+                                    onChange={(e) => handleInputChange("userClass", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "userClass")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
-                                      onClick={() =>
-                                        handleSaveClick("userClass")
-                                      }
+                                    <button 
+                                      onClick={() => handleSaveClick("userClass")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button
+                                    <button 
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -1315,13 +1203,11 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="font-semibold">
-                                  {user.userClass}
-                                </p>
+                                <p className="font-semibold">{user.userClass}</p>
                               )}
                             </div>
                             {editingField !== "userClass" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("userClass")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -1338,9 +1224,7 @@ const Dashboard = () => {
                                   <input
                                     type="number"
                                     value={editValues.age || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("age", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("age", e.target.value)}
                                     onKeyDown={(e) => handleKeyPress(e, "age")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
@@ -1348,14 +1232,14 @@ const Dashboard = () => {
                                     max="100"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
+                                    <button 
                                       onClick={() => handleSaveClick("age")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button
+                                    <button 
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -1369,7 +1253,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "age" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("age")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -1391,30 +1275,21 @@ const Dashboard = () => {
                                   <input
                                     type="tel"
                                     value={editValues.phonenumber || ""}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        "phonenumber",
-                                        e.target.value
-                                      )
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "phonenumber")
-                                    }
+                                    onChange={(e) => handleInputChange("phonenumber", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "phonenumber")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter phone number"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
-                                      onClick={() =>
-                                        handleSaveClick("phonenumber")
-                                      }
+                                    <button 
+                                      onClick={() => handleSaveClick("phonenumber")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button
+                                    <button 
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -1430,7 +1305,7 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "phonenumber" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("phonenumber")}
                                 className="bg-[#F0EFFA] text-gray-600 text-xs px-3 py-1 rounded-lg hover:bg-gray-200 ml-2"
                               >
@@ -1447,25 +1322,21 @@ const Dashboard = () => {
                                   <input
                                     type="email"
                                     value={editValues.email || ""}
-                                    onChange={(e) =>
-                                      handleInputChange("email", e.target.value)
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleKeyPress(e, "email")
-                                    }
+                                    onChange={(e) => handleInputChange("email", e.target.value)}
+                                    onKeyDown={(e) => handleKeyPress(e, "email")}
                                     className="font-semibold bg-white border border-gray-300 rounded px-2 py-1 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                                     autoFocus
                                     placeholder="Enter email address"
                                   />
                                   <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
-                                    <button
+                                    <button 
                                       onClick={() => handleSaveClick("email")}
                                       className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-green-600 text-xs"
                                       title="Save"
                                     >
                                       ✓
                                     </button>
-                                    <button
+                                    <button 
                                       onClick={handleCancelClick}
                                       className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
                                       title="Cancel"
@@ -1488,13 +1359,9 @@ const Dashboard = () => {
                               )}
                             </div>
                             {editingField !== "email" && (
-                              <button
+                              <button 
                                 onClick={() => handleEditClick("email")}
-                                className={`${
-                                  user.email
-                                    ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200"
-                                    : "bg-[#068F36] text-white hover:bg-green-700"
-                                } text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
+                                className={`${user.email ? "bg-[#F0EFFA] text-gray-600 hover:bg-gray-200" : "bg-[#068F36] text-white hover:bg-green-700"} text-xs px-3 py-1 rounded-lg ml-2 flex-shrink-0`}
                               >
                                 {user.email ? "Edit" : "Add Now"}
                               </button>
@@ -1594,43 +1461,41 @@ const Dashboard = () => {
                         </div>
 
                         {/* Traits */}
-                        {user?.characterTraits &&
-                          user.characterTraits.map((trait, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm"
-                            >
-                              <img
-                                src={iconMap[trait]}
-                                alt={trait}
-                                className="w-[3rem] h-[2.5rem] flex-shrink-0"
-                              />
-                              <div className="overflow-hidden">
-                                <p className="text-xs text-gray-500">
-                                  Trait {index + 1}
-                                </p>
-                                <p className="font-semibold">{trait}</p>
-                              </div>
+                        {user?.characterTraits && user.characterTraits.map((trait, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm"
+                          >
+                            <img
+                              src={iconMap[trait]}
+                              alt={trait}
+                              className="w-[3rem] h-[2.5rem] flex-shrink-0"
+                            />
+                            <div className="overflow-hidden">
+                              <p className="text-xs text-gray-500">
+                                Trait {index + 1}
+                              </p>
+                              <p className="font-semibold">{trait}</p>
                             </div>
-                          ))}
+                          </div>
+                        ))}
 
                         {/* Fact Section */}
                         <div className="bg-gray-50 rounded-lg p-4 mt-6 text-left col-span-2">
                           <p className="text-xs text-gray-400 mb-1">Fact</p>
                           <p className="text-sm text-gray-700 leading-relaxed">
                             Meet <strong>“{user?.characterName}”</strong> who is{" "}
-                            {user?.characterTraits &&
-                              user.characterTraits.map((trait, index) => {
-                                const percentages = [40, 30, 20, 10];
-                                const isLast =
-                                  index === user.characterTraits.length - 1;
-                                return (
-                                  <span key={trait}>
-                                    {percentages[index]}% {trait.toLowerCase()}
-                                    {!isLast ? ", " : ""}
-                                  </span>
-                                );
-                              })}
+                            {user?.characterTraits && user.characterTraits.map((trait, index) => {
+                              const percentages = [40, 30, 20, 10];
+                              const isLast =
+                                index === user.characterTraits.length - 1;
+                              return (
+                                <span key={trait}>
+                                  {percentages[index]}% {trait.toLowerCase()}
+                                  {!isLast ? ", " : ""}
+                                </span>
+                              );
+                            })}
                           </p>
                         </div>
 
@@ -1670,107 +1535,137 @@ const Dashboard = () => {
 
                 {/* Current Plan Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Current Plan
-                  </h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Current Plans</h3>
                   {loadingSubscriptions ? (
                     <div className="flex justify-center items-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">
-                        Loading subscription data...
-                      </span>
+                      <span className="ml-2 text-gray-600">Loading subscription data...</span>
                     </div>
-                  ) : userSubscription ? (
-                    <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="text-xl font-semibold text-green-800">
-                            {userSubscription.plan.toUpperCase()} PLAN
-                          </h4>
-                          <p className="text-gray-600 text-sm">
-                            Subscribed on:{" "}
-                            {new Date(
-                              userSubscription.startDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              userSubscription.status === "ACTIVE"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {userSubscription.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Valid Until:</p>
-                          <p className="font-semibold">
-                            {new Date(
-                              userSubscription.endDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Plan Type:</p>
-                          <p className="font-semibold">
-                            {userSubscription.plan}
-                          </p>
-                        </div>
-                        {userSubscription.selectedModule && (
-                          <div className="md:col-span-2">
-                            <p className="text-gray-500">Selected Module:</p>
-                            <p className="font-semibold">
-                              {userSubscription.selectedModule}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Add upgrade button for STARTER and PRO plans */}
-                      {(userSubscription.plan === "STARTER" ||
-                        userSubscription.plan === "PRO") && (
-                        <div className="mt-4 pt-4 border-t border-green-200">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm text-gray-600">
-                                {userSubscription.plan === "STARTER"
-                                  ? "Unlock premium modules and certificates"
-                                  : "Get institutional features and live sessions"}
-                              </p>
+                  ) : subscriptions && subscriptions.length > 0 ? (
+                    <div className="space-y-4">
+                      {subscriptions
+                        .filter(sub => sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date())
+                        .map((subscription, index) => {
+                          let selectedModule = null;
+                          if (subscription.notes && subscription.planType === 'SOLO') {
+                            try {
+                              const parsedNotes = JSON.parse(subscription.notes);
+                              selectedModule = parsedNotes.selectedModule;
+                            } catch (error) {
+                              console.error('Error parsing subscription notes:', error);
+                            }
+                          }
+                          
+                          return (
+                            <div key={subscription.id || index} className="border border-green-200 rounded-lg p-4 bg-green-50">
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h4 className="text-xl font-semibold text-green-800">
+                                    {subscription.planType.toUpperCase()} PLAN
+                                  </h4>
+                                  <p className="text-gray-600 text-sm">
+                                    Subscribed on: {new Date(subscription.startDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                    subscription.status === 'ACTIVE' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {subscription.status}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-500">Valid Until:</p>
+                                  <p className="font-semibold">
+                                    {new Date(subscription.endDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">Plan Type:</p>
+                                  <p className="font-semibold">{subscription.planType}</p>
+                                </div>
+                                {selectedModule && (
+                                  <div className="md:col-span-2">
+                                    <p className="text-gray-500">Selected Module:</p>
+                                    <p className="font-semibold">{selectedModule}</p>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Show remaining days with enhanced display */}
+                              <div className="mt-3 pt-3 border-t border-green-200">
+                                {(() => {
+                                  // Use enriched data if available, otherwise calculate manually
+                                  let remainingDays;
+                                  let isExpired = false;
+                                  
+                                  if (subscription.remainingDays !== undefined) {
+                                    // Use enriched data from subscription manager
+                                    remainingDays = subscription.remainingDays;
+                                    isExpired = subscription.isExpired || remainingDays <= 0;
+                                  } else {
+                                    // Fallback to manual calculation
+                                    const endDate = new Date(subscription.endDate);
+                                    const currentDate = new Date();
+                                    const timeDiff = endDate.getTime() - currentDate.getTime();
+                                    remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                                    isExpired = remainingDays <= 0;
+                                  }
+                                  
+                                  if (!isExpired && remainingDays > 0) {
+                                    // Active subscription
+                                    let textColor = 'text-green-600';
+                                    let bgColor = 'bg-green-50';
+                                    
+                                    // Change color based on urgency
+                                    if (remainingDays <= 3) {
+                                      textColor = 'text-red-600';
+                                      bgColor = 'bg-red-50';
+                                    } else if (remainingDays <= 7) {
+                                      textColor = 'text-yellow-600';
+                                      bgColor = 'bg-yellow-50';
+                                    }
+                                    
+                                    return (
+                                      <div className={`p-2 rounded-lg ${bgColor}`}>
+                                        <p className={`${textColor} text-sm font-medium flex items-center gap-2`}>
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          {remainingDays} day{remainingDays !== 1 ? 's' : ''} remaining
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expires on {new Date(subscription.endDate).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    );
+                                  } else {
+                                    // Expired subscription
+                                    return (
+                                      <div className="p-2 rounded-lg bg-red-50">
+                                        <p className="text-red-600 text-sm font-medium flex items-center gap-2">
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          Expired
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expired on {new Date(subscription.endDate).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                              </div>
                             </div>
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/payment?plan=${
-                                    userSubscription.plan === "STARTER"
-                                      ? "SOLO"
-                                      : "INSTITUTIONAL"
-                                  }`
-                                )
-                              }
-                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
-                            >
-                              Upgrade to{" "}
-                              {userSubscription.plan === "STARTER"
-                                ? "SOLO"
-                                : "INSTITUTIONAL"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                          );
+                        })}
                     </div>
                   ) : (
                     <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
-                      <p className="text-gray-600 mb-4">
-                        You don't have any active subscriptions yet.
-                      </p>
-                      <Link
-                        to="/courses"
+                      <p className="text-gray-600 mb-4">You don't have any active subscriptions yet.</p>
+                      <Link 
+                        to="/courses" 
                         className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                       >
                         Browse Plans
@@ -1781,20 +1676,18 @@ const Dashboard = () => {
 
                 {/* Accessible Modules Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Accessible Modules
-                  </h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Accessible Modules</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { name: "Finance Management", key: "finance" },
-                      { name: "Digital Marketing", key: "digital-marketing" },
-                      { name: "Communication Skills", key: "communication" },
-                      { name: "Computer Science", key: "computers" },
-                      { name: "Entrepreneurship", key: "entrepreneurship" },
-                      { name: "Environmental Science", key: "environment" },
-                      { name: "Legal Awareness", key: "law" },
-                      { name: "Leadership Skills", key: "leadership" },
-                      { name: "Social Emotional Learning", key: "sel" },
+                      { name: 'Fundamentals of Finance', key: 'finance' },
+                      { name: 'Computer Science', key: 'computers' },
+                      { name: 'Fundamentals of Law', key: 'law' },
+                      { name: 'Communication Mastery', key: 'communication' },
+                      { name: 'Entrepreneurship Bootcamp', key: 'entrepreneurship' },
+                      { name: 'Digital Marketing Pro', key: 'digital-marketing' },
+                      { name: 'Leadership & Adaptability', key: 'leadership' },
+                      { name: 'Environmental Sustainability', key: 'environment' },
+                      { name: 'Wellness & Mental Health', key: 'sel' },
                     ].map((module) => {
                       const hasAccess = hasModuleAccess(module.key);
                       return (
@@ -1802,26 +1695,20 @@ const Dashboard = () => {
                           key={module.key}
                           className={`border rounded-lg p-4 ${
                             hasAccess
-                              ? "border-green-200 bg-green-50"
-                              : "border-gray-200 bg-gray-50"
+                              ? 'border-green-200 bg-green-50'
+                              : 'border-gray-200 bg-gray-50'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-gray-800">
-                              {module.name}
-                            </h4>
+                            <h4 className="font-semibold text-gray-800">{module.name}</h4>
                             <span
                               className={`w-3 h-3 rounded-full ${
-                                hasAccess ? "bg-green-500" : "bg-gray-400"
+                                hasAccess ? 'bg-green-500' : 'bg-gray-400'
                               }`}
                             />
                           </div>
-                          <p
-                            className={`text-sm ${
-                              hasAccess ? "text-green-600" : "text-gray-500"
-                            }`}
-                          >
-                            {hasAccess ? "Accessible" : "Premium Required"}
+                          <p className={`text-sm ${hasAccess ? 'text-green-600' : 'text-gray-500'}`}>
+                            {hasAccess ? 'Accessible' : 'Premium Required'}
                           </p>
                         </div>
                       );
@@ -1831,62 +1718,43 @@ const Dashboard = () => {
 
                 {/* Payment History Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Payment History
-                  </h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Payment History</h3>
                   {loadingPayments ? (
                     <div className="flex justify-center items-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">
-                        Loading payment history...
-                      </span>
+                      <span className="ml-2 text-gray-600">Loading payment history...</span>
                     </div>
                   ) : payments.length > 0 ? (
                     <div className="space-y-4">
                       {payments.slice(0, 5).map((payment) => (
-                        <div
-                          key={payment.id}
-                          className="border border-gray-200 rounded-lg p-4"
-                        >
+                        <div key={payment.id} className="border border-gray-200 rounded-lg p-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <h4 className="font-semibold text-gray-800">
                                 {payment.planType} Plan - ₹{payment.amount}
                               </h4>
                               <p className="text-sm text-gray-500">
-                                {new Date(
-                                  payment.createdAt
-                                ).toLocaleDateString()}{" "}
-                                at{" "}
-                                {new Date(
-                                  payment.createdAt
-                                ).toLocaleTimeString()}
+                                {new Date(payment.createdAt).toLocaleDateString()} at {new Date(payment.createdAt).toLocaleTimeString()}
                               </p>
                             </div>
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                payment.status === "COMPLETED"
-                                  ? "bg-green-100 text-green-800"
-                                  : payment.status === "PENDING"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              payment.status === 'COMPLETED' 
+                                ? 'bg-green-100 text-green-800' 
+                                : payment.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
                               {payment.status}
                             </span>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-gray-500">Payment ID:</p>
-                              <p className="font-mono text-xs">
-                                {payment.razorpayPaymentId || "Pending"}
-                              </p>
+                              <p className="font-mono text-xs">{payment.razorpayPaymentId || 'Pending'}</p>
                             </div>
                             <div>
                               <p className="text-gray-500">Order ID:</p>
-                              <p className="font-mono text-xs">
-                                {payment.razorpayOrderId}
-                              </p>
+                              <p className="font-mono text-xs">{payment.razorpayOrderId}</p>
                             </div>
                             <div>
                               <p className="text-gray-500">Currency:</p>
@@ -1895,21 +1763,14 @@ const Dashboard = () => {
                           </div>
                           {payment.notes && (
                             <div className="mt-2 pt-2 border-t border-gray-100">
-                              <p className="text-gray-500 text-sm">
-                                Selected Module:
-                              </p>
+                              <p className="text-gray-500 text-sm">Selected Module:</p>
                               <p className="text-sm font-medium">
                                 {(() => {
                                   try {
-                                    const parsedNotes = JSON.parse(
-                                      payment.notes
-                                    );
-                                    return (
-                                      parsedNotes.selectedModule ||
-                                      "All Modules"
-                                    );
+                                    const parsedNotes = JSON.parse(payment.notes);
+                                    return parsedNotes.selectedModule || 'All Modules';
                                   } catch {
-                                    return payment.notes || "All Modules";
+                                    return payment.notes || 'All Modules';
                                   }
                                 })()}
                               </p>
@@ -1919,19 +1780,15 @@ const Dashboard = () => {
                       ))}
                       {payments.length > 5 && (
                         <div className="text-center">
-                          <p className="text-gray-500 text-sm">
-                            Showing latest 5 payments
-                          </p>
+                          <p className="text-gray-500 text-sm">Showing latest 5 payments</p>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-gray-600 mb-4">
-                        No payment history found.
-                      </p>
-                      <Link
-                        to="/courses"
+                      <p className="text-gray-600 mb-4">No payment history found.</p>
+                      <Link 
+                        to="/courses" 
                         className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                       >
                         Make Your First Purchase
@@ -1944,15 +1801,13 @@ const Dashboard = () => {
           </>
         )}
       </main>
-
+      
       {/* Image Crop Modal */}
       {showCropModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">
-              Crop Your Profile Picture
-            </h3>
-
+            <h3 className="text-lg font-semibold mb-4">Crop Your Profile Picture</h3>
+            
             <div className="mb-4">
               <ReactCrop
                 crop={crop}
@@ -1969,7 +1824,7 @@ const Dashboard = () => {
                 />
               </ReactCrop>
             </div>
-
+            
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCropCancel}
@@ -1983,7 +1838,7 @@ const Dashboard = () => {
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 disabled={isUploading || !completedCrop}
               >
-                {isUploading ? "Uploading..." : "Confirm & Upload"}
+                {isUploading ? 'Uploading...' : 'Confirm & Upload'}
               </button>
             </div>
           </div>

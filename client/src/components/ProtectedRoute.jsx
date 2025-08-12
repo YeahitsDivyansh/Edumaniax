@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSubscription } from '../contexts/SubscriptionContext';
+import { useSubscription } from '../contexts/useSubscription';
 import { useAccessControl } from '../utils/accessControl';
 import { Lock, Crown, Zap, Star, ArrowRight } from 'lucide-react';
 

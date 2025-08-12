@@ -3,7 +3,20 @@
  * 
  * This file provides utility functions to check access permissions
  * on the frontend and manage feature visibility.
+ * 
+ * KEY FEATURES:
+ * - Support for multiple SOLO plan purchases (one per module)
+ * - Users can purchase individual modules instead of upgrading to PRO
+ * - Flexible upgrade suggestions (individual module purchase vs PRO upgrade)
+ * - Maintains backward compatibility with existing single-module SOLO plans
+ * 
+ * SUBSCRIPTION STRUCTURE EXPECTED:
+ * - Each subscription should have: planType, module/selectedModule, status, endDate
+ * - Multiple active SOLO subscriptions allowed for different modules
+ * - PRO/INSTITUTIONAL plans still provide access to all modules
  */
+
+import React from 'react';
 
 // Plan hierarchy for upgrade calculations
 const PLAN_HIERARCHY = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
@@ -136,10 +149,17 @@ const MODULE_CONFIGS = {
  */
 class AccessController {
   constructor(userSubscription = null, selectedModule = null) {
+    console.log('AccessController: Initializing with subscriptions:', userSubscription);
+    console.log('AccessController: Selected module:', selectedModule);
+    
     this.userSubscription = userSubscription;
     this.selectedModule = selectedModule;
     this.currentPlan = this.getCurrentPlan();
+    this.soloModules = this.getSoloModules();
     this.trialStartDate = this.getTrialStartDate();
+    
+    console.log('AccessController: Initialized with currentPlan:', this.currentPlan);
+    console.log('AccessController: Initialized with soloModules:', this.soloModules);
   }
 
   /**
@@ -147,26 +167,132 @@ class AccessController {
    */
   getCurrentPlan() {
     if (!this.userSubscription || !Array.isArray(this.userSubscription)) {
+      console.log('AccessController: No subscriptions, defaulting to STARTER');
       return 'STARTER';
     }
 
-    // Find the highest active subscription
-    const activeSubscriptions = this.userSubscription.filter(sub => 
-      sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
-    );
+    // Find the highest active subscription (using enriched data)
+    const activeSubscriptions = this.userSubscription.filter(sub => {
+      // Check if subscription is active and not expired
+      const isActive = sub.status === 'ACTIVE';
+      const isNotExpired = sub.isExpired === false || new Date(sub.endDate) > new Date();
+      const hasRemainingDays = !Object.prototype.hasOwnProperty.call(sub, 'remainingDays') || sub.remainingDays > 0;
+      
+      return isActive && isNotExpired && hasRemainingDays;
+    });
+
+    console.log('AccessController: Found', activeSubscriptions.length, 'active subscriptions');
 
     if (activeSubscriptions.length === 0) {
+      console.log('AccessController: No active subscriptions, defaulting to STARTER');
       return 'STARTER';
     }
 
     // Return the highest tier among active subscriptions (don't mutate original array)
     for (const plan of [...PLAN_HIERARCHY].reverse()) {
       if (activeSubscriptions.some(sub => sub.planType === plan)) {
+        console.log('AccessController: Current plan determined as', plan);
         return plan;
       }
     }
 
+    console.log('AccessController: No matching plan found, defaulting to STARTER');
     return 'STARTER';
+  }
+
+  /**
+   * Get all modules that user has SOLO plan access to
+   */
+  getSoloModules() {
+    if (!this.userSubscription || !Array.isArray(this.userSubscription)) {
+      console.log('AccessController: No subscriptions or not an array');
+      return [];
+    }
+
+    // Find all active SOLO subscriptions using enriched data
+    const activeSoloSubscriptions = this.userSubscription.filter(sub => {
+      const isActive = sub.status === 'ACTIVE';
+      const isSolo = sub.planType === 'SOLO';
+      const isNotExpired = sub.isExpired === false || new Date(sub.endDate) > new Date();
+      const hasRemainingDays = !Object.prototype.hasOwnProperty.call(sub, 'remainingDays') || sub.remainingDays > 0;
+      
+      return isActive && isSolo && isNotExpired && hasRemainingDays;
+    });
+
+    console.log('AccessController: Found', activeSoloSubscriptions.length, 'active SOLO subscriptions');
+
+    // Extract module names from SOLO subscriptions
+    const modules = activeSoloSubscriptions.map(sub => {
+      console.log('AccessController: Processing subscription', sub.id);
+      
+      // First try to get from enriched selectedModule field (from server)
+      if (sub.selectedModule) {
+        const moduleMapping = {
+          'Fundamentals of Finance': 'finance',
+          'Computer Science': 'computers', 
+          'Fundamentals of Law': 'law',
+          'Communication Mastery': 'communication',
+          'Entrepreneurship Bootcamp': 'entrepreneurship',
+          'Digital Marketing Pro': 'digital-marketing',
+          'Leadership & Adaptability': 'leadership', 
+          'Environmental Sustainability': 'environment',
+          'Wellness & Mental Health': 'sel',
+        };
+        
+        const moduleKey = moduleMapping[sub.selectedModule] || sub.selectedModule?.toLowerCase();
+        console.log('AccessController: From enriched data, mapped', sub.selectedModule, 'to', moduleKey);
+        return moduleKey;
+      }
+      
+      // Fallback to parsing notes field
+      if (sub.notes) {
+        try {
+          const parsedNotes = JSON.parse(sub.notes);
+          if (parsedNotes.selectedModule) {
+            const moduleMapping = {
+              'Fundamentals of Finance': 'finance',
+              'Computer Science': 'computers', 
+              'Fundamentals of Law': 'law',
+              'Communication Mastery': 'communication',
+              'Entrepreneurship Bootcamp': 'entrepreneurship',
+              'Digital Marketing Pro': 'digital-marketing',
+              'Leadership & Adaptability': 'leadership', 
+              'Environmental Sustainability': 'environment',
+              'Wellness & Mental Health': 'sel',
+            };
+            
+            const moduleKey = moduleMapping[parsedNotes.selectedModule] || parsedNotes.selectedModule?.toLowerCase();
+            console.log('AccessController: From notes JSON, mapped', parsedNotes.selectedModule, 'to', moduleKey);
+            return moduleKey;
+          }
+        } catch {
+          // If parsing fails, try to map the notes directly (legacy format)
+          const moduleMapping = {
+            'Fundamentals of Finance': 'finance',
+            'Computer Science': 'computers', 
+            'Fundamentals of Law': 'law',
+            'Communication Mastery': 'communication',
+            'Entrepreneurship Bootcamp': 'entrepreneurship',
+            'Digital Marketing Pro': 'digital-marketing',
+            'Leadership & Adaptability': 'leadership', 
+            'Environmental Sustainability': 'environment',
+            'Wellness & Mental Health': 'sel',
+          };
+          
+          const moduleKey = moduleMapping[sub.notes] || sub.notes?.toLowerCase();
+          console.log('AccessController: From notes directly, mapped', sub.notes, 'to', moduleKey);
+          return moduleKey;
+        }
+      }
+      
+      // Fallback to module field if it exists
+      const fallback = sub.module;
+      console.log('AccessController: Using fallback', fallback);
+      return fallback;
+    }).filter(Boolean);
+
+    console.log('AccessController: Final SOLO modules:', modules);
+    return modules;
   }
 
   /**
@@ -230,9 +356,18 @@ class AccessController {
       return this.isTrialValid();
     }
 
-    // For SOLO plans, check if it's their selected module
+    // For SOLO plans, check if user has purchased this specific module
+    // OR if they have trial access to other modules
     if (this.currentPlan === 'SOLO') {
-      return this.selectedModule === moduleKey && currentPlanIndex >= requiredPlanIndex;
+      // Check if user has purchased this specific module
+      const hasPurchasedModule = this.soloModules.includes(moduleKey);
+      
+      if (hasPurchasedModule) {
+        return currentPlanIndex >= requiredPlanIndex;
+      }
+      
+      // If not purchased, provide trial access to level 1 of other modules
+      return true; // Trial access to other modules
     }
 
     // PRO and INSTITUTIONAL have access to all modules
@@ -254,10 +389,16 @@ class AccessController {
       return true;
     }
     
-    // SOLO plan users have access to ALL levels of their selected module
-    // (even if the level is not explicitly defined in MODULE_CONFIGS)
+    // SOLO plan users have access to ALL levels of their purchased modules
+    // OR only level 1 of other modules (trial access)
     if (this.currentPlan === 'SOLO') {
-      return this.selectedModule === moduleKey;
+      const hasPurchasedModule = this.soloModules.includes(moduleKey);
+      
+      if (hasPurchasedModule) {
+        return true; // Full access to all levels of purchased modules
+      } else {
+        return levelNumber === 1; // Only level 1 access for non-purchased modules
+      }
     }
     
     // For other plans, the level must exist in MODULE_CONFIGS
@@ -265,6 +406,8 @@ class AccessController {
 
     // STARTER plan users can only access level 1 during trial period
     if (this.currentPlan === 'STARTER') {
+      // Note: Individual challenges will be handled by useGameAccess hook
+      // This allows the level to appear unlocked in UI but restricts actual game access
       return levelNumber === 1 && this.isTrialValid();
     }
 
@@ -283,6 +426,12 @@ class AccessController {
       return this.hasModuleAccess(moduleKey) && this.isTrialValid();
     }
 
+    // SOLO plan users have full game access to their selected module
+    // AND trial game access (level 1) to other modules
+    if (this.currentPlan === 'SOLO') {
+      return this.hasModuleAccess(moduleKey); // This now includes trial access to other modules
+    }
+
     // Other plans follow normal module access rules
     return this.hasModuleAccess(moduleKey);
   }
@@ -293,6 +442,8 @@ class AccessController {
   hasGameLevelAccess(moduleKey, levelNumber) {
     if (!this.hasGameAccess(moduleKey)) return false;
     
+    // Note: For STARTER plan, we're allowing level 1 access here
+    // but the individual challenge access is restricted in useGameAccess hook
     return this.hasLevelAccess(moduleKey, levelNumber);
   }
 
@@ -334,8 +485,147 @@ class AccessController {
     ).map(([key, config]) => ({
       key,
       ...config,
-      hasAccess: true
+      hasAccess: true,
+      isPurchased: this.isModulePurchased(key),
+      accessType: this.getModuleAccessType(key),
+      canPurchase: this.canPurchaseModule(key),
+      purchaseStatus: this.getModulePurchaseStatus(key)
     }));
+  }
+
+  /**
+   * Check if a specific module is purchased (for SOLO users)
+   */
+  isModulePurchased(moduleKey) {
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return true; // All modules are included in these plans
+    }
+    
+    if (this.currentPlan === 'SOLO') {
+      return this.soloModules.includes(moduleKey);
+    }
+    
+    return false; // STARTER users don't have purchased modules
+  }
+
+  /**
+   * Get the type of access for a module (purchased, trial, or premium)
+   */
+  getModuleAccessType(moduleKey) {
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return 'premium';
+    }
+    
+    if (this.currentPlan === 'SOLO' && this.soloModules.includes(moduleKey)) {
+      return 'purchased';
+    }
+    
+    if (this.hasModuleAccess(moduleKey)) {
+      return 'trial';
+    }
+    
+    return 'locked';
+  }
+
+  /**
+   * Get modules that user has purchased with SOLO plans
+   */
+  getPurchasedModules() {
+    if (this.currentPlan !== 'SOLO') {
+      return [];
+    }
+    
+    return this.soloModules.map(moduleKey => ({
+      key: moduleKey,
+      ...MODULE_CONFIGS[moduleKey],
+      accessType: 'purchased'
+    })).filter(module => module.name); // Filter out invalid modules
+  }
+
+  /**
+   * Get modules available for purchase (not yet purchased SOLO modules)
+   */
+  getAvailableForPurchase() {
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return []; // No need to purchase individual modules
+    }
+    
+    return Object.entries(MODULE_CONFIGS).filter(([key]) => 
+      !this.soloModules.includes(key)
+    ).map(([key, config]) => ({
+      key,
+      ...config,
+      hasAccess: false,
+      canPurchase: true,
+      isPurchased: false,
+      requiredPlan: 'SOLO'
+    }));
+  }
+
+  /**
+   * Get all modules with their purchase and access status
+   */
+  getAllModulesWithStatus() {
+    return Object.entries(MODULE_CONFIGS).map(([key, config]) => {
+      const isPurchased = this.isModulePurchased(key);
+      const hasAccess = this.hasModuleAccess(key);
+      const accessType = this.getModuleAccessType(key);
+      
+      return {
+        key,
+        ...config,
+        isPurchased,
+        hasAccess,
+        accessType,
+        canPurchase: this.canPurchaseModule(key),
+        purchaseStatus: this.getModulePurchaseStatus(key)
+      };
+    });
+  }
+
+  /**
+   * Check if a module can be purchased
+   */
+  canPurchaseModule(moduleKey) {
+    // PRO and INSTITUTIONAL users don't need to purchase individual modules
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return false;
+    }
+    
+    // Can't purchase if already purchased
+    if (this.soloModules.includes(moduleKey)) {
+      return false;
+    }
+    
+    // STARTER and SOLO users can purchase modules they don't have
+    return true;
+  }
+
+  /**
+   * Get detailed purchase status for a module
+   */
+  getModulePurchaseStatus(moduleKey) {
+    if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
+      return {
+        status: 'included',
+        message: 'Included in your plan',
+        actionRequired: false
+      };
+    }
+    
+    if (this.soloModules.includes(moduleKey)) {
+      return {
+        status: 'purchased',
+        message: 'Already purchased',
+        actionRequired: false
+      };
+    }
+    
+    return {
+      status: 'available',
+      message: 'Available for purchase',
+      actionRequired: true
+    };
   }
 
   /**
@@ -389,52 +679,130 @@ class AccessController {
    * Get upgrade suggestions
    */
   getUpgradeSuggestions(targetModule = null, targetLevel = null) {
-    let requiredPlan = this.currentPlan;
-
     if (targetModule) {
       const module = MODULE_CONFIGS[targetModule];
-      if (module && !this.hasModuleAccess(targetModule)) {
-        requiredPlan = module.minPlan;
+      
+      // Check if user already has access
+      if (this.hasModuleAccess(targetModule) && 
+          (!targetLevel || this.hasLevelAccess(targetModule, targetLevel))) {
+        return null; // No upgrade needed
       }
 
-      // For level-specific checks, consider SOLO and PRO plan special cases
+      // For SOLO plan users, suggest purchasing the specific module
+      if (this.currentPlan === 'SOLO') {
+        // If they don't have this module, suggest purchasing it
+        if (!this.soloModules.includes(targetModule)) {
+          return {
+            type: 'purchase_module',
+            currentPlan: this.currentPlan,
+            targetModule: targetModule,
+            moduleName: module.name,
+            recommendedAction: 'Purchase SOLO plan for this module',
+            benefits: [
+              `Full access to all levels of ${module.name}`,
+              'Completion certificates for this module',
+              'Progress tracking',
+              'Downloadable content'
+            ],
+            cost: 'Additional SOLO plan purchase',
+            alternative: {
+              type: 'upgrade_to_pro',
+              plan: 'PRO',
+              benefits: this.getPlanBenefits('PRO'),
+              note: 'Get access to ALL modules with PRO plan'
+            }
+          };
+        }
+      }
+
+      // For STARTER users, suggest SOLO for specific module or PRO for all
+      if (this.currentPlan === 'STARTER') {
+        return {
+          type: 'upgrade_options',
+          currentPlan: this.currentPlan,
+          targetModule: targetModule,
+          moduleName: module.name,
+          options: [
+            {
+              type: 'purchase_solo',
+              plan: 'SOLO',
+              scope: 'single_module',
+              benefits: [
+                `Full access to ${module.name}`,
+                'All levels and activities',
+                'Completion certificates',
+                'Progress tracking'
+              ],
+              cost: 'SOLO plan for one module'
+            },
+            {
+              type: 'upgrade_to_pro',
+              plan: 'PRO',
+              scope: 'all_modules',
+              benefits: this.getPlanBenefits('PRO'),
+              cost: 'PRO plan for all modules',
+              recommended: this.soloModules.length >= 2 // Recommend PRO if user already has 2+ SOLO modules
+            }
+          ]
+        };
+      }
+
+      // For users needing PRO features (AI, advanced features)
       if (targetLevel && module?.levels?.[targetLevel]) {
-        // SOLO users have access to all levels of their selected module
-        if (this.currentPlan === 'SOLO' && this.selectedModule === targetModule) {
-          // No upgrade needed for SOLO users accessing their selected module
-          return null;
-        }
-        
-        // PRO and INSTITUTIONAL users have access to all levels of all modules
-        if (this.currentPlan === 'PRO' || this.currentPlan === 'INSTITUTIONAL') {
-          // No upgrade needed for PRO/INSTITUTIONAL users
-          return null;
-        }
-        
         const levelRequiredPlan = module.levels[targetLevel].minPlan;
-        const currentIndex = PLAN_HIERARCHY.indexOf(requiredPlan);
-        const levelIndex = PLAN_HIERARCHY.indexOf(levelRequiredPlan);
         
-        if (levelIndex > currentIndex) {
-          requiredPlan = levelRequiredPlan;
+        if (levelRequiredPlan === 'PRO' || levelRequiredPlan === 'INSTITUTIONAL') {
+          return {
+            type: 'upgrade_to_premium',
+            currentPlan: this.currentPlan,
+            recommendedPlan: levelRequiredPlan,
+            reason: 'advanced_features',
+            benefits: this.getPlanBenefits(levelRequiredPlan),
+            unlockedModules: this.getUnlockedModulesForPlan(levelRequiredPlan),
+            note: 'Required for advanced features and AI-powered content'
+          };
         }
       }
     }
 
-    const currentIndex = PLAN_HIERARCHY.indexOf(this.currentPlan);
-    const requiredIndex = PLAN_HIERARCHY.indexOf(requiredPlan);
+    return null; // No upgrade needed
+  }
 
-    if (currentIndex >= requiredIndex) {
-      return null; // No upgrade needed
+  /**
+   * Calculate upgrade pricing when moving from multiple SOLO plans to PRO
+   */
+  calculateUpgradePrice(targetPlan = 'PRO') {
+    const SOLO_PRICE = 199;
+    const PRO_PRICE = 1433;
+    
+    if (targetPlan !== 'PRO') {
+      return { totalPrice: 0, discount: 0, soloCount: 0 };
     }
-
+    
+    // Count number of active SOLO subscriptions
+    const activeSoloCount = this.soloModules.length;
+    
+    // Calculate discount based on existing SOLO purchases
+    const soloDiscount = activeSoloCount * SOLO_PRICE;
+    const finalPrice = Math.max(0, PRO_PRICE - soloDiscount);
+    
     return {
-      currentPlan: this.currentPlan,
-      recommendedPlan: requiredPlan,
-      benefits: this.getPlanBenefits(requiredPlan),
-      unlockedModules: this.getUnlockedModulesForPlan(requiredPlan),
-      unlockedFeatures: this.getUnlockedFeaturesForPlan(requiredPlan)
+      totalPrice: finalPrice,
+      originalPrice: PRO_PRICE,
+      soloDiscount: soloDiscount,
+      soloCount: activeSoloCount,
+      savings: soloDiscount,
+      message: activeSoloCount > 0 
+        ? `You save ₹${soloDiscount} from your ${activeSoloCount} SOLO plan${activeSoloCount > 1 ? 's' : ''}!`
+        : 'Regular PRO plan pricing'
     };
+  }
+
+  /**
+   * Check if user qualifies for upgrade pricing
+   */
+  qualifiesForUpgradePrice(targetPlan = 'PRO') {
+    return this.currentPlan === 'SOLO' && this.soloModules.length > 0 && targetPlan === 'PRO';
   }
 
   /**
@@ -449,11 +817,13 @@ class AccessController {
         'Community access'
       ],
       SOLO: [
-        'Full access to 1 premium module',
-        'All levels and activities',
-        'Completion certificates',
+        'Full access to selected premium module',
+        'All levels and activities for purchased module',
+        'Trial access to Challenge 1 of Level 1 in other modules',
+        'Completion certificates for purchased modules',
         'Progress tracking',
-        'Downloadable content'
+        'Downloadable content',
+        'Can purchase multiple SOLO plans for different modules'
       ],
       PRO: [
         'Access to all modules',
@@ -461,7 +831,8 @@ class AccessController {
         'Completion certificates for all modules',
         'Advanced analytics',
         'Priority support',
-        '6 months access'
+        '3 months access',
+        'Better value than multiple SOLO plans'
       ],
       INSTITUTIONAL: [
         'Everything in PRO',
@@ -545,10 +916,10 @@ class AccessController {
    */
   getRequiredPlan(moduleKey, levelNumber = null) {
     const module = MODULE_CONFIGS[moduleKey];
-    if (!module) return 'PRO';
+    if (!module) return 'SOLO'; // Default to SOLO for individual module purchase
 
-    // For SOLO users accessing their selected module, SOLO plan is sufficient for all levels
-    if (levelNumber && this.currentPlan === 'SOLO' && this.selectedModule === moduleKey) {
+    // For SOLO users accessing their purchased modules, SOLO plan is sufficient for all levels
+    if (levelNumber && this.currentPlan === 'SOLO' && this.soloModules.includes(moduleKey)) {
       return 'SOLO';
     }
 
@@ -557,11 +928,16 @@ class AccessController {
       return this.currentPlan;
     }
 
+    // For specific levels that require PRO features (AI, advanced analytics)
     if (levelNumber && module.levels?.[levelNumber]) {
-      return module.levels[levelNumber].minPlan;
+      const levelRequiredPlan = module.levels[levelNumber].minPlan;
+      if (levelRequiredPlan === 'PRO' || levelRequiredPlan === 'INSTITUTIONAL') {
+        return levelRequiredPlan;
+      }
     }
 
-    return module.minPlan;
+    // For basic module access, SOLO plan is sufficient for individual purchase
+    return 'SOLO';
   }
 }
 
@@ -569,10 +945,15 @@ class AccessController {
  * Hook for React components to use access control
  */
 export const useAccessControl = (userSubscription = null, selectedModule = null) => {
-  const accessController = new AccessController(userSubscription, selectedModule);
+  // Use React.useMemo to recreate the AccessController only when dependencies change
+  const accessController = React.useMemo(() => {
+    return new AccessController(userSubscription, selectedModule);
+  }, [userSubscription, selectedModule]);
 
-  return {
+  // Use React.useMemo for the return object to avoid recreating it on every render
+  return React.useMemo(() => ({
     currentPlan: accessController.currentPlan,
+    soloModules: accessController.soloModules,
     isTrialValid: () => accessController.isTrialValid(),
     getRemainingTrialDays: () => accessController.getRemainingTrialDays(),
     hasModuleAccess: (moduleKey) => accessController.hasModuleAccess(moduleKey),
@@ -580,6 +961,13 @@ export const useAccessControl = (userSubscription = null, selectedModule = null)
     hasGameAccess: (moduleKey) => accessController.hasGameAccess(moduleKey),
     hasGameLevelAccess: (moduleKey, levelNumber) => accessController.hasGameLevelAccess(moduleKey, levelNumber),
     hasFeatureAccess: (feature) => accessController.hasFeatureAccess(feature),
+    isModulePurchased: (moduleKey) => accessController.isModulePurchased(moduleKey),
+    canPurchaseModule: (moduleKey) => accessController.canPurchaseModule(moduleKey),
+    getModuleAccessType: (moduleKey) => accessController.getModuleAccessType(moduleKey),
+    getModulePurchaseStatus: (moduleKey) => accessController.getModulePurchaseStatus(moduleKey),
+    getPurchasedModules: () => accessController.getPurchasedModules(),
+    getAvailableForPurchase: () => accessController.getAvailableForPurchase(),
+    getAllModulesWithStatus: () => accessController.getAllModulesWithStatus(),
     getAccessibleModules: () => accessController.getAccessibleModules(),
     getLockedModules: () => accessController.getLockedModules(),
     getAccessibleLevels: (moduleKey) => accessController.getAccessibleLevels(moduleKey),
@@ -587,8 +975,10 @@ export const useAccessControl = (userSubscription = null, selectedModule = null)
     getUpgradeSuggestions: (moduleKey, levelNumber) => accessController.getUpgradeSuggestions(moduleKey, levelNumber),
     shouldShowUpgradePrompt: (moduleKey, levelNumber) => accessController.shouldShowUpgradePrompt(moduleKey, levelNumber),
     getAccessStatus: (moduleKey, levelNumber) => accessController.getAccessStatus(moduleKey, levelNumber),
-    getPlanBenefits: (planType) => accessController.getPlanBenefits(planType)
-  };
+    getPlanBenefits: (planType) => accessController.getPlanBenefits(planType),
+    calculateUpgradePrice: (targetPlan) => accessController.calculateUpgradePrice(targetPlan),
+    qualifiesForUpgradePrice: (targetPlan) => accessController.qualifiesForUpgradePrice(targetPlan)
+  }), [accessController]);
 };
 
 // Export configurations and utilities

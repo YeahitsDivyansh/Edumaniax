@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreditCard, CheckCircle, XCircle, Loader2, ArrowLeft, Shield, Building, Users } from 'lucide-react';
 import usePayment from '../hooks/usePayment';
+import { forceRefreshSubscriptions } from '../utils/subscriptionRefresh';
+import { useAccessControl } from '../utils/accessControl';
 
 const PLAN_DETAILS = {
   STARTER: {
@@ -29,7 +31,7 @@ const PLAN_DETAILS = {
   PRO: {
     name: 'Pro Plan',
     price: 1433,
-    duration: '6 Months',
+    duration: '3 Months',
     features: [
       'Access to all premium modules',
       'Notes for every module',
@@ -63,24 +65,47 @@ const Payment = () => {
   const [selectedModule, setSelectedModule] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [userInfo, setUserInfo] = useState({});
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
+  const [isAdditionalPurchase, setIsAdditionalPurchase] = useState(false);
+  
+  // Access control hook
+  const accessControl = useAccessControl(userSubscriptions);
   
   const AVAILABLE_MODULES = [
-    'Entrepreneurship',
-    'Leadership',
-    'Anger Management',
-    'Counseling',
-    'Mathematics',
-    'Science',
-    'Language Arts',
-    'Social Studies'
+    'Fundamentals of Finance',
+    'Computer Science',
+    'Fundamentals of Law',
+    'Communication Mastery',
+    'Entrepreneurship Bootcamp',
+    'Digital Marketing Pro',
+    'Leadership & Adaptability',
+    'Environmental Sustainability',
+    'Wellness & Mental Health'
   ];
+
+  // Get available modules for SOLO plan (filter out already purchased for additional purchases)
+  const getAvailableModulesForSelection = () => {
+    if (isAdditionalPurchase && accessControl) {
+      const availableForPurchase = accessControl.getAvailableForPurchase();
+      return availableForPurchase.map(module => module.name || module.key);
+    }
+    return AVAILABLE_MODULES;
+  };
 
   // Get plan from URL params or default to PRO
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const planFromUrl = urlParams.get('plan');
+    const additionalFlag = urlParams.get('additional');
+    
     if (planFromUrl && PLAN_DETAILS[planFromUrl]) {
       setSelectedPlan(planFromUrl);
+      
+      // Check if this is an additional SOLO purchase
+      if (additionalFlag === 'true' && planFromUrl === 'SOLO') {
+        setIsAdditionalPurchase(true);
+      }
       
       // If the user is coming for an institutional plan, prepare the contact form
       if (planFromUrl === 'INSTITUTIONAL') {
@@ -98,8 +123,101 @@ const Payment = () => {
     }
   }, []);
 
-  // Show loading while payment configuration is being checked
-  if (loading) {
+  // Fetch user subscriptions
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      if (userInfo.id) {
+        try {
+          setSubscriptionsLoading(true);
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${userInfo.id}`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              setUserSubscriptions(data.subscriptions || []);
+            }
+          } else {
+            console.error('Failed to fetch subscriptions');
+            setUserSubscriptions([]);
+          }
+        } catch (error) {
+          console.error('Error fetching subscriptions:', error);
+          setUserSubscriptions([]);
+        } finally {
+          setSubscriptionsLoading(false);
+        }
+      } else {
+        setSubscriptionsLoading(false);
+      }
+    };
+
+    fetchSubscriptions();
+  }, [userInfo.id]);
+
+  // Function to get button text and action based on user's current plan and selected plan
+  const getPlanButtonInfo = (planKey) => {
+    if (subscriptionsLoading) {
+      return { text: 'Loading...', disabled: true, action: 'loading' };
+    }
+
+    const plan = PLAN_DETAILS[planKey];
+    
+    // For INSTITUTIONAL plan, always show "Request Information"
+    if (planKey === 'INSTITUTIONAL') {
+      return { text: 'Request Information', disabled: false, action: 'contact' };
+    }
+
+    // Check if user already has this exact plan
+    const hasThisPlan = accessControl.currentPlan === planKey;
+    
+    // For SOLO plans - special logic for multiple module purchases
+    if (planKey === 'SOLO') {
+      // If user is already on SOLO plan, show "Purchase Another Module"
+      if (accessControl.currentPlan === 'SOLO') {
+        const availableModules = accessControl.getAvailableForPurchase();
+        if (availableModules.length > 0) {
+          return { 
+            text: 'Purchase Another Module', 
+            disabled: false, 
+            action: 'purchase_additional_module',
+            subtitle: `${availableModules.length} modules available`
+          };
+        } else {
+          return { 
+            text: 'All Modules Purchased', 
+            disabled: true, 
+            action: 'all_purchased',
+            subtitle: 'Consider upgrading to PRO for AI features'
+          };
+        }
+      }
+      
+      // For non-SOLO users, show regular purchase option
+      return { text: 'Choose SOLO Plan', disabled: false, action: 'purchase' };
+    }
+
+    // For PRO and STARTER plans
+    if (hasThisPlan) {
+      return { text: 'Current Plan', disabled: true, action: 'current' };
+    }
+
+    // Check if this is an upgrade or downgrade
+    const currentPlanIndex = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'].indexOf(accessControl.currentPlan);
+    const targetPlanIndex = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'].indexOf(planKey);
+    
+    if (targetPlanIndex > currentPlanIndex) {
+      return { text: `Upgrade to ${plan.name}`, disabled: false, action: 'upgrade' };
+    } else if (targetPlanIndex < currentPlanIndex) {
+      return { text: 'Downgrade', disabled: true, action: 'downgrade' };
+    }
+    
+    return { text: `Choose ${plan.name}`, disabled: false, action: 'purchase' };
+  };
+
+  // Show loading only when payment feature status is being checked
+  if (isPaymentEnabled === null && loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
@@ -114,7 +232,7 @@ const Payment = () => {
   }
 
   // Check if payment feature is disabled - only after loading is complete
-  if (!isPaymentEnabled) {
+  if (!loading && !isPaymentEnabled) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-gray-400">
@@ -129,6 +247,21 @@ const Payment = () => {
           >
             View Plans
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while subscriptions are being fetched (only if we have user info)
+  if (userInfo.id && subscriptionsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-200 to-green-300 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
+          <Loader2 className="w-16 h-16 text-green-500 mx-auto mb-4 animate-spin" />
+          <h1 className="text-2xl font-bold text-green-800 mb-2">Loading Your Plans...</h1>
+          <p className="text-green-700 mb-4">
+            Please wait while we fetch your subscription details.
+          </p>
         </div>
       </div>
     );
@@ -172,8 +305,18 @@ const Payment = () => {
       // Process payment using Razorpay
       await processPayment(
         orderData,
-        () => {
+        async () => {
           setPaymentStatus('success');
+          
+          // Force refresh subscription data using utility
+          if (userInfo.id) {
+            try {
+              await forceRefreshSubscriptions(userInfo.id);
+            } catch (error) {
+              console.error('Error refreshing subscriptions after payment:', error);
+            }
+          }
+          
           setTimeout(() => {
             navigate('/dashboard');
           }, 3000);
@@ -190,7 +333,33 @@ const Payment = () => {
     }
   };
 
-  const currentPlan = PLAN_DETAILS[selectedPlan];
+  // Calculate pricing based on user's current subscriptions
+  const calculateOrderPrice = () => {
+    const basePlan = PLAN_DETAILS[selectedPlan];
+    
+    // For PRO plan upgrades from SOLO, apply discount (only if accessControl is ready)
+    if (selectedPlan === 'PRO' && accessControl && accessControl.qualifiesForUpgradePrice && accessControl.qualifiesForUpgradePrice('PRO')) {
+      const upgradePrice = accessControl.calculateUpgradePrice('PRO');
+      return {
+        ...basePlan,
+        originalPrice: upgradePrice.originalPrice,
+        price: upgradePrice.totalPrice,
+        discount: upgradePrice.soloDiscount,
+        soloCount: upgradePrice.soloCount,
+        isUpgrade: true,
+        savingsMessage: upgradePrice.message
+      };
+    }
+    
+    // Regular pricing for all other cases
+    return {
+      ...basePlan,
+      originalPrice: basePlan.price,
+      isUpgrade: false
+    };
+  };
+
+  const currentPlan = calculateOrderPrice();
 
   if (paymentStatus === 'success') {
     return (
@@ -560,9 +729,26 @@ const Payment = () => {
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-semibold text-gray-700">{currentPlan.name}</span>
                   <span className="font-bold text-gray-900">
-                    {typeof currentPlan.price === 'number' ? `₹${currentPlan.price}` : currentPlan.price}
+                    {typeof currentPlan.originalPrice === 'number' ? `₹${currentPlan.originalPrice}` : currentPlan.originalPrice}
                   </span>
                 </div>
+                
+                {/* Show discount for PRO upgrades */}
+                {currentPlan.isUpgrade && currentPlan.discount > 0 && (
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Original Price</span>
+                      <span className="text-gray-600">₹{currentPlan.originalPrice}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>SOLO Plan Discount ({currentPlan.soloCount} module{currentPlan.soloCount > 1 ? 's' : ''})</span>
+                      <span>-₹{currentPlan.discount}</span>
+                    </div>
+                    <div className="text-xs text-green-600 mt-1">
+                      {currentPlan.savingsMessage}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">
@@ -589,29 +775,44 @@ const Payment = () => {
               <div className="text-center">
                 <CreditCard className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  Ready to unlock premium features?
+                  {isAdditionalPurchase ? 'Add Another Module' : 'Ready to unlock premium features?'}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Start your {currentPlan.name} subscription today
+                  {isAdditionalPurchase 
+                    ? `Add another module to your SOLO plan collection`
+                    : `Start your ${currentPlan.name} subscription today`
+                  }
                 </p>
 
                 {/* Module selection for SOLO plan */}
                 {selectedPlan === 'SOLO' && (
                   <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200 text-left">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      Select Your Module
+                      {isAdditionalPurchase ? 'Select Additional Module' : 'Select Your Module'}
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      With the SOLO plan, you get access to one premium module of your choice.
+                      {isAdditionalPurchase 
+                        ? 'Choose another module to add to your SOLO plan collection.'
+                        : 'With the SOLO plan, you get access to one premium module of your choice.'
+                      }
                     </p>
+                    {isAdditionalPurchase && accessControl?.getPurchasedModules && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-500">
+                          Already purchased: {accessControl.getPurchasedModules().map(m => m.name).join(', ')}
+                        </p>
+                      </div>
+                    )}
                     <select
                       value={selectedModule}
                       onChange={(e) => setSelectedModule(e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       required
                     >
-                      <option value="">Select a module...</option>
-                      {AVAILABLE_MODULES.map((module) => (
+                      <option value="">
+                        {isAdditionalPurchase ? 'Select additional module...' : 'Select a module...'}
+                      </option>
+                      {getAvailableModulesForSelection().map((module) => (
                         <option key={module} value={module}>
                           {module}
                         </option>

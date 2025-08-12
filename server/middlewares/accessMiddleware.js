@@ -16,6 +16,19 @@ import {
 
 const prisma = new PrismaClient();
 
+// Module name mapping - converts frontend display names to backend module keys
+const FRONTEND_TO_BACKEND_MODULE_MAPPING = {
+  'Fundamentals of Finance': 'finance',
+  'Computer Science': 'computers',
+  'Fundamentals of Law': 'law',
+  'Communication Mastery': 'communication',
+  'Entrepreneurship Bootcamp': 'entrepreneurship',
+  'Digital Marketing Pro': 'digital-marketing',
+  'Leadership & Adaptability': 'leadership',
+  'Environmental Sustainability': 'environment',
+  'Wellness & Mental Health': 'sel',
+};
+
 /**
  * Get user's active subscriptions and highest plan
  */
@@ -46,13 +59,18 @@ async function getUserSubscriptionInfo(userId) {
       }
     }
 
-    // Temporary solution: Get the SOLO plan's module from subscription notes if available
+    // Get the SOLO plan's module from subscription notes if available
     let selectedModule = null;
     const soloSubscription = subscriptions.find(sub => sub.planType === 'SOLO');
     if (soloSubscription && soloSubscription.notes) {
       try {
         const notesData = JSON.parse(soloSubscription.notes);
-        selectedModule = notesData.selectedModule || null;
+        const frontendModuleName = notesData.selectedModule;
+        
+        // Convert frontend display name to backend module key
+        if (frontendModuleName) {
+          selectedModule = FRONTEND_TO_BACKEND_MODULE_MAPPING[frontendModuleName] || frontendModuleName.toLowerCase();
+        }
       } catch (e) {
         // If notes is not valid JSON or doesn't contain selectedModule
         selectedModule = null;
@@ -131,9 +149,14 @@ export const requireModuleAccess = (moduleKey) => {
 
       const { highestPlan, selectedModule } = await getUserSubscriptionInfo(userId);
 
+      // Debug logging
+      // console.log(`[Access Check] User: ${userId}, Module: ${moduleKey}, Plan: ${highestPlan}, Selected: ${selectedModule}`);
+
       // Check if user has access to the module
       if (!hasModuleAccess(highestPlan, moduleKey, selectedModule)) {
         const upgradeInfo = getUpgradeInfo(highestPlan, 'PRO');
+        
+        // console.log(`[Access Denied] User ${userId} denied access to ${moduleKey} module`);
         
         return res.status(403).json({
           error: 'Access denied',
@@ -144,6 +167,8 @@ export const requireModuleAccess = (moduleKey) => {
           redirectUrl: `/payment-required?plan=PRO&module=${moduleKey}`
         });
       }
+
+      // console.log(`[Access Granted] User ${userId} granted access to ${moduleKey} module`);
 
       // Attach subscription info to request for further use
       req.userSubscription = { highestPlan, selectedModule };

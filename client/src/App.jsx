@@ -545,7 +545,8 @@ function AppContent() {
     "/LegalQuizQuestLevel3",
   ];
 
-  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname);
+  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname) && 
+                                   !location.pathname.startsWith('/sales/dashboard');
 
   return (
     <div className="flex flex-col min-h-screen">
