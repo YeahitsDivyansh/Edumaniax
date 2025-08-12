@@ -31,15 +31,17 @@ const InstructionsScreen = ({ onStartGame }) => {
           {/* Right column: Text and learning outcome */}
           <div className="flex flex-col items-center w-[25vw]">
             <span className="lilita text-[15px] font-normal leading-[28px] text-[#fff] text-left">
-              Match the description of the environment zone to its correct name:
+              Create your own 5-point climate action pledge. Your plan should include:
               <br/>
-              • Lithosphere 
+              • One change at school 
               <br/>
-              • Hydrosphere 
+              • One change at home 
               <br/>
-              • Biosphere 
+              • One energy-saving habit 
               <br/>
-              • Atmosphere 
+              • One waste-reducing habit 
+              <br/>
+              • One awareness action 
             </span>
             
             {/* Learning Outcome box */}

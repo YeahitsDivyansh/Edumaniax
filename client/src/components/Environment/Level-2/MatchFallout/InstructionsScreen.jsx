@@ -31,15 +31,15 @@ const InstructionsScreen = ({ onStartGame }) => {
           {/* Right column: Text and learning outcome */}
           <div className="flex flex-col items-center w-[25vw]">
             <span className="lilita text-[15px] font-normal leading-[28px] text-[#fff] text-left">
-              Match the description of the environment zone to its correct name:
+              You're shown a table of human actions in one column and 
               <br/>
-              • Lithosphere 
+              environmental consequences in another — but shuffled. 
               <br/>
-              • Hydrosphere 
+              Match the correct pairs.
               <br/>
-              • Biosphere 
+              • Scoring: +2 per correct match
               <br/>
-              • Atmosphere 
+              • Time Limit: 2 minutes 
             </span>
             
             {/* Learning Outcome box */}
