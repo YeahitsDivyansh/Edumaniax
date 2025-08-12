@@ -24,22 +24,21 @@ const InstructionsScreen = ({ onStartGame }) => {
         <div className="flex flex-row items-start justify-center w-[85vw] mt-[15vh] gap-[1vw]">
           
           {/* Left column: ScenarioContent */}
-          <div className="flex justify-center">
+          <div className="flex justify-center -mt-11">
             <ScenarioContent />
           </div>
           
           {/* Right column: Text and learning outcome */}
           <div className="flex flex-col items-center w-[25vw]">
             <span className="lilita text-[15px] font-normal leading-[28px] text-[#fff] text-left">
-              Match the description of the environment zone to its correct name:
+              You’re given a starting action or event (the “cause”). 
               <br/>
-              • Lithosphere 
+              Your task is to predict 3 connected consequences in logical order.
               <br/>
-              • Hydrosphere 
+              Score: +5 for correct sequence
               <br/>
-              • Biosphere 
+              Suggested Time: 1 minute per puzzle 
               <br/>
-              • Atmosphere 
             </span>
             
             {/* Learning Outcome box */}

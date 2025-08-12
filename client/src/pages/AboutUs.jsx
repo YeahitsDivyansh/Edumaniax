@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Linkedin } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
+import AboutUsSkeleton from "@/AboutUsDesign/AboutUsSkeleton";
 
 const AnimatedCard = ({ children, delay = 0, className = "" }) => (
   <motion.div
@@ -22,13 +25,27 @@ const StatCard = ({ number, label, suffix = "", delay = 0 }) => (
     className="text-center text-white"
   >
     <div className="text-3xl md:text-4xl font-bold mb-2">
-      {number}{suffix}
+      {number}
+      {suffix}
     </div>
     <div className="text-sm opacity-90">{label}</div>
   </motion.div>
 );
 
 const AboutUs = () => {
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API/data loading
+    setTimeout(() => setLoading(false), 3000);
+  }, []);
+
+  if (loading) return <AboutUsSkeleton />;
+
+  const buttonText = isLoggedIn ? "Purchase Now" : "Book your Free Demo!";
+  const buttonLink = isLoggedIn ? "/pricing" : "/login";
 
   const heroCards = [
     {
@@ -52,50 +69,55 @@ const AboutUs = () => {
   const differentiators = [
     {
       title: "Curriculum-Aligned, Future-Focused",
-      description: "Our content seamlessly integrates with existing curricula while preparing students for tomorrow's challenges.",
+      description:
+        "Our content seamlessly integrates with existing curricula while preparing students for tomorrow's challenges.",
       bgColor: "bg-[#A5ED6E]",
       iconBg: "bg-green-500",
-      image: "different1.svg"
+      image: "different1.svg",
     },
     {
       title: "Gamified Designed Modules",
-      description: "Learning becomes an adventure with our gamified approach that keeps students engaged and motivated.",
+      description:
+        "Learning becomes an adventure with our gamified approach that keeps students engaged and motivated.",
       bgColor: "bg-[#FFE495]",
       iconBg: "bg-yellow-500",
-      image: "different2.svg"
+      image: "different2.svg",
     },
     {
       title: "Age-Smart Content Structure",
-      description: "Every lesson is carefully crafted to match cognitive development stages and learning preferences.",
+      description:
+        "Every lesson is carefully crafted to match cognitive development stages and learning preferences.",
       bgColor: "bg-[#BFEDF8]",
       iconBg: "bg-green-500",
-      image: "different3.svg"
+      image: "different3.svg",
     },
     {
       title: "Project-Based Learning",
-      description: "Students don't just learn concepts—they build, create, and solve real-world problems..",
+      description:
+        "Students don't just learn concepts—they build, create, and solve real-world problems..",
       bgColor: "bg-[#E9D9FF]",
       iconBg: "bg-purple-500",
-      image: "different4.svg"
+      image: "different4.svg",
     },
 
     {
       title: "Real-World Relevance",
-      description: "Every skill and concept connects directly to practical applications students will use in their future careers.",
+      description:
+        "Every skill and concept connects directly to practical applications students will use in their future careers.",
       bgColor: "bg-[#A6FFC4]",
       iconBg: "bg-green-500",
-      image: "different5.svg"
+      image: "different5.svg",
     },
   ];
 
   const teamMembers = [
     {
-      name: "Sharadd Raj Ustar",
+      name: "Sharadd Raaj Ustav",
       image: "sharad.svg",
       bgColor: "bg-[#66C537]/20",
       linkedin: "https://www.linkedin.com/in/sharadrajutsav/",
       post: "Founder & CEO",
-      iconbg: "bg-[#236900]"
+      iconbg: "bg-[#236900]",
     },
     {
       name: "Shreya Sienha",
@@ -103,7 +125,7 @@ const AboutUs = () => {
       bgColor: "bg-[#5CE1E6]/20",
       linkedin: "https://www.linkedin.com/in/shreya-sinha2802/",
       post: "Co-Founder",
-      iconbg: "bg-[#007074]"
+      iconbg: "bg-[#007074]",
     },
     {
       name: "CA Saurabh Jain",
@@ -111,7 +133,7 @@ const AboutUs = () => {
       bgColor: "bg-[#FFDE59]/20",
       linkedin: "https://www.linkedin.com/in/ca-saurabh-jain-8a014034/",
       post: "Co-Founder",
-      iconbg: "bg-[#B59100]"
+      iconbg: "bg-[#B59100]",
     },
   ];
 
@@ -121,8 +143,7 @@ const AboutUs = () => {
       <section className="w-full">
         <div className="bg-[url('/paper.svg')] bg-cover bg-center bg-no-repeat w-full mx  ">
           {/* Main Heading */}
-          <div
-            className="w-full relative h-full  py-8 ">
+          <div className="w-full relative h-full  py-8 ">
             <div className="absolute inset-0 -z-10">
               {/* Small yellow circle - top left */}
               <div className="w-20 h-20 bg-yellow-400 rounded-full absolute top-6 left-10 sm:top-14 sm:left-20"></div>
@@ -157,33 +178,36 @@ const AboutUs = () => {
               <div className="flex flex-wrap flex-col items-center text-center mb-5">
                 <div className="bg-white w-auto backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 mt-14 sm:mt-8 border border-black/50">
                   <div className="text-black text-xs sm:text-xs flex items-center gap-2">
-                    <span> <img className="h-5 w-5" src="/heart.svg" alt="" /></span>Created with love
+                    <span>
+                      {" "}
+                      <img className="h-5 w-5" src="/heart.svg" alt="" />
+                    </span>
+                    Created with love
                   </div>
                 </div>
               </div>
 
               <div className=" flex flex-col justify-center items-center  w-auto">
-
-
                 <div className="relative flex flex-row w-auto  ">
-                  
                   <div>
-                    <h1 className="text-[#068F36] text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
-                      style={{ fontFamily: '"Sigmar", sans-serif' }}>
-
+                    <h1
+                      className="text-[#068F36] text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                      style={{ fontFamily: '"Sigmar", sans-serif' }}
+                    >
                       Shaping the future
                     </h1>
                   </div>
                 </div>
 
-                <h1 className="text-[#068F36] text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
-                  style={{ fontFamily: '"Sigmar", sans-serif' }}>
-                  through smarter 
+                <h1
+                  className="text-[#068F36] text-xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                  style={{ fontFamily: '"Sigmar", sans-serif' }}
+                >
+                  through smarter
                   <br className="block md:hidden" />
                   &nbsp;learning
                 </h1>
               </div>
-
             </motion.div>
 
             {/* Hero Cards Grid */}
@@ -201,7 +225,7 @@ const AboutUs = () => {
             items-end 
             overflow-hidden 
             relative 
-            ${index % 2 === 1 ? 'mt-10' : ''}
+            ${index % 2 === 1 ? "mt-10" : ""}
           `}
                     >
                       <img
@@ -214,7 +238,6 @@ const AboutUs = () => {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
 
@@ -227,20 +250,35 @@ const AboutUs = () => {
         >
           <div className="text-center text-white mb-8">
             <p className="text-lg opacity-90">
-              We are is a mission driven company that lives to empower students, they think differently from
+              We are a mission driven company that lives to empower students,
+              they think differently from
               <br />
               their education journey, and study more interactively
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatCard number="12K" suffix="+" label="Students Empowered" delay={0.1} />
-            <StatCard number="500" suffix="+" label="Schools Connected" delay={0.2} />
-            <StatCard number="95" suffix="%" label="Student Satisfaction" delay={0.3} />
+            <StatCard
+              number="12K"
+              suffix="+"
+              label="Students Empowered"
+              delay={0.1}
+            />
+            <StatCard
+              number="500"
+              suffix="+"
+              label="Schools Connected"
+              delay={0.2}
+            />
+            <StatCard
+              number="95"
+              suffix="%"
+              label="Student Satisfaction"
+              delay={0.3}
+            />
             <StatCard number="24/7" label="Learning Support" delay={0.4} />
           </div>
         </div>
-
       </section>
 
       {/* Our Vision Section */}
@@ -275,9 +313,10 @@ const AboutUs = () => {
                     Active Creators
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    We envision a world where students are not just passive learners but
-                    active creators, leaders, and innovators—where every child sees
-                    themselves as capable of building something meaningful.
+                    We envision a world where students are not just passive
+                    learners but active creators, leaders, and innovators—where
+                    every child sees themselves as capable of building something
+                    meaningful.
                   </p>
                 </div>
               </div>
@@ -329,7 +368,9 @@ const AboutUs = () => {
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
             {/* Left card - 60% width on desktop, full width on mobile */}
             <AnimatedCard delay={0.1} className="flex-1 lg:flex-[3]">
-              <div className={`${differentiators[0].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#97F74D] hover:border-[#73D42A]`}>
+              <div
+                className={`${differentiators[0].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#97F74D] hover:border-[#73D42A]`}
+              >
                 <div className="flex flex-col md:flex-row h-full items-center">
                   {/* Image on mobile/tablet - top */}
                   <div className="w-full md:hidden mb-4 mr-7">
@@ -362,7 +403,9 @@ const AboutUs = () => {
 
             {/* Right card - 40% width on desktop, full width on mobile */}
             <AnimatedCard delay={0.2} className="flex-1 lg:flex-[2]">
-              <div className={`${differentiators[1].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#FFD558] hover:border-[#F1C12F]`}>
+              <div
+                className={`${differentiators[1].bgColor} rounded-3xl h-full border-2 border-white hover:bg-[#FFD558] hover:border-[#F1C12F]`}
+              >
                 <div className="flex flex-col md:flex-row h-full items-center">
                   {/* Image on mobile/tablet - top */}
                   <div className="w-full md:hidden mb-4 mr-7">
@@ -398,7 +441,9 @@ const AboutUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1 - Image at top */}
             <AnimatedCard delay={0.3}>
-              <div className={`${differentiators[2].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#92EAFF] hover:border-[#43CCED]`}>
+              <div
+                className={`${differentiators[2].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#92EAFF] hover:border-[#43CCED]`}
+              >
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image at top */}
                   <div className="w-full h-48 md:h-60">
@@ -423,7 +468,9 @@ const AboutUs = () => {
 
             {/* Card 2 - Image at bottom on desktop, top on mobile */}
             <AnimatedCard delay={0.4}>
-              <div className={`${differentiators[3].bgColor} rounded-3xl relative h-auto md:h-[50vh] border-2 border-white hover:bg-[#D7BDFC] hover:border-[#B681FF]`}>
+              <div
+                className={`${differentiators[3].bgColor} rounded-3xl relative h-auto md:h-[50vh] border-2 border-white hover:bg-[#D7BDFC] hover:border-[#B681FF]`}
+              >
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image on mobile - top */}
                   <div className="w-full h-48 md:hidden">
@@ -456,7 +503,9 @@ const AboutUs = () => {
 
             {/* Card 3 - Image at top */}
             <AnimatedCard delay={0.3}>
-              <div className={`${differentiators[4].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#79FFA6] hover:border-[#3AE774]`}>
+              <div
+                className={`${differentiators[4].bgColor} relative rounded-3xl h-auto md:h-[50vh] border-2 border-white hover:bg-[#79FFA6] hover:border-[#3AE774]`}
+              >
                 <div className="flex flex-col gap-4 p-4 md:p-0">
                   {/* Image at top */}
                   <div className="w-full h-48 md:h-60">
@@ -485,10 +534,7 @@ const AboutUs = () => {
       {/* People Behind This Vision */}
       <section className="px-6 py-16">
         <div className="w-[80%] mx-auto">
-          <div
-
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
               People behind this vision
             </h2>
@@ -504,7 +550,7 @@ const AboutUs = () => {
                   scale: 1.05,
                   scaleX: 2.08,
                   zIndex: 10,
-                  transition: { duration: 0.3, ease: "easeOut" }
+                  transition: { duration: 0.3, ease: "easeOut" },
                 }}
                 initial={{ zIndex: 1 }}
               >
@@ -515,9 +561,13 @@ const AboutUs = () => {
                     className="w-full h-full object-contain rounded-2xl transition-transform duration-300 ease-out group-hover:scale-x-108 group-hover:scale-118"
                   />
                 </div>
-                <div className={`flex flex-col ${member.bgColor} h-[10vh] rounded-xl items-center justify-center gap- transition-all duration-300 group-hover:scale-x-108`}>
+                <div
+                  className={`flex flex-col ${member.bgColor} h-[10vh] rounded-xl items-center justify-center gap- transition-all duration-300 group-hover:scale-x-108`}
+                >
                   <div>
-                    <p className="text-xs sm:text-md transition-all duration-300">{member.post}</p>
+                    <p className="text-xs sm:text-md transition-all duration-300">
+                      {member.post}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 transition-all duration-300">
                     <h3 className="text-xl sm:text-3xl font-bold text-gray-800">
@@ -555,10 +605,12 @@ const AboutUs = () => {
                   </div>
                   <div className="mb-6 sm:mb-8 lg:mb-0">
                     <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-                      Our interactive tools, immersive story-based lessons, and fun gamification are
-                      designed to keep kids engaged. As they play games, collect badges and unlock
-                      concepts. With every lesson, they'll also see how their hard work improving
-                      their performance outcome while helping them in learning.
+                      Our interactive tools, immersive story-based lessons, and
+                      fun gamification are designed to keep kids engaged. As
+                      they play games, collect badges and unlock concepts. With
+                      every lesson, they'll also see how their hard work
+                      improving their performance outcome while helping them in
+                      learning.
                     </p>
                   </div>
                 </div>
@@ -570,20 +622,17 @@ const AboutUs = () => {
                       className="w-full h-full object-contain p-2"
                     />
                   </div>
-                  <button
-                    
-                    className="bg-green-600 text-white px-1.5 py-2 sm:px-4 sm:py-2.5 lg:px-5 lg:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-xs sm:text-base absolute bottom-4 right-4 lg:absolute lg:-bottom-5 lg:right-1"
-                  >
-                    Book Your Free Demo → 14 days
-                  </button>
+                  <Link to={buttonLink}>
+                    <button className="bg-[#068F36] hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow-md transition text-lg">
+                      {buttonText}
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
           </AnimatedCard>
         </div>
       </section>
-
-
     </div>
   );
 };
