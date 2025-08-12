@@ -572,12 +572,16 @@ const Dashboard = () => {
     Creative: "/dashboardDesign/creative.svg",
     Curious: "/dashboardDesign/curious.svg",
     Logical: "/dashboardDesign/logical.svg",
-    Playfull: "./Playfull.svg",
+    Playful: "./Playful.svg",
     SmartThinker: "/dashboardDesign/smartThinker.svg",
     MysterySolver: "/dashboardDesign/mysterySolver.svg",
     Talkative: "/dashboardDesign/talkative.svg",
     Fantasy: "/dashboardDesign/fantasy.svg",
   };
+
+  const fixSpelling = (name) => (name === "Playfull" ? "Playful" : name);
+
+  const styleName = fixSpelling(user?.characterStyle);
 
   return (
     <div className="flex min-h-screen font-sans">
@@ -1579,15 +1583,13 @@ const Dashboard = () => {
 
                         <div className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm">
                           <img
-                            src={iconMap[user.characterStyle]}
-                            alt={user.characterStyle}
+                            src={iconMap[styleName]}
+                            alt={styleName}
                             className="w-[3.5rem] h-[3rem] flex-shrink-0"
                           />
                           <div className="overflow-hidden">
                             <p className="text-xs text-gray-500">Style</p>
-                            <p className="font-semibold">
-                              {user.characterStyle}
-                            </p>
+                            <p className="font-semibold">{styleName}</p>
                           </div>
                         </div>
 
