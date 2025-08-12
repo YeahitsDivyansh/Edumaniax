@@ -1,7 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import HeroSkeleton from "./HeroSkeleton";
 
 const Hero = () => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000); // Simulate API/data delay
+  }, []);
+
+  if (loading) return <HeroSkeleton />;
+
   return (
     <section
       className="-mt-6 text-white py-6 md:py-2 pb-0 relative overflow-hidden"

@@ -5,6 +5,7 @@ import BlogCard from "@/components/BlogCard";
 import { useAuth } from "@/contexts/AuthContext";
 import CTA from "@/BlogDesign/CTA";
 import { formatTextWithLinks } from "@/utils/linkFormatter";
+import SingleBlogSkeleton from "@/BlogDesign/SingleBlogSkeleton";
 
 const SingleBlog = () => {
   const { user, role } = useAuth();
@@ -48,24 +49,31 @@ const SingleBlog = () => {
     getBlogById(id);
   }, [id, getBlogById]);
 
-  if (loading || !singleBlog) return <div>Loading...</div>;
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1500); // Simulate API/data delay
+  }, []);
+
+  if (loading || !singleBlog) return <SingleBlogSkeleton />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const name = user?.name || (role === "admin" ? "Admin" : null);
-    
-    // console.log("Submitting comment:", { 
-    //   blogId: id, 
-    //   name: name, 
+
+    // console.log("Submitting comment:", {
+    //   blogId: id,
+    //   name: name,
     //   content: comment.content,
     //   user: user
     // });
-    
+
     if (!name || !comment.content) {
-      console.log("Missing required fields:", { name, content: comment.content });
+      console.log("Missing required fields:", {
+        name,
+        content: comment.content,
+      });
       return;
     }
-    
+
     try {
       // console.log("Sending comment to server...");
       await postComment(id, name, comment.content, user?.id || null);
@@ -167,7 +175,9 @@ const SingleBlog = () => {
                           <a
                             href={`#point-${idx}`}
                             className="text-green-800"
-                            dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item.heading) }}
+                            dangerouslySetInnerHTML={{
+                              __html: formatTextWithLinks(item.heading),
+                            }}
                           />
                         </li>
                       ))}
@@ -180,25 +190,46 @@ const SingleBlog = () => {
                   singleBlog.tableOfContents
                     .filter((point) => point.heading?.trim())
                     .map((point, index) => (
-                      <div key={index} id={`point-${index}`} className="scroll-mt-24">
+                      <div
+                        key={index}
+                        id={`point-${index}`}
+                        className="scroll-mt-24"
+                      >
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                          <span dangerouslySetInnerHTML={{ __html: `${index + 1}. ${formatTextWithLinks(point.heading)}` }} />
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: `${index + 1}. ${formatTextWithLinks(
+                                point.heading
+                              )}`,
+                            }}
+                          />
                         </h2>
 
                         {Array.isArray(point.explanation) &&
-                          point.explanation.filter((e) => e.trim()).length > 0 && (
+                          point.explanation.filter((e) => e.trim()).length >
+                            0 && (
                             <ul className="list-disc list-inside text-gray-800 pl-4 space-y-1">
                               {point.explanation
                                 .filter((item) => item.trim())
                                 .map((item, i) => (
-                                  <p key={i} dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item) }} />
+                                  <p
+                                    key={i}
+                                    dangerouslySetInnerHTML={{
+                                      __html: formatTextWithLinks(item),
+                                    }}
+                                  />
                                 ))}
                             </ul>
                           )}
 
                         {point.reflection?.trim() && (
                           <p className="mt-4 italic text-gray-700">
-                            <strong>Reflection:</strong> <span dangerouslySetInnerHTML={{ __html: formatTextWithLinks(point.reflection) }} />
+                            <strong>Reflection:</strong>{" "}
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: formatTextWithLinks(point.reflection),
+                              }}
+                            />
                           </p>
                         )}
                       </div>
@@ -208,15 +239,11 @@ const SingleBlog = () => {
               {/* Extra Blog Link */}
               <p className="mt-10  text-center text-gray-800    ">
                 To explore more modules and success stories, visit the official{" "}
-                <Link
-                  to="/blogs"
-                  className="blog-hyperlink"
-                >
+                <Link to="/blogs" className="blog-hyperlink">
                   EduManiax Blogs
                 </Link>
                 .
               </p>
-
 
               {/* CTA with ref */}
               <div className="-ml-4 mt-12" ref={ctaRef}>
@@ -352,7 +379,9 @@ const SingleBlog = () => {
                       <a
                         href={`#point-${idx}`}
                         className="text-green-800"
-                        dangerouslySetInnerHTML={{ __html: formatTextWithLinks(item.heading) }}
+                        dangerouslySetInnerHTML={{
+                          __html: formatTextWithLinks(item.heading),
+                        }}
                       />
                     </li>
                   ))}
