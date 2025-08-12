@@ -360,18 +360,35 @@ const SalesDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-gray-900">Sales Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            {renderConnectionStatus()}
-            <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium">{user?.name || 'User'}</span>
-              <button
-                onClick={logout}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Logout
-              </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 relative">
+          <div className="flex justify-between items-center">
+            {/* EduManiax Logo */}
+            <div className="flex items-center gap-2">
+              <div className="w-15 h-10 relative">
+                <img className="h-12 w-full" src="/midLogo.png" alt="logo" />
+              </div>
+              <span className="text-[#09BE43] mt-1 font-bold text-2xl">
+                Edumaniax
+              </span>
+            </div>
+            
+            {/* Centered Sales Dashboard Title */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <h1 className="text-2xl font-semibold text-gray-900">Sales Dashboard</h1>
+            </div>
+            
+            {/* Right side controls */}
+            <div className="flex items-center space-x-4">
+              {renderConnectionStatus()}
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium">{user?.name || 'User'}</span>
+                <button
+                  onClick={() => logout(navigate)} // <-- Pass navigate to logout
+                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>

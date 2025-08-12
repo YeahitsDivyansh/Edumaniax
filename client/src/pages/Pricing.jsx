@@ -167,6 +167,7 @@ const Pricing = () => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
+          console.log('Pricing: Raw subscription data received:', subscriptionData);
           setSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
           
           // Find the highest active and valid subscription
@@ -175,6 +176,8 @@ const Pricing = () => {
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
+          
+          console.log('Pricing: Active subscriptions found:', activeSubscriptions);
           
           // Define plan hierarchy to find the highest plan
           const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
@@ -260,10 +263,24 @@ const Pricing = () => {
 
   // Function to check if a plan is the user's current plan
   const isCurrentPlan = (planTitle) => {
-    if (!user || !accessControl.currentPlan) return false;
+    if (!user || !accessControl.currentPlan) {
+      console.log('isCurrentPlan: No user or currentPlan', { user: !!user, currentPlan: accessControl.currentPlan });
+      return false;
+    }
     
     const planType = planTitle.replace(' PLAN', '');
-    return accessControl.currentPlan === planType;
+    const isCurrentPlanResult = accessControl.currentPlan === planType;
+    
+    console.log('isCurrentPlan check:', { 
+      planTitle, 
+      planType, 
+      currentPlan: accessControl.currentPlan,
+      isCurrentPlan: isCurrentPlanResult,
+      subscriptions: subscriptions.length,
+      allPlans: ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL']
+    });
+    
+    return isCurrentPlanResult;
   };
 
   // Function to check if a plan should be grayed out (already purchased or lower tier)

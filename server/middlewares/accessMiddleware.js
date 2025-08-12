@@ -156,7 +156,7 @@ export const requireModuleAccess = (moduleKey) => {
       if (!hasModuleAccess(highestPlan, moduleKey, selectedModule)) {
         const upgradeInfo = getUpgradeInfo(highestPlan, 'PRO');
         
-        console.log(`[Access Denied] User ${userId} denied access to ${moduleKey} module`);
+        // console.log(`[Access Denied] User ${userId} denied access to ${moduleKey} module`);
         
         return res.status(403).json({
           error: 'Access denied',
