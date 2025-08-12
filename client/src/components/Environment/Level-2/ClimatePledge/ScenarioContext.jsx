@@ -1,71 +1,124 @@
 import React, { useState, useEffect } from 'react';
+import Checknow from "@/components/icon/GreenBudget/Checknow"; // Assuming path from ClimatePledge
 
-// Data for the "Pick The Zone" game
-const options = [
-    { name: "Lithosphere", iconUrl: "https://www.svgrepo.com/show/448839/rock.svg" },
-    { name: "Atmosphere", iconUrl: "https://www.svgrepo.com/show/443315/atmosphere.svg" },
-    { name: "Hydrosphere", iconUrl: "https://www.svgrepo.com/show/450379/hydrosphere.svg" },
-    { name: "Biosphere", iconUrl: "https://www.svgrepo.com/show/442751/biosphere.svg" },
-];
-
-// Sample description from the Pick The Zone game
-const scenarioDescription = "The layer that includes soil, rocks, and land where we build houses and grow food.";
-
+// --- Animation Configuration ---
+const TEXT_TO_TYPE = "planting";
+const FEEDBACK_MESSAGE = "Can you be more specific?";
+const TYPING_SPEED_MS = 150;
+const PAUSE_AFTER_TYPING_MS = 1000;
+const CHECKING_DURATION_MS = 1500;
+const FEEDBACK_DURATION_MS = 3000;
 
 const ScenarioContent = () => {
-  // State to track the currently highlighted option for the animation
-  const [animatedSelection, setAnimatedSelection] = useState(null);
+    // State to manage the animation steps
+    const [displayText, setDisplayText] = useState('');
+    const [isChecking, setIsChecking] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
 
-  // useEffect to run the animation logic
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setAnimatedSelection(prevSelection =>
-        prevSelection === options[0].name ? null : options[0].name
-      );
-    }, 1000);
+    // useEffect to control the entire animation sequence
+    useEffect(() => {
+        let timer;
 
-    return () => clearInterval(intervalId);
-  }, []);
+        const typeAnimation = (index = 0) => {
+            if (index < TEXT_TO_TYPE.length) {
+                setDisplayText(TEXT_TO_TYPE.substring(0, index + 1));
+                timer = setTimeout(() => typeAnimation(index + 1), TYPING_SPEED_MS);
+            } else {
+                timer = setTimeout(startCheckingAnimation, PAUSE_AFTER_TYPING_MS);
+            }
+        };
 
-  return (
-    // Main container - sets the background and centers the content
-    <div className="w-full h-full p-4 bg-green-950/50 rounded-lg flex items-center justify-center">
-      {/* MODIFIED: Inner container - reduced max-width for an even narrower look */}
-      <div className="w-full max-w-2xl flex flex-col md:flex-row gap-4">
-        
-        {/* Left Panel: Options */}
-        <div className="w-full md:w-1/2 bg-[rgba(32,47,54,0.3)] rounded-xl p-4 space-y-3">
-          {options.map((opt) => {
-            const isSelected = animatedSelection === opt.name;
-            const ringColor = isSelected ? 'ring-green-500' : 'ring-gray-600';
+        const startCheckingAnimation = () => {
+            setIsChecking(true);
+            timer = setTimeout(showFeedbackAnimation, CHECKING_DURATION_MS);
+        };
 
-            return (
-              <div
-                key={opt.name}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all bg-[#131f24] ring-2 ${ringColor} shadow-[0_2px_0_0_#000]`}
-              >
-                <div className={`w-6 h-6 rounded-md border-2 ${isSelected ? 'bg-green-600 border-green-400' : 'border-gray-500'} flex items-center justify-center`}>
-                  {/* MODIFIED: Smaller checkmark */}
-                  {isSelected && <span className="text-white text-base">✓</span>}
+        const showFeedbackAnimation = () => {
+            setIsChecking(false);
+            setShowFeedback(true);
+            timer = setTimeout(resetAnimation, FEEDBACK_DURATION_MS);
+        };
+
+        const resetAnimation = () => {
+            setShowFeedback(false);
+            setDisplayText('');
+            timer = setTimeout(typeAnimation, 500);
+        };
+
+        typeAnimation();
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        // MODIFIED: Wider container with `position: relative` to contain the absolute feedback element.
+        // `justify-between` pushes the top and bottom content to the edges, creating space.
+        <div className="w-[45vw] h-[45vh] bg-[#0A160E] flex flex-col items-center justify-between p-4 rounded-lg overflow-hidden relative">
+            
+            {/* --- TOP SECTION: Question & Input (Part of normal layout flow) --- */}
+            <div className="flex flex-col items-center w-full">
+                <h1 className="text-white text-xl font-bold font-['Comic_Neue'] mb-3 text-center">
+                    One Change at School
+                </h1>
+                <div className="w-full max-w-lg h-24 bg-gray-800/30 rounded-lg border border-zinc-700 p-2 flex items-center justify-center">
+                    <span className="text-center text-neutral-400 text-lg font-bold font-['Comic_Neue']">
+                        {displayText}
+                        <span className="animate-pulse">|</span>
+                    </span>
                 </div>
-                {/* MODIFIED: Smaller font size */}
-                <span className="flex-1 text-base font-medium text-white">{opt.name}</span>
-                <img src={opt.iconUrl} alt={opt.name} className="w-7 h-7" />
-              </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* Right Panel: Description */}
-        <div className="w-full md:w-1/2 bg-[rgba(32,47,54,0.3)] rounded-xl p-5 flex items-center justify-center min-h-[260px]">
-          {/* MODIFIED: Smaller font size */}
-          <p className="text-base text-center font-medium leading-relaxed text-gray-200">
-            {scenarioDescription}
-          </p>
+            {/* --- MIDDLE SECTION: Feedback (Absolutely Positioned Overlay) --- */}
+            {/* MODIFIED: This element is now an overlay. It appears on top of the empty space
+                and will not affect the layout of the other elements. */}
+            {showFeedback && (
+                <div className="absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-auto h-[12vh] flex justify-center items-center">
+                    <div className="flex items-center h-full">
+                        <img src="/feedbackcharacter.gif" alt="Feedback Character" className="w-[6vw] h-full object-contain" />
+                        <div className="relative flex items-center">
+                            <div
+                                className="absolute left-[-0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1.8vh] bg-cover bg-no-repeat"
+                                style={{ backgroundImage: "url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-09/cZcfryFaXc.png)" }}
+                            />
+                            <div className="flex h-auto py-2 justify-center items-center bg-[#131f24] rounded-lg border-solid border-2 px-4 border-[#37464f]">
+                                <span className="font-['Inter'] text-sm font-medium text-center text-[#f1f7fb]">
+                                    {FEEDBACK_MESSAGE}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* --- BOTTOM SECTION: Button Bar (Part of normal layout flow) --- */}
+            <div className="w-full h-auto flex justify-center items-center gap-4">
+                <button disabled className="relative w-36 h-12">
+                    <Checknow
+                        topGradientColor="#02ad3eff"
+                        bottomGradientColor="#026123ff"
+                        className={isChecking ? "opacity-70" : ""}
+                        width="100%" height="100%"
+                    />
+                    {/* MODIFIED: Smaller button text (`text-base`) */}
+                    <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 lilita-one-regular text-sm text-white [text-shadow:0_2px_0_#000]">
+                        {isChecking ? "Checking..." : "Check Now"}
+                    </span>
+                </button>
+                <button disabled className="relative w-36 h-12">
+                    <Checknow
+                        topGradientColor="#02ad3eff"
+                        bottomGradientColor="#026123ff"
+                        className="opacity-70"
+                        width="100%" height="100%"
+                    />
+                    {/* MODIFIED: Smaller button text (`text-base`) */}
+                    <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 lilita-one-regular text-sm text-white [text-shadow:0_2px_0_#000] opacity-50">
+                        Continue
+                    </span>
+                </button>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ScenarioContent;

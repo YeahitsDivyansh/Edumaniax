@@ -74,9 +74,9 @@ const itemsToSelect = 3;
 function ItemCard({ item, isSelected, onClick, isDisabled }) {
   const cardClasses = `flex items-center w-[27vw] min-h-[9vh] px-[2vw] py-[1.5vh] rounded-[1.2vh] shadow-[0_2px_0_0_#37464f] transition-all duration-200 ease-in-out cursor-pointer ${isSelected ? "bg-[#202f36] border-[0.2vh] border-[#5f8428] shadow-[0_2px_0_0_#5f8428]" : "bg-[#131f24] border-[0.2vh] border-[#37464f]"} ${isDisabled && !isSelected ? "opacity-50 cursor-not-allowed" : "hover:scale-102"}`;
   const walletIconUrl = isSelected ? "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-04/tuvaKMgcsm.png" : "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-04/CGOQJaAXZU.png";
-  const nameClasses = `font-['Inter'] text-[1.5vw] font-medium leading-[2.5vh] ${isSelected ? "text-[#79b933]" : "text-[#f1f7fb]"}`;
-  const costClasses = `font-['Lilita_One'] text-[1.5vw] font-normal leading-[2.5vh] text-[#fff]`;
-  const iconClasses = `w-[2.5vw] h-[2.5vw] shrink-0 object-contain ml-auto`;
+  const nameClasses = `font-['Inter'] text-[1.4vw] font-medium leading-[2.5vh] ${isSelected ? "text-[#79b933]" : "text-[#f1f7fb]"}`;
+  const costClasses = `font-['Lilita_One'] text-[1.2vw] font-normal leading-[2.5vh] text-[#fff] ml-[0.5vw]`;
+  const iconClasses = `w-[2vw] h-[2vw] shrink-0 object-contain ml-auto`;
   const priceContainerClasses = `flex w-[7vw] h-[4vh] justify-center items-center rounded-[0.8vh] ${isSelected ? "border-[0.2vh] border-[#79b933]" : "border-[0.2vh] border-[#37464f]"}`;
   const priceIconClasses = `w-[2.5vh] h-[2.5vh] shrink-0 object-contain`;
 
