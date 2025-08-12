@@ -154,10 +154,10 @@ function ReviewScreen({ answers, onBackToResults }) {
 // =============================================================================
 
 const options = [
-    { name: "Lithosphere", iconUrl: "https://www.svgrepo.com/show/448839/rock.svg" },
-    { name: "Atmosphere", iconUrl: "https://www.svgrepo.com/show/443315/atmosphere.svg" },
-    { name: "Hydrosphere", iconUrl: "https://www.svgrepo.com/show/450379/hydrosphere.svg" },
-    { name: "Biosphere", iconUrl: "https://www.svgrepo.com/show/442751/biosphere.svg" },
+    { name: "Lithosphere",/* iconUrl: "https://www.svgrepo.com/show/448839/rock.svg" */},
+    { name: "Atmosphere",/* iconUrl: "https://www.svgrepo.com/show/443315/atmosphere.svg" */},
+    { name: "Hydrosphere"/*, iconUrl: "https://www.svgrepo.com/show/450379/hydrosphere.svg" */},
+    { name: "Biosphere"/*, iconUrl: "https://www.svgrepo.com/show/442751/biosphere.svg"*/ },
 ];
 
 const questions = [
@@ -309,9 +309,8 @@ const PickTheZone = () => {
                                    {isSelected && <span className="text-white text-xl">✓</span>}
                                 </div>
                                 <span className="flex-1 text-xl font-medium">{opt.name}</span>
-                                <img src={opt.iconUrl} alt={opt.name} className="w-8 h-8" />
                             </div>
-                        );
+                        );//<img src={opt.iconUrl} alt={opt.name} className="w-8 h-8" />
                     })}
                 </div>
 

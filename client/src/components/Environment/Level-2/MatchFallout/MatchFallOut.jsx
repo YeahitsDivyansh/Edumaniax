@@ -330,7 +330,7 @@ const MatchTheFallout = () => {
     const activeDragItem = activeId ? (availableFallouts.find(c => c === activeId) || slots.find(s => s.id === activeId)?.content) : null;
 
     return (
-        <div className="w-full h-screen bg-[#202f36] flex flex-col items-center justify-center p-[1vw] pt-[10.5vh] pb-[12vh] relative overflow-hidden">
+        <div className="w-full h-screen bg-[#0A160E] flex flex-col items-center justify-center p-[1vw] pt-[10.5vh] pb-[12vh] relative overflow-hidden">
             <GameNav timeLeft={state.timeLeft} />
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <div className="flex w-full max-w-[70vw] justify-between items-start">
