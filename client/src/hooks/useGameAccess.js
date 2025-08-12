@@ -96,6 +96,13 @@ export const useGameAccess = (moduleKey, progress = []) => {
   const isChallengeUnlocked = (moduleIndex, challengeIndex, modules = []) => {
     // Admin always has access
     if (role === "admin") return true;
+    
+    // STARTER plan users can only access the first challenge of level 1
+    if (currentPlan === 'STARTER' && isTrialValid()) {
+      // Only allow access to Challenge 1 in Level 1 (first challenge of first module)
+      if (moduleIndex === 0 && challengeIndex === 0) return true;
+      return false;
+    }
 
     // Use access control system for subscription-based access
     const levelNumber = moduleIndex + 1; // Convert 0-based index to 1-based level

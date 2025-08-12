@@ -265,6 +265,8 @@ class AccessController {
 
     // STARTER plan users can only access level 1 during trial period
     if (this.currentPlan === 'STARTER') {
+      // Note: Individual challenges will be handled by useGameAccess hook
+      // This allows the level to appear unlocked in UI but restricts actual game access
       return levelNumber === 1 && this.isTrialValid();
     }
 
@@ -293,6 +295,8 @@ class AccessController {
   hasGameLevelAccess(moduleKey, levelNumber) {
     if (!this.hasGameAccess(moduleKey)) return false;
     
+    // Note: For STARTER plan, we're allowing level 1 access here
+    // but the individual challenge access is restricted in useGameAccess hook
     return this.hasLevelAccess(moduleKey, levelNumber);
   }
 
