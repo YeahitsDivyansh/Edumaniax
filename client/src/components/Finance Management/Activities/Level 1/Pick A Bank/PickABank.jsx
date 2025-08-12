@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BankCard from "./BankCard";
 import { useFinance } from "../../../../../contexts/FinanceContext.jsx";
 import { usePerformance } from "@/contexts/PerformanceContext"; // for performance
-
-
-const API_KEY = import.meta.env.VITE_API_KEY;
+import IntroScreen from "./IntroScreen";
+import GameNav from "./GameNav";
+import { useNavigate } from "react-router-dom";
+import InstructionOverlay from "./InstructionOverlay";
 
 const upiOptions = ["Google Pay", "PhonePe", "Paytm", "BHIM"];
 const banks = [
@@ -20,7 +21,7 @@ const banks = [
     id: "B",
     name: "Bank B",
     fee: "₹50/month",
-    interest: "2.5%",
+    interest: "2.5% interest",
     digital: "Full digital banking, and free UPI + cashback",
   },
   {
@@ -184,6 +185,83 @@ const feedbackMap = {
     "Without advice, Bank C offers safety with traditional services but low interest.",
 };
 
+const feedbackOutcomeMap = {
+  // ===== Bank A =====
+  "A|Choose digital bank|High interest": "win",
+  "A|Choose digital bank|Low fee": "win",
+  "A|Choose digital bank|Supports digital payments": "lose", // basic digital only
+  "A|Choose digital bank|Traditional bank": "lose",
+  "A|Choose digital bank|As per parents' advice": "win",
+
+  "A|Avoid fees|High interest": "win",
+  "A|Avoid fees|Low fee": "win",
+  "A|Avoid fees|Supports digital payments": "win",
+  "A|Avoid fees|Traditional bank": "lose",
+  "A|Avoid fees|As per parents' advice": "win",
+
+  "A|Stick to traditional bank|High interest": "lose",
+  "A|Stick to traditional bank|Low fee": "lose",
+  "A|Stick to traditional bank|Supports digital payments": "lose",
+  "A|Stick to traditional bank|Traditional bank": "lose",
+  "A|Stick to traditional bank|As per parents' advice": "lose",
+
+  "A|No advice|High interest": "win",
+  "A|No advice|Low fee": "win",
+  "A|No advice|Supports digital payments": "win",
+  "A|No advice|Traditional bank": "lose",
+  "A|No advice|As per parents' advice": "win",
+
+  // ===== Bank B =====
+  "B|Choose digital bank|High interest": "lose",
+  "B|Choose digital bank|Low fee": "lose",
+  "B|Choose digital bank|Supports digital payments": "win",
+  "B|Choose digital bank|Traditional bank": "lose",
+  "B|Choose digital bank|As per parents' advice": "win",
+
+  "B|Avoid fees|High interest": "lose",
+  "B|Avoid fees|Low fee": "lose",
+  "B|Avoid fees|Supports digital payments": "lose",
+  "B|Avoid fees|Traditional bank": "lose",
+  "B|Avoid fees|As per parents' advice": "lose",
+
+  "B|Stick to traditional bank|High interest": "lose",
+  "B|Stick to traditional bank|Low fee": "lose",
+  "B|Stick to traditional bank|Supports digital payments": "lose",
+  "B|Stick to traditional bank|Traditional bank": "lose",
+  "B|Stick to traditional bank|As per parents' advice": "lose",
+
+  "B|No advice|High interest": "lose",
+  "B|No advice|Low fee": "lose",
+  "B|No advice|Supports digital payments": "win",
+  "B|No advice|Traditional bank": "lose",
+  "B|No advice|As per parents' advice": "win",
+
+  // ===== Bank C =====
+  "C|Choose digital bank|High interest": "lose",
+  "C|Choose digital bank|Low fee": "lose",
+  "C|Choose digital bank|Supports digital payments": "lose",
+  "C|Choose digital bank|Traditional bank": "lose",
+  "C|Choose digital bank|As per parents' advice": "lose",
+
+  "C|Avoid fees|High interest": "lose",
+  "C|Avoid fees|Low fee": "win",
+  "C|Avoid fees|Supports digital payments": "lose",
+  "C|Avoid fees|Traditional bank": "win",
+  "C|Avoid fees|As per parents' advice": "lose",
+
+  "C|Stick to traditional bank|High interest": "lose",
+  "C|Stick to traditional bank|Low fee": "win",
+  "C|Stick to traditional bank|Supports digital payments": "lose",
+  "C|Stick to traditional bank|Traditional bank": "win",
+  "C|Stick to traditional bank|As per parents' advice": "win",
+
+  "C|No advice|High interest": "lose",
+  "C|No advice|Low fee": "win",
+  "C|No advice|Supports digital payments": "lose",
+  "C|No advice|Traditional bank": "win",
+  "C|No advice|As per parents' advice": "lose",
+};
+
 const getManualFeedback = (bank, advice, reason) => {
   const key = `${bank}|${advice}|${reason}`;
 
@@ -193,66 +271,59 @@ const getManualFeedback = (bank, advice, reason) => {
   );
 };
 
-function parsePossiblyStringifiedJSON(text) {
-  if (typeof text !== "string") return null;
-
-  // Remove triple backticks and optional "json" after them
-  text = text.trim();
-  if (text.startsWith("```")) {
-    text = text
-      .replace(/^```(json)?/, "")
-      .replace(/```$/, "")
-      .trim();
-  }
-
-  // Remove single backticks
-  if (text.startsWith("`") && text.endsWith("`")) {
-    text = text.slice(1, -1).trim();
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch (err) {
-    console.error("Failed to parse JSON:", err);
-    return null;
-  }
-}
-
 export default function PickABank() {
   const { completeFinanceChallenge } = useFinance();
+  const [step, setStep] = useState("choose"); // 'choose' or 'form'
   const [selectedBank, setSelectedBank] = useState(null);
   const [upiApp, setUpiApp] = useState("");
   const [parentAdvice, setParentAdvice] = useState("");
-  const [reason, setReason] = useState("");
   const [chosenReason, setChosenReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const [outcome, setOutcome] = useState("");
 
   //for Performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [showGif, setShowGif] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+    }, 4000); // 4 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showIntro) {
+    return <IntroScreen />;
+  }
+
+  const handleBankSelect = (bank) => {
+    setSelectedBank(bank);
+    setStep("form");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setSubmitted(true);
     setLoadingFeedback(true);
 
-    const feedbackText = getManualFeedback(
-      selectedBank?.id,
-      parentAdvice,
-      chosenReason
-    );
-
-    console.log(feedbackText);
+    const feedbackKey = `${selectedBank?.id}|${parentAdvice}|${chosenReason}`;
+    const feedbackText = feedbackMap[feedbackKey] || "No feedback available.";
+    const outcomeResult = feedbackOutcomeMap[feedbackKey] || "lose"; // win | lose
 
     setFeedback(feedbackText);
-    //for Performance
-    const totalTime = (Date.now() - startTime) / 1000; // in seconds
+    setOutcome(outcomeResult);
+
+    // Performance tracking
+    const totalTime = (Date.now() - startTime) / 1000;
     const studyTimeMinutes = Math.ceil(totalTime / 60);
 
-    // Simple score logic: Bank A (best balance) gets 10, B gets 7, C gets 5
     const scoreMap = { A: 10, B: 7, C: 5 };
     const score = scoreMap[selectedBank.id] ?? 6;
 
@@ -264,14 +335,22 @@ export default function PickABank() {
       avgResponseTimeSec: totalTime,
       studyTimeMinutes,
       completed: true,
-     
     });
-setStartTime(Date.now());
+
+    // Still run your win/lose challenge functions
+    if (outcomeResult === "win") {
+      completeFinanceChallenge(1, 0);
+    } else {
+      completeFinanceChallenge(0, 1);
+    }
+
+    setStartTime(Date.now());
+
+    // Simulate feedback delay
     setTimeout(() => {
       setLoadingFeedback(false);
+      setStep("result"); // show result screen
     }, 1500);
-
-    completeFinanceChallenge(0, 1); //MARK CHALLENGE COMPLETED
   };
 
   const notAllowed = () => {
@@ -283,168 +362,379 @@ setStartTime(Date.now());
     return false;
   };
 
-  return (
-    <div
-      className="w-full min-h-screen bg-gradient-to-br from-pink-100 to-yellow-50 p-4"
-      style={{ fontFamily: "'Comic Neue', cursive" }}
-    >
-      {/* Main Content Card */}
-      <div className="w-[92%] max-w-4xl mx-auto bg-white/90 backdrop-blur-md p-6 pt-4 flex flex-col items-center rounded-2xl shadow-2xl">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-purple-700 drop-shadow animate-bounce text-center">
-          🎉 You’ve turned 18. Welcome to banking!
-        </h1>
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-indigo-600 text-center">
-          🏦 Pick Your Bank Simulator
-        </h2>
+  // function to handle selection and trigger gif
+  const handleOptionSelect = (setter, value) => {
+    setter(value);
+    setShowGif(true);
+    setTimeout(() => setShowGif(false), 3000); // hide after 2 seconds
+  };
 
-        {!submitted && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl mb-8">
-              {banks?.map((bank) => (
+  // View Feedback Handler
+  const handleViewFeedback = () => {
+    setShowFeedback(true);
+  };
+
+  // Next Challenge Handler
+  const handleNextChallenge = () => {
+    navigate("/overspend-trap"); // ensure `useNavigate()` is defined
+  };
+
+  return (
+    <>
+      <div
+        className="w-full min-h-screen bg-[#0A160E]"
+        style={{ fontFamily: "'Comic Neue', cursive" }}
+      >
+        <GameNav />
+
+        <div className="p-4 pt-25 md:pt-54 pb-28">
+          {/* Main Content Card */}
+          <div className="w-[92%] max-w-4xl mx-auto p-6 pt-4 flex flex-col items-center">
+            {step === "choose" && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mb-8">
+                  {banks?.map((bank) => (
+                    <div
+                      key={bank.id}
+                      className="transition-transform hover:scale-105"
+                    >
+                      <BankCard
+                        bank={bank}
+                        onSelect={(bank) => handleBankSelect(bank)}
+                        selected={bank.id === selectedBank?.id}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Footer */}
+            <div className="fixed bottom-0 left-0 w-full bg-[#2f3e46] border-t-4 border-[#1a2e1a] shadow-inner py-3 sm:py-6 flex items-center justify-center gap-4 z-40 px-4 sm:px-0">
+              {/* Kid Celebration Gif + Speech Bubble */}
+              {showGif && (
                 <div
-                  key={bank.id}
-                  className="transition-transform hover:scale-105"
+                  className="
+    absolute
+    -top-24 sm:-top-30
+    transform -translate-x-1/2
+    z-50 flex items-start
+  "
+                  style={{ left: "85%" }}
                 >
-                  <BankCard
-                    bank={bank}
-                    onSelect={setSelectedBank}
-                    selected={bank.id === selectedBank?.id}
+                  {/* Kid gif */}
+                  <img
+                    src="/financeGames6to8/kid-gif.gif"
+                    alt="Kid Celebration"
+                    className="object-contain"
+                    style={{
+                      maxHeight: "120px",
+                      height: "auto",
+                      width: "auto",
+                    }}
+                  />
+
+                  {/* Speech bubble — hidden on small screens */}
+                  <img
+                    src="/financeGames6to8/kid-saying.svg"
+                    alt="Kid Saying"
+                    className="absolute top-2 left-[90px] w-24 hidden md:block"
                   />
                 </div>
-              ))}
-            </div>
+              )}
 
-            {selectedBank && (
-              <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-xl space-y-5 text-lg bg-purple-50/60 p-5 rounded-xl shadow-xl"
-              >
-                <div>
-                  <label className="block font-bold text-indigo-800 mb-1">
-                    💳 Which UPI/digital wallet do you use?
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {upiOptions.map((upi) => (
-                      <label
-                        key={upi}
-                        className="flex items-center gap-2 bg-fuchsia-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-fuchsia-300"
+              {step === "choose" ? (
+                <>
+                  <span className="text-white lilita-one-regular font-semibold text-lg">
+                    Choose from options:
+                  </span>
+                  {banks?.map((bank) => {
+                    const svgMap = {
+                      "Bank A": "/financeGames6to8/level-2/bankAbtn.svg",
+                      "Bank B": "/financeGames6to8/level-2/bankBbtn.svg",
+                      "Bank C": "/financeGames6to8/level-2/bankCbtn.svg",
+                    };
+
+                    return (
+                      <button
+                        key={bank.id}
+                        onClick={() => {
+                          setSelectedBank(bank);
+                          setStep("form");
+                        }}
+                        className="p-1 rounded transition transform active:scale-90 hover:scale-105"
                       >
-                        <input
-                          type="checkbox"
-                          value={upi}
-                          checked={upiApp === upi}
-                          onChange={(e) =>
-                            setUpiApp(e.target.checked ? upi : "")
-                          }
+                        <img
+                          src={svgMap[bank.name]}
+                          alt={bank.name}
+                          className="h-10 w-auto"
                         />
-                        <span>{upi}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-indigo-800 mb-1">
-                    👨‍👩‍👧 Did your parents give you any advice?
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {parentAdviceOptions.map((advice) => (
-                      <label
-                        key={advice}
-                        className="flex items-center gap-2 bg-yellow-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-yellow-300"
-                      >
-                        <input
-                          type="checkbox"
-                          value={advice}
-                          checked={parentAdvice === advice}
-                          onChange={(e) =>
-                            setParentAdvice(e.target.checked ? advice : "")
-                          }
-                        />
-                        <span>{advice}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-indigo-800 mb-1">
-                    🌟 Why did you choose this bank?
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {reasonOptions.map((reason, index) => (
-                      <label
-                        key={index}
-                        className="flex items-center gap-2 bg-blue-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-blue-300"
-                      >
-                        <input
-                          type="checkbox"
-                          value={reason}
-                          checked={chosenReason === reason}
-                          onChange={(e) =>
-                            setChosenReason(e.target.checked ? reason : "")
-                          }
-                        />
-                        <span>{reason}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={notAllowed()}
-                  className={`w-full bg-indigo-500 text-white py-3 px-6 rounded-xl text-xl font-bold transition-all duration-300 ${notAllowed()
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-indigo-600 hover:scale-105"
-                    }`}
-                >
-                  🚀 Submit for Feedback
-                </button>
-              </form>
-            )}
-          </>
-        )}
-
-        {/* Submission View */}
-        {submitted && (
-          <div className="mt-6 bg-white p-6 rounded-xl shadow-md max-w-xl w-full border-2 border-indigo-300">
-            <h2 className="text-2xl font-bold mb-3 text-green-700">
-              ✅ Your Submission
-            </h2>
-            <p className="text-xl">
-              <strong>🏦 Selected Bank:</strong> {selectedBank.name}
-            </p>
-            <p className="text-xl">
-              <strong>📱 UPI App:</strong> {upiApp}
-            </p>
-            <p className="text-xl">
-              <strong>👪 Parent Advice:</strong> {parentAdvice}
-            </p>
-            <p className="text-xl">
-              <strong>🎯 Your Reason:</strong> {chosenReason}
-            </p>
-
-            <div className="mt-4">
-              <h3 className="text-2xl font-semibold text-indigo-700 mb-2">
-                💬 Feedback:
-              </h3>
-              {loadingFeedback ? (
-                <div className="flex flex-col items-center justify-center my-6">
-                  <div className="w-12 h-12 border-4 border-t-purple-500 border-yellow-200 rounded-full animate-spin"></div>
-                  <p className="mt-4 text-purple-600 text-2xl font-semibold">
-                    Thinking...
-                  </p>
-                </div>
+                      </button>
+                    );
+                  })}
+                </>
               ) : (
-                <p className="text-xl whitespace-pre-line text-purple-800 font-medium">
-                  {feedback}
-                </p>
+                step === "form" && (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={notAllowed()}
+                    className={`p-1 rounded ${
+                      notAllowed() ? "cursor-not-allowed opacity-50" : ""
+                    }`}
+                  >
+                    <img
+                      src="/financeGames6to8/level-2/submit.svg"
+                      alt="Submit"
+                      className="h-12 w-auto"
+                    />
+                  </button>
+                )
               )}
             </div>
+
+            {step === "form" && selectedBank && (
+              <>
+                {/* Heading */}
+                <div className="text-center font-bold text-white text-2xl mb-6 pb-2">
+                  Select the answer of following questions
+                </div>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="w-full max-w-xl space-y-5 text-lg bg-[#202F36]/30 p-5 rounded-xl shadow-xl"
+                >
+                  <div>
+                    <label className="block font-bold text-white mb-1">
+                      A. Which UPI/digital wallet do you use?
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {upiOptions.map((upi) => (
+                        <label
+                          key={upi}
+                          className="flex border border-[#37464F] items-center gap-2 bg-[#131F24] px-4 py-1.5 rounded-lg cursor-pointer hover:bg-[#132b35]"
+                        >
+                          <input
+                            type="checkbox"
+                            value={upi}
+                            checked={upiApp === upi}
+                            onChange={(e) =>
+                              handleOptionSelect(
+                                setUpiApp,
+                                e.target.checked ? upi : ""
+                              )
+                            }
+                            className="
+    appearance-none w-5 h-5 border border-[#37464F] rounded
+    checked:bg-[url('/financeGames6to8/level-2/tick.svg')]
+    checked:bg-center checked:bg-no-repeat
+  "
+                          />
+
+                          <span className="text-white">{upi}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-white mb-1">
+                      B. Did your parents give you any advice?
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {parentAdviceOptions.map((advice) => (
+                        <label
+                          key={advice}
+                          className="flex border border-[#37464F] items-center gap-2 bg-[#131F24] px-4 py-1.5 rounded-lg cursor-pointer hover:bg-[#132b35]"
+                        >
+                          <input
+                            type="checkbox"
+                            value={advice}
+                            checked={parentAdvice === advice}
+                            onChange={(e) =>
+                              setParentAdvice(e.target.checked ? advice : "")
+                            }
+                            className="appearance-none w-5 h-5 border border-[#37464F] rounded
+    checked:bg-[url('/financeGames6to8/level-2/tick.svg')]
+    checked:bg-center checked:bg-no-repeat"
+                          />
+                          <span className="text-white">{advice}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-white mb-1">
+                      C. Why did you choose this bank?
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {reasonOptions.map((reason, index) => (
+                        <label
+                          key={index}
+                          className="flex border border-[#37464F] items-center gap-2 bg-[#131F24] px-4 py-1.5 rounded-lg cursor-pointer hover:bg-[#132b35]"
+                        >
+                          <input
+                            type="checkbox"
+                            value={reason}
+                            checked={chosenReason === reason}
+                            onChange={(e) =>
+                              setChosenReason(e.target.checked ? reason : "")
+                            }
+                            className="appearance-none w-5 h-5 border border-[#37464F] rounded
+    checked:bg-[url('/financeGames6to8/level-2/tick.svg')]
+    checked:bg-center checked:bg-no-repeat"
+                          />
+                          <span className="text-white">{reason}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* WINNING & LOSING VIEW */}
+            {step === "result" ? (
+              feedbackOutcomeMap[
+                `${selectedBank?.id}|${parentAdvice}|${chosenReason}`
+              ] === "win" ? (
+                // WINNING VIEW
+                <div className="fixed inset-0 z-50 bg-[#0A160E] flex flex-col justify-between">
+                  {/* Center Content */}
+                  <div className="flex flex-col items-center justify-center flex-1 p-6">
+                    {/* Trophy GIFs */}
+                    <div className="relative w-64 h-64 flex items-center justify-center">
+                      <img
+                        src="/financeGames6to8/trophy-rotating.gif"
+                        alt="Rotating Trophy"
+                        className="absolute w-full h-full object-contain"
+                      />
+                      <img
+                        src="/financeGames6to8/trophy-celebration.gif"
+                        alt="Celebration Effects"
+                        className="absolute w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Challenge Complete Text */}
+                    <h2 className="text-yellow-400 lilita-one-regular text-3xl sm:text-4xl font-bold mt-6">
+                      Challenge Complete!
+                    </h2>
+
+                    {/* Accuracy + Insight Boxes */}
+                    <div className="mt-6 flex flex-col items-center sm:flex-row sm:items-start sm:gap-4">
+                      {/* Insight Box */}
+                      <div className="mt-4 sm:mt-0 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center w-74">
+                        <p className="text-black text-sm font-extrabold mb-1 mt-2">
+                          INSIGHT
+                        </p>
+                        <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center overflow-hidden">
+                          <span
+                            className="text-[#FFCC00] lilita-one-regular font-medium italic leading-tight"
+                            style={{
+                              fontSize: "clamp(0.65rem, 1.2vw, 0.85rem)",
+                              lineHeight: "1.1",
+                              whiteSpace: "normal",
+                            }}
+                          >
+                            {feedback || "Analyzing your results..."}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Buttons */}
+                  <div className="bg-[#2f3e46] border-t border-gray-700 py-4 px-6 flex justify-center gap-6">
+                    <img
+                      src="/financeGames6to8/feedback.svg"
+                      alt="Feedback"
+                      onClick={handleViewFeedback}
+                      className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                    />
+                    <img
+                      src="/financeGames6to8/next-challenge.svg"
+                      alt="Next Challenge"
+                      onClick={handleNextChallenge}
+                      className="cursor-pointer w-44 h-14 object-contain hover:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+                </div>
+              ) : (
+                // LOSING VIEW
+                feedbackOutcomeMap[
+                  `${selectedBank?.id}|${parentAdvice}|${chosenReason}`
+                ] === "lose" && (
+                  <div className="fixed inset-0 z-50 bg-[#0A160E] flex flex-col justify-between">
+                    {/* Game Over Content */}
+                    <div className="flex flex-col items-center justify-center flex-1 p-4">
+                      <img
+                        src="/financeGames6to8/game-over-game.gif"
+                        alt="Game Over"
+                        className="w-48 sm:w-64 h-auto mb-4"
+                      />
+                      <p className="text-yellow-400 lilita-one-regular text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center">
+                        Oops! That was close! Wanna Retry?
+                      </p>
+
+                      {/* What Went Wrong Box */}
+                      <div className="mt-4 sm:mt-8 lg:mt-12 bg-[#FFCC00] rounded-xl p-1 flex flex-col items-center w-74">
+                        <p className="text-black text-sm font-extrabold mb-1 mt-2">
+                          WHAT WENT WRONG?
+                        </p>
+                        <div className="bg-[#131F24] mt-0 w-73 h-16 rounded-xl flex items-center justify-center px-4 text-center overflow-hidden">
+                          <span
+                            className="text-[#FFCC00] lilita-one-regular font-medium italic leading-tight"
+                            style={{
+                              fontSize: "clamp(0.65rem, 1.2vw, 0.85rem)",
+                              lineHeight: "1.1",
+                              whiteSpace: "normal",
+                            }}
+                          >
+                            {feedback || "Analyzing your results..."}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Buttons */}
+                    <div className="bg-[#2f3e46] border-t border-gray-700 py-3 px-4 flex justify-center gap-6">
+                      <img
+                        src="/financeGames6to8/feedback.svg"
+                        alt="Feedback"
+                        onClick={handleViewFeedback}
+                        className="cursor-pointer w-28 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
+                      />
+                      <img
+                        src="/financeGames6to8/retry.svg"
+                        alt="Retry"
+                        onClick={() => {
+                          setShowIntro(false);
+                          setStep("choose");
+                        }}
+                        className="cursor-pointer w-28 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
+                      />
+                      <img
+                        src="/financeGames6to8/next-challenge.svg"
+                        alt="Next Challenge"
+                        onClick={handleNextChallenge}
+                        className="cursor-pointer w-34 sm:w-36 md:w-44 h-12 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+                  </div>
+                )
+              )
+            ) : null}
+          </div>
+        </div>
+
+        {/* Instructions overlay */}
+        {showInstructions && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <InstructionOverlay onClose={() => setShowInstructions(false)} />
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
