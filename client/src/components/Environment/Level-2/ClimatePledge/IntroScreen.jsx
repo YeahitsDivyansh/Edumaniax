@@ -69,7 +69,7 @@ const IntroScreen = ({ onShowInstructions }) => {
       {/* Exit Button */}
       <Link
         to="/environmental/games"
-        className="absolute top-4 left-4 w-[7vw] h-[7vh] mt-7 ml-7 transition transform active:scale-95"
+        className="absolute top-4 left-4 w-[7vw] h-[7vh] mt-11 ml-7 transition transform active:scale-95"
       >
         <img
           src={btnExit}
