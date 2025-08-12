@@ -1,7 +1,14 @@
+import { useAuth } from "@/contexts/AuthContext";
 import React from "react";
 import { Link } from "react-router-dom";
 
 const CTA = () => {
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user);
+
+  const buttonText = isLoggedIn ? "Purchase Now" : "Book your Free Demo!";
+  const buttonLink = isLoggedIn ? "/pricing" : "/login";
+
   return (
     <div className="max-w-8xl mx-auto px-4 py-10">
       {/* ✅ Mobile View */}
@@ -10,9 +17,9 @@ const CTA = () => {
         <h2 className="text-3xl font-extrabold text-gray-900">
           Want to play all the levels?
         </h2>
-        <Link to="/login">
-          <button className="bg-[#068F36] mt-2 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-md shadow-md text-sm">
-            Book your trial now! - It's Free
+        <Link to={buttonLink}>
+          <button className="bg-[#068F36] hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow-md transition text-lg">
+            {buttonText}
           </button>
         </Link>
       </div>
@@ -40,9 +47,9 @@ const CTA = () => {
               alt="Mushroom"
               className="w-24"
             />
-            <Link to="/login">
-              <button className="bg-[#068F36] hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-md text-sm shadow-md whitespace-nowrap">
-                Book Trial Now!
+            <Link to={buttonLink}>
+              <button className="bg-[#068F36] hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow-md transition text-lg whitespace-nowrap">
+                {buttonText}
               </button>
             </Link>
           </div>

@@ -379,9 +379,9 @@ const ChainReaction = () => {
 
                     <div className="flex items-center justify-center w-auto max-w-[43.5vw] h-[12.5vh]">
                          <img src={currentPuzzle.image} alt="Cause" className="w-[9vw] h-[12.5vh] object-contain" />
-                         <div className="relative flex items-center">
+                         <div className="relative flex items-center ml-[4vw] md:ml-[2vw] lg:ml-0 ">
                             <div className="absolute left-[-1.1vw] top-1/2 -translate-y-1/2 w-[1.25vw] h-[2.2vh] bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-09/cZcfryFaXc.png)] bg-cover bg-no-repeat" />
-                            <div className="flex h-[7vh] justify-center items-center bg-[#131f24] rounded-[0.83vw] border-solid border-[0.1vh] border-[#37464f] px-[2.2vw]">
+                            <div className="flex h-[7vh]  justify-center items-center bg-[#131f24] rounded-[0.83vw] border-solid border-[0.1vh] border-[#37464f] px-[2.2vw]">
                                  <span className="font-['Inter'] text-[2.6vh] font-medium text-[#f1f7fb] text-center">
                                      {currentPuzzle.cause}
                                  </span>
