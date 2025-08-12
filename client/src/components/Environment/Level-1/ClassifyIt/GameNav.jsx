@@ -74,7 +74,7 @@ const GameNav = () => {
         <BackButton className="w-16 md:w-24 lg:w-32"/>
       </Link>
       
-      <span className="lilita ml-[14vw] md:ml-[11vw] lg:ml-[7vw] [text-shadow:0_6px_0_#000] [text-stroke:1px_black] sm:text-[2.8vh] md:text-[3vh] lg:text-[4vh] md:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
+      <span className="lilita ml-[14vw] md:ml-[11vw] lg:ml-[7vw] [text-shadow:0_6px_0_#000] [text-stroke:1px_black] sm:text-[2.8vh] md:text-[3vh] lg:text-[5vh] text-[#ffcc00] ml-[8vw] tracking-[0.05vw]">
         Classify It
       </span>
       

@@ -50,9 +50,9 @@ const ScenarioContent = () => {
                 </div>
                 {/* MODIFIED: Smaller font size */}
                 <span className="flex-1 text-base font-medium text-white">{opt.name}</span>
-                <img src={opt.iconUrl} alt={opt.name} className="w-7 h-7" />
+
               </div>
-            );
+            ); // <img src={opt.iconUrl} alt={opt.name} className="w-7 h-7" />
           })}
         </div>
 
