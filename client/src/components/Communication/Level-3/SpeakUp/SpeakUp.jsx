@@ -87,8 +87,8 @@ const SpeakUpGame = () => {
           setCurrent(current + 1);
           setSelected(null);
         }
-      }, 3000);
-    }, 2000);
+      }, 2000);
+    }, 1000);
   };
 
   const resetGame = () => {

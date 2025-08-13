@@ -41,7 +41,7 @@ const LandmarkCasesResult = () => {
   }
 
   const handlePlayAgain = () => {
-    navigate("/landmark-cases-game"); // or wherever your main game starts
+    navigate("/LandmarkCasesGame"); // or wherever your main game starts
   };
 
   const canvasRef = useRef(null);

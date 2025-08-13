@@ -22,7 +22,7 @@ import clickSoundFileOops from "../../Sound/clickSoundFileOops.mp3";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
-
+import { usePerformance } from "@/contexts/PerformanceContext";
 
 const SustainabilityGames1 = () => {
   const { completeEnvirnomentChallenge } = useEnvirnoment();

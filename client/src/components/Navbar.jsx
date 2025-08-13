@@ -128,10 +128,10 @@ const Navbar = () => {
                   className={`${
                     user?.avatar
                       ? "h-10 w-10 object-cover rounded-full border-2 border-green-500"
-                      : "h-10 w-9 object-cover rounded-full border-2 border-green-500"
+                      : "h-10 w-10 object-cover rounded-full border-2 border-green-500"
                   }`}
                 />
-                <span className="text-green-700 font-medium">{user.name}</span>
+                <span className="text-black font-medium">{user.name}</span>
                 <ChevronDown
                   size={20}
                   className={`text-gray-500 transition-transform duration-300 ${
@@ -155,20 +155,20 @@ const Navbar = () => {
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      My Courses
+                      My Modules
                     </Link>
                     <Link
                       to="/dashboard"
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      My Blogs
+                      My Subscription
                     </Link>
                   </div>
                   <hr className="my-1 border-gray-200" />
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300"
+                    className="w-full text-left px-4 py-2 text-red-700 hover:bg-gray-100 transition duration-300"
                   >
                     Logout
                   </button>
@@ -295,7 +295,7 @@ const Navbar = () => {
                     className={`${
                       user?.avatar
                         ? "h-8 w-8 object-cover rounded-full"
-                        : "h-6 w-6"
+                        : "h-6 w-6 object-cover rounded-full"
                     }`}
                   />
                   <span className="ml-2 text-black">{user.name}</span>

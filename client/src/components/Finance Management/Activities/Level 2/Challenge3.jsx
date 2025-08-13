@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lottie from "lottie-react";
 import { useFinance } from "../../../../contexts/FinanceContext";
-import { usePerformance } from "@/contexts/PerformanceContext"; // for performance
-
+import { usePerformance } from "@/contexts/PerformanceContext";
 
 // Lottie animations
 import superheroAnimation from "../../../../lotties/superhero.json";
@@ -53,6 +52,8 @@ const getLottieAnimation = (category) => {
 
 const Challenge3 = () => {
   const { completeFinanceChallenge } = useFinance();
+  const { updatePerformance } = usePerformance();
+
   const [step, setStep] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [expenseLimit, setExpenseLimit] = useState("");
@@ -64,10 +65,10 @@ const Challenge3 = () => {
   const [feedbackLog, setFeedbackLog] = useState([]);
   const [lastFeedback, setLastFeedback] = useState("");
   const [currentAction, setCurrentAction] = useState("");
+  const [startTime, setStartTime] = useState(Date.now());
 
-  const { updatePerformance } = usePerformance(); // for performance
- const [startTime,setStartTime] = useState(Date.now()); // for performance
-
+  // Track winner state
+  const [parsedWinner, setParsedWinner] = useState(null);
 
   const getTotalSpent = () =>
     [...sortedItems.needNow].reduce((sum, item) => sum + item.price, 0);
@@ -78,12 +79,12 @@ const Challenge3 = () => {
 
   const handleSort = (category) => {
     const item = items[step];
+    if (!item) return;
+
     const total = getTotalSpent();
     const feedback = getFeedback(item, category, total, Number(expenseLimit));
-    const lottieType = getLottieAnimation(category);
 
     setCurrentAction(category);
-
     setSortedItems((prev) => ({
       ...prev,
       [category]: [...prev[category], item],
@@ -97,6 +98,29 @@ const Challenge3 = () => {
       setStep((prev) => prev + 1);
     }, 2000);
   };
+
+  // Post-game effects
+  useEffect(() => {
+    if (step >= items.length && expenseLimit) {
+      const overspent = getTotalSpent() > Number(expenseLimit);
+      setParsedWinner(!overspent);
+
+      if (!overspent) {
+        completeFinanceChallenge(1, 2);
+        const totalTimeSec = (Date.now() - startTime) / 1000;
+        updatePerformance({
+          moduleName: "Finance",
+          topicName: "bankingExpert",
+          score: 10,
+          accuracy: 100,
+          avgResponseTimeSec: totalTimeSec / items.length,
+          studyTimeMinutes: Math.ceil(totalTimeSec / 60),
+          completed: true,
+        });
+        setStartTime(Date.now());
+      }
+    }
+  }, [step, expenseLimit]);
 
   if (!expenseLimit) {
     return (
@@ -130,45 +154,33 @@ const Challenge3 = () => {
 
   if (step >= items.length) {
     const overspent = getTotalSpent() > Number(expenseLimit);
-    if (!overspent) {
-      completeFinanceChallenge(1, 2); // mark challenge completed
-
-      // for performance
-      const totalTimeSec = (Date.now() - startTime) / 1000;
-      updatePerformance({
-        moduleName: "Finance",
-        topicName: "bankingExpert",
-        score: 10,
-        accuracy: 100,
-        avgResponseTimeSec: totalTimeSec / items.length,
-        studyTimeMinutes: Math.ceil(totalTimeSec / 60),
-        completed: true,
-       
-      });
-      setStartTime(Date.now());
-    }
-
     return (
       <motion.div
         className="max-w-full sm:max-w-3xl mx-auto mt-6 px-4 py-6 bg-white rounded-xl shadow-xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <h2 className="text-2xl font-bold text-center text-green-600 mb-4">
-          🎉 Game Over
+        <h2
+          className={`text-2xl font-bold text-center mb-4 ${
+            overspent ? "text-red-600" : "text-green-600"
+          }`}
+        >
+          {overspent ? "❌ You overspent" : "🎉 You Win!"}
         </h2>
         <p className="text-center mb-2">
           🧾 Total Spent: ₹{getTotalSpent()} / ₹{expenseLimit}
         </p>
         <p
-          className={`text-center font-bold ${overspent ? "text-red-500" : "text-green-500"
-            }`}
+          className={`text-center font-bold ${
+            overspent ? "text-red-500" : "text-green-500"
+          }`}
         >
           {overspent
-            ? "❌ You overspent. Try skipping more next time!"
-            : "✅ Great job! You stayed within budget!"}
+            ? "Try skipping more next time!"
+            : "Great job! You stayed within budget!"}
         </p>
 
+        {/* Feedback Summary */}
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {["needNow", "wantLater", "skipIt"].map((cat) => (
             <div key={cat} className="bg-gray-100 p-4 rounded shadow">
@@ -225,7 +237,6 @@ const Challenge3 = () => {
       animate={{ opacity: 1 }}
     >
       <div className="flex flex-col md:flex-row gap-6 items-center">
-        {/* Right side - Content */}
         <div className="w-full md:w-1/2">
           <h2 className="text-2xl font-bold text-center text-blue-600 mb-4">
             🛍️ Budget Choice

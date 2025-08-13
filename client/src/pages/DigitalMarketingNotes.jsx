@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, ChevronDown, BookOpen, TrendingUp, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 import Section1dm from "./DMsections/Section1dm";
 import Section2dm from "./DMsections/Section2dm";
@@ -250,7 +251,8 @@ const DigitalMarketingFullNotes = () => {
     <div className="min-h-screen bg-gray-50">
       {/* HERO SECTION (only show when no grade is selected) */}
       {!selectedGrade && (
-        <div className="h-[100vh] relative overflow-hidden bg-gradient-to-r from-[#1e2b16] via-[#2f4f2f] to-[#1a2e1a]">
+        <div className="h-[100vh] relative overflow-hidden bg-[#006724]">
+          <Navbar />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,...')] opacity-10"></div>
           <div className="relative max-w-7xl mx-auto px-6 py-10">
             <motion.div
@@ -259,7 +261,7 @@ const DigitalMarketingFullNotes = () => {
               transition={{ duration: 0.8 }}
               className="text-center"
             >
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 xl:mt-30 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 xl:mt-10 leading-tight">
                 Welcome to Digital Marketing!
                 <br />
               </h1>
@@ -308,7 +310,9 @@ const DigitalMarketingFullNotes = () => {
 
       {/* NOTES SECTION */}
       {selectedGrade === "6-8" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -358,10 +362,13 @@ const DigitalMarketingFullNotes = () => {
             {renderGradeNotes()}
           </main>
         </div>
+        </div>
       )}
 
       {selectedGrade === "9-10" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -411,10 +418,13 @@ const DigitalMarketingFullNotes = () => {
             {renderGradeNotes()}
           </main>
         </div>
+        </div>
       )}
 
       {selectedGrade === "11-12" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+           <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -460,6 +470,7 @@ const DigitalMarketingFullNotes = () => {
           >
             {renderGradeNotes()}
           </main>
+        </div>
         </div>
       )}
     </div>

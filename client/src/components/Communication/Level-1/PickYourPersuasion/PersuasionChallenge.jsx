@@ -37,6 +37,7 @@ const PersuasionGame = () => {
   // ✅ for performance
   const { updatePerformance } = usePerformance();
   const [startTime, setStartTime] = useState(Date.now());
+  const [isCorrect, setIsCorrect] = useState(false);
 
   const handleReasonClick = (reason) => {
     setSelectedReasons((prev) =>

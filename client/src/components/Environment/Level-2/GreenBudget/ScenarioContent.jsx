@@ -87,14 +87,14 @@ const ScenarioContent = () => {
                   ₹150
                 </span>
               </div>
-              <div className="flex w-[12vw] pt-0 pr-[1.4vw] pb-0 pl-[1.2vw] flex-col items-end shrink-0 flex-nowrap relative z-[33]">
+              <div className="flex pt-0 pr-[2.2vw] pb-0 pl-[1.2vw] flex-col items-end shrink-0 flex-nowrap relative z-[33]">
                 <div className="flex justify-center items-center self-stretch shrink-0 flex-nowrap relative z-[34]">
                   <span className="flex w-[7.1vw] h-[2.7vh] justify-center items-center shrink-0 basis-auto font-['Inter'] text-[0.9vw] font-medium leading-[2.7vh] text-[#f1f7fb] relative text-center whitespace-nowrap z-[35]">
                     Poster Printouts
                   </span>
                 </div>
               </div>
-              <div className="w-[1.4vw] h-[2.6vh] shrink-0 bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/uYOeyhaVdV.png)] bg-cover bg-no-repeat relative overflow-hidden z-[41]" />
+              <div className="w-[1.3vw] h-[2.4vh] shrink-0 bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/uYOeyhaVdV.png)] bg-cover bg-no-repeat relative overflow-hidden z-[41]" />
             </div>
 
             {/* --- Item 4: Packaged Water (Untouched) --- */}

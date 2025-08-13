@@ -86,7 +86,7 @@ const MatchTermsGameResult = () => {
   }
 
   const handlePlayAgain = () => {
-    navigate("/match-terms-game"); // or wherever your main game starts
+    navigate("/MatchTermsGame"); // or wherever your main game starts
   };
 
   // Get correct answer for a brand
