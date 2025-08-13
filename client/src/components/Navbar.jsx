@@ -127,8 +127,8 @@ const Navbar = () => {
                   alt="User Dashboard"
                   className={`${
                     user?.avatar
-                      ? "h-10 w-10 object-cover rounded-full"
-                      : "h-10 w-9 object-cover rounded-full"
+                      ? "h-10 w-10 object-cover rounded-full border-2 border-green-500"
+                      : "h-10 w-9 object-cover rounded-full border-2 border-green-500"
                   }`}
                 />
                 <span className="text-green-700 font-medium">{user.name}</span>

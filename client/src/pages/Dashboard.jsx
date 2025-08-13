@@ -864,7 +864,7 @@ const Dashboard = () => {
                         : "grayscale(100%)",
                   }}
                 />
-                <span className="font-bold">My Subscriptions</span>
+                <span className="font-bold">My Subscription</span>
               </button>
             )}
 
@@ -968,7 +968,7 @@ const Dashboard = () => {
                     : "grayscale(100%)",
               }}
             />
-            <span className="text-xs">Subs</span>
+            <span className="text-xs">Sub</span>
           </button>
         )}
 
