@@ -55,7 +55,7 @@ const courses = [
   },
   {
     id: 2,
-    title: "Computer Science",
+    title: "Computers and Artificial Intelligence-Computer Science",
     description:
       "Dive into programming, algorithms, and software development with hands-on projects and real-world applications.",
     image:
@@ -231,14 +231,14 @@ const CourseCard = ({
   const isPurchased = isModulePurchased(moduleKey);
 
   // Debug logging for trial access
-  console.log('CourseCard:', course.title, {
+  console.log("CourseCard:", course.title, {
     moduleKey,
     hasAccess,
     hasGamesAccess,
     cardCurrentPlan,
     remainingDays,
     isPurchased,
-    userSubscriptions: userSubscriptions?.length || 0
+    userSubscriptions: userSubscriptions?.length || 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -405,7 +405,9 @@ const CourseCard = ({
                   alt="Game"
                   className="w-5 h-5 opacity-70"
                 />
-                {cardCurrentPlan === "STARTER" ? "Upgrade for Full Access" : "Upgrade >"}
+                {cardCurrentPlan === "STARTER"
+                  ? "Upgrade for Full Access"
+                  : "Upgrade >"}
               </motion.button>
             </Link>
           )}
@@ -515,8 +517,6 @@ const Courses = () => {
   const filtersRef = useRef(null);
   const [forceRefresh, setForceRefresh] = useState(0);
   const [_accessControl, setAccessControl] = useState(null);
-
-
 
   // Initialize accessControl class instance for more complex operations when needed
   useEffect(() => {
@@ -891,8 +891,6 @@ const Courses = () => {
         ref={coursesRef}
         className="max-w-7xl mx-auto px-6 py-12 pb-28 sm:mb-8 mb-80"
       >
-
-
         {filteredCourses.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
