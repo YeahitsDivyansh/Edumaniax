@@ -1937,11 +1937,11 @@ const Dashboard = () => {
             {selectedSection === "subscriptions" && (
               <div className="max-w-6xl mx-auto px-6 pt-6">
                 {/* DASHBOARD HEADER */}
-                <div className="bg-[#068F36] text-5xl font-bold text-center px-10 py-4 rounded-md shadow-sm mb-8">
-                  <span className="text-white" style={{ opacity: 0.72 }}>
-                    MY SUBSCRIPTIONS
-                  </span>
-                </div>
+                <div className="bg-white w-full max-w-6xl rounded-lg shadow-sm px-6 py-4 mb-6">
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    My Subscription
+                  </h2>
+                </div>
 
                 {/* Current Plan Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">

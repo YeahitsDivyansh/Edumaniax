@@ -62,14 +62,14 @@ const notesSidebar9to10 = [
 ];
 
 const notesSidebar11to12 = [
-  { id: "s-1", title: "Unit 1: Introduction" },
-  { id: "s-2", title: "Unit 2: Verbal & Non-Verbal " },
-  { id: "s-3", title: "Unit 3: Persuasion & Influence" },
-  { id: "s-4", title: "Unit 4: Conflict Resolution " },
-  { id: "s-5", title: "Unit 5: Professional " },
-  { id: "s-6", title: "Unit 6: Digital & Social Media" },
-  { id: "s-7", title: "Unit 7: Leadership & Collaboration" },
-  { id: "s-8", title: "Unit 8: Leadership & Collaboration" },
+  { id: "s-1", title: "Unit 1: Strategic Entrepreneurship " },
+  { id: "s-2", title: "Unit 2: Venture Design Framework " },
+  { id: "s-3", title: "Unit 3: Go-To-Market Strategy" },
+  { id: "s-4", title: "Unit 4: Financial Modelling" },
+  { id: "s-5", title: "Unit 5: AI x Entrepreneurship" },
+  { id: "s-6", title: "Unit 6: Innovation " },
+  { id: "s-7", title: "Unit 7: Pitch, Fund, and Scale!" },
+  { id: "s-8", title: "Unit 8: Impact Entrepreneurship" },
 
 ];
 
@@ -337,7 +337,7 @@ const DigitalMarketingFullNotes = () => {
                   : "-translate-x-full md:translate-x-0"
                 }`}
             >
-              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+              <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
                 Entrepreneurship
 
               </h2>
@@ -346,8 +346,8 @@ const DigitalMarketingFullNotes = () => {
                   <li
                     key={section.id}
                     data-scroll-id={section.id}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${activeId === section.id
-                        ? "bg-green-100 text-green-800 font-semibold border-l-4 border-green-500"
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20${activeId === section.id
+                        ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
                         : "hover:bg-green-50 text-gray-800"
                       }`}
                     onClick={() => scrollTo(section.id)}
@@ -392,7 +392,7 @@ const DigitalMarketingFullNotes = () => {
                   : "-translate-x-full md:translate-x-0"
                 }`}
             >
-              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+              <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
                 Entrepreneurship
 
               </h2>
@@ -444,7 +444,7 @@ const DigitalMarketingFullNotes = () => {
         shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
                 }`}
             >
-              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+              <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
                 Entrepreneurship
               </h2>
               <ul className="space-y-3">
@@ -452,9 +452,9 @@ const DigitalMarketingFullNotes = () => {
                   <li
                     key={section.id}
                     data-scroll-id={section.id}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${activeId === section.id
-                        ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                        : "hover:bg-blue-50 text-gray-800"
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20${activeId === section.id
+                        ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                        : "hover:bg-green-50 text-gray-800"
                       }`}
                     onClick={() => scrollTo(section.id)}
                   >
