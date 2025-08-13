@@ -772,7 +772,7 @@ const DigitalMarketingFullNotes = () => {
         showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
     >
-      <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+      <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
         Social Learning
       </h2>
       <ul className="space-y-3">
