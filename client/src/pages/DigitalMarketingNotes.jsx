@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, ChevronDown, BookOpen, TrendingUp, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 import Section1dm from "./DMsections/Section1dm";
 import Section2dm from "./DMsections/Section2dm";
@@ -250,7 +251,8 @@ const DigitalMarketingFullNotes = () => {
     <div className="min-h-screen bg-gray-50">
       {/* HERO SECTION (only show when no grade is selected) */}
       {!selectedGrade && (
-        <div className="h-[100vh] relative overflow-hidden bg-gradient-to-r from-[#1e2b16] via-[#2f4f2f] to-[#1a2e1a]">
+        <div className="h-[100vh] relative overflow-hidden bg-[#006724]">
+          <Navbar />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,...')] opacity-10"></div>
           <div className="relative max-w-7xl mx-auto px-6 py-10">
             <motion.div
@@ -259,7 +261,7 @@ const DigitalMarketingFullNotes = () => {
               transition={{ duration: 0.8 }}
               className="text-center"
             >
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 xl:mt-30 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 xl:mt-10 leading-tight">
                 Welcome to Digital Marketing!
                 <br />
               </h1>
@@ -308,7 +310,9 @@ const DigitalMarketingFullNotes = () => {
 
       {/* NOTES SECTION */}
       {selectedGrade === "6-8" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -327,7 +331,7 @@ const DigitalMarketingFullNotes = () => {
                   : "-translate-x-full md:translate-x-0"
               }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Digital Marketing
             </h2>
             <ul className="space-y-3">
@@ -358,10 +362,13 @@ const DigitalMarketingFullNotes = () => {
             {renderGradeNotes()}
           </main>
         </div>
+        </div>
       )}
 
       {selectedGrade === "9-10" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -380,7 +387,7 @@ const DigitalMarketingFullNotes = () => {
                   : "-translate-x-full md:translate-x-0"
               }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Digital Marketing
             </h2>
             <ul className="space-y-3">
@@ -388,10 +395,10 @@ const DigitalMarketingFullNotes = () => {
                 <li
                   key={section.id}
                   data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
                     activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
+                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                        : "hover:bg-green-50 text-gray-800"
                   }`}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -411,10 +418,13 @@ const DigitalMarketingFullNotes = () => {
             {renderGradeNotes()}
           </main>
         </div>
+        </div>
       )}
 
       {selectedGrade === "11-12" && (
-        <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+        <div>
+          <Navbar />
+           <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
           {/* Toggle for mobile */}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
@@ -430,7 +440,7 @@ const DigitalMarketingFullNotes = () => {
           showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Digital Marketing
             </h2>
             <ul className="space-y-3">
@@ -438,10 +448,10 @@ const DigitalMarketingFullNotes = () => {
                 <li
                   key={section.id}
                   data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
                     activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
+                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                      : "hover:bg-green-50 text-gray-800"
                   }`}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -460,6 +470,7 @@ const DigitalMarketingFullNotes = () => {
           >
             {renderGradeNotes()}
           </main>
+        </div>
         </div>
       )}
     </div>

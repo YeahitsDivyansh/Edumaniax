@@ -1,12 +1,21 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Star, ChevronDown, X } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Star, 
+  ChevronDown, 
+  X,
+  CheckCircle,
+  Building,
+  Users,
+  Loader2
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { FaArrowUp } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
-import emailjs from "@emailjs/browser";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -173,38 +182,41 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
+      // Send free trial request to sales dashboard
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/free-trial`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fullName: formData.fullName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            class: formData.class,
+            state: formData.state,
+            city: formData.city
+          })
+        }
+      );
 
-      const serviceId = 'service_52co609';
-      const templateId = 'template_50ibn0n';
-      const publicKey = 'zgnJuM3MRywVUxjcR';
+      if (!response.ok) {
+        throw new Error('Failed to submit request');
+      }
 
-      const templateParams = {
-        to_email: "anujyelve3074@gmail.com",
-        subject: "New Free Trial Request",
-        name: formData.fullName,
-        email: formData.email,
-        phone: formData.phoneNumber,
-        class: formData.class,
-        state: formData.state,
-        city: formData.city,
-        message: `A new user wants to book a free trial:
-        Name: ${formData.fullName}
-        Email: ${formData.email}
-        Phone Number: ${formData.phoneNumber}
-        Class: ${formData.class}
-        State: ${formData.state}
-        City: ${formData.city}`
-      };
-
-      await emailjs.send(serviceId, templateId, templateParams, publicKey);
-
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      const result = await response.json();
+      
+      if (result.success) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+      } else {
+        throw new Error(result.message || 'Failed to submit request');
+      }
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error submitting free trial request:", error);
       setError("Failed to send request. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -910,6 +922,441 @@ const StudentFeedbackCarousel = () => {
   );
 };
 
+// Plans data for both Home and InstitutionalContactModal
+const plans = [
+  {
+    title: "STARTER PLAN",
+    price: "₹0",
+    frequency: "7 Days Free Trial",
+    description: "Perfect to explore and get started.",
+    features: [
+      "Access to 1 free game/module",
+      "Notes for the selected module",
+      "Access to basic learning tools",
+      "7 days trial period",
+      { text: "No access to premium modules", excluded: true },
+      { text: "No AI powered personalized assessment", excluded: true },
+      { text: "No completion certificates", excluded: true },
+    ],
+    button: "Start Free Trial",
+  },
+  {
+    title: "SOLO PLAN",
+    price: "₹199",
+    frequency: "Per member, per 1 Month",
+    description: "Ideal for focused learning on a specific topic.",
+    features: [
+      "Access to 1 premium module of choice",
+      "Notes for the selected module",
+      "Interactive activities and assessments",
+      "Completion certificates",
+      { text: "No access to all premium modules", excluded: true },
+      { text: "No AI powered personalized assessment", excluded: true },
+    ],
+    button: "Start Now",
+  },
+  {
+    title: "PRO PLAN",
+    price: "₹1433",
+    frequency: "Per member, per 6 Month",
+    description: "Full learning experience for committed users",
+    features: [
+      "Access to all premium modules",
+      "Notes for every module",
+      "All interactive games and assessments",
+      "AI powered personalized assessment",
+      "Completion certificates for all modules",
+    ],
+    button: "Start Now",
+    tag: "Popular",
+    discount: "Save 20%",
+  },
+  {
+    title: "INSTITUTIONAL PLAN",
+    price: "Custom",
+    frequency: "Per member, per Month",
+    description: "Tailored for bulk use with flexibility.",
+    features: [
+      "Access for 30+ users",
+      "All modules notes & games included",
+      "Custom onboarding & priority support",
+      "Live Lectures by SME",
+      "AI powered personalized assessment",
+      "Completion certificates",
+    ],
+    button: "Contact Us",
+  },
+];
+
+// Institutional Contact Modal Component
+const InstitutionalContactModal = ({ isOpen, onClose }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    organizationalEmail: '',
+    organization: '',
+    phone: '',
+    employees: '',
+    message: ''
+  });
+  const [formStatus, setFormStatus] = useState(null); // null, 'sending', 'success', 'error'
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormStatus(null);
+      setFormData({
+        name: user?.name || '',
+        email: user?.email || '',
+        organizationalEmail: '',
+        organization: '',
+        phone: '',
+        employees: '',
+        message: ''
+      });
+    }
+  }, [isOpen, user]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic validation for the organizational email
+    if (!formData.organizationalEmail) {
+      alert("Please provide your organization's email address");
+      return;
+    }
+    
+    // Validate if organization name is provided
+    if (!formData.organization) {
+      alert("Please provide your organization name");
+      return;
+    }
+    
+    setFormStatus('sending');
+    
+    try {
+      // Send inquiry to backend with properly mapped field names
+      const mappedData = {
+        contactName: formData.name,
+        contactEmail: formData.email,
+        contactPhone: formData.phone,
+        organizationName: formData.organization,
+        organizationType: formData.employees ? 'Educational' : 'Other', // Default to Educational if not specified
+        studentCount: formData.employees || '30+', // Default to 30+ if not specified
+        message: formData.message,
+        organizationalEmail: formData.organizationalEmail // Additional field
+      };
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mappedData)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit inquiry');
+      }
+      
+      console.log('Institutional plan inquiry submitted:', data);
+      setFormStatus('success');
+      
+      // Redirect after a delay if user is logged in
+      if (user) {
+        setTimeout(() => {
+          onClose();
+          navigate('/dashboard');
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
+      alert(`Failed to submit inquiry: ${error.message}`);
+      setFormStatus(null);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  if (formStatus === 'success') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-green-800 mb-2">Request Sent Successfully!</h1>
+          <p className="text-green-700 mb-4">
+            Thank you for your interest in our Institutional Plan for <strong>{formData.organization}</strong>.
+          </p>
+          <p className="text-gray-700 mb-4">
+            Our team will contact you shortly at <strong>{formData.organizationalEmail}</strong> to discuss your requirements and provide a customized solution.
+          </p>
+          {user && <p className="text-sm text-gray-600">Redirecting to dashboard...</p>}
+          <button
+            onClick={onClose}
+            className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <div
+          className="absolute inset-0"
+          onClick={onClose}
+        />
+
+        <motion.div
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto mt-[5vh] max-h-[90vh] overflow-y-auto"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", duration: 0.3 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 z-10"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+
+          <div className="grid md:grid-cols-2 gap-8 p-8">
+            {/* Institutional Plan Info */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Institutional Plan</h2>
+              
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-xl font-semibold text-green-700 mb-4">Perfect for:</h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                    <span>Schools and educational institutions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                    <span>Corporate training programs</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Users size={20} className="text-green-600 mt-1 shrink-0" />
+                    <span>Organizations with 30+ users</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle size={20} className="text-green-500 mt-1 shrink-0" />
+                    <span>Custom learning requirements</span>
+                  </li>
+                </ul>
+                
+                <div className="mt-4 bg-green-50 p-3 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-800">
+                    <strong>Note:</strong> This plan requires verification of your organizational status. Our team will review your application and contact you for further details.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 bg-green-50 p-6 rounded-2xl border border-green-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Institutional Benefits:</h3>
+                <ul className="space-y-2 text-gray-700">
+                  {plans.find(p => p.title === "INSTITUTIONAL PLAN")?.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle size={16} className="text-green-500 mt-1 shrink-0" />
+                      <span>{typeof feature === 'string' ? feature : feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+              <p className="text-gray-600 mb-6">
+                Please fill out this form to get a custom quote for your organization. Our team will contact you shortly.
+              </p>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Name*
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    readOnly={!!user?.name}
+                    className={`w-full p-3 border ${user?.name ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!user?.name ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                    placeholder="Your name"
+                  />
+                  {user?.name && (
+                    <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email*
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    readOnly={!!user?.email}
+                    className={`w-full p-3 border ${user?.email ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!user?.email ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                    placeholder="Your email"
+                  />
+                  {user?.email && (
+                    <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="organizationalEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                    Organizational Email*
+                  </label>
+                  <input
+                    type="email"
+                    id="organizationalEmail"
+                    name="organizationalEmail"
+                    value={formData.organizationalEmail}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Your organization's email (e.g., info@yourschool.edu)"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-1">
+                    Organization Name*
+                  </label>
+                  <input
+                    type="text"
+                    id="organization"
+                    name="organization"
+                    value={formData.organization}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Your organization"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Your phone number"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Users/Students
+                  </label>
+                  <select
+                    id="employees"
+                    name="employees"
+                    value={formData.employees}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="">Select an option</option>
+                    <option value="30-50">30-50 users</option>
+                    <option value="51-100">51-100 users</option>
+                    <option value="101-500">101-500 users</option>
+                    <option value="500+">500+ users</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    rows="4"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Tell us about your specific requirements..."
+                  ></textarea>
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={formStatus === 'sending'}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                >
+                  {formStatus === 'sending' ? (
+                    <>
+                      <Loader2 className="animate-spin" size={20} />
+                      Sending...
+                    </>
+                  ) : (
+                    'Request Information'
+                  )}
+                </button>
+                
+                <p className="text-xs text-gray-500 mt-4">
+                  By submitting this form, you agree to our Terms of Service and Privacy Policy
+                </p>
+              </form>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const Home = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -917,6 +1364,7 @@ const Home = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
+  const [isInstitutionalModalOpen, setIsInstitutionalModalOpen] = useState(false);
   const [userSubscriptions, setUserSubscriptions] = useState([]);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
@@ -1343,7 +1791,7 @@ useEffect(() => {
 
   const pricingFaqData = [
     {
-      question: "What if I’m not satisfied with EduManiax after joining?",
+      question: "What if I'm not satisfied with EduManiax after joining?",
       answer:
         "No worries! EduManiax offers a 90% refund policy for your peace of mind. Before enrolling, you also get a full demo of the platform, personalized one-on-one interaction, and access to our 24/7 support team to help you at every step.",
       QbgColor: "bg-[#6DEE0E]", // Vivid green
@@ -1376,71 +1824,6 @@ useEffect(() => {
         "Yes! EduManiax currently offers a one-day free trial that grants access to all premium features.",
       QbgColor: "bg-[#FFE7A1]", // Soft yellow
       AbgColor: "bg-[#FFFBE5]", // ☀️ Pale yellow pastel
-    },
-  ];
-
-  const plans = [
-    {
-      title: "STARTER PLAN",
-      price: "₹0",
-      frequency: "7 Days Free Trial",
-      description: "Perfect to explore and get started.",
-      features: [
-        "Access to 1 free game/module",
-        "Notes for the selected module",
-        "Access to basic learning tools",
-        "7 days trial period",
-        { text: "No access to premium modules", excluded: true },
-        { text: "No AI powered personalized assessment", excluded: true },
-        { text: "No completion certificates", excluded: true },
-      ],
-      button: "Start Free Trial",
-    },
-    {
-      title: "SOLO PLAN",
-      price: "₹199",
-      frequency: "Per member, per 1 Month",
-      description: "Ideal for focused learning on a specific topic.",
-      features: [
-        "Access to 1 premium module of choice",
-        "Notes for the selected module",
-        "Interactive activities and assessments",
-        "Completion certificates",
-        { text: "No access to all premium modules", excluded: true },
-        { text: "No AI powered personalized assessment", excluded: true },
-      ],
-      button: "Start Now",
-    },
-    {
-      title: "PRO PLAN",
-      price: "₹1433",
-      frequency: "Per member, per 6 Month",
-      description: "Full learning experience for committed users",
-      features: [
-        "Access to all premium modules",
-        "Notes for every module",
-        "All interactive games and assessments",
-        "AI powered personalized assessment",
-        "Completion certificates for all modules",
-      ],
-      button: "Start Now",
-      tag: "Popular",
-      discount: "Save 20%",
-    },
-    {
-      title: "INSTITUTIONAL PLAN",
-      price: "Custom",
-      frequency: "Per member, per Month",
-      description: "Tailored for bulk use with flexibility.",
-      features: [
-        "Access for 30+ users",
-        "All modules notes & games included",
-        "Custom onboarding & priority support",
-        "Live Lectures by SME",
-        "AI powered personalized assessment",
-        "Completion certificates",
-      ],
-      button: "Contact Us",
     },
   ];
 
@@ -1548,11 +1931,17 @@ useEffect(() => {
         onClose={() => setIsTrialModalOpen(false)}
       />
 
+      {/* Institutional Contact Modal */}
+      <InstitutionalContactModal
+        isOpen={isInstitutionalModalOpen}
+        onClose={() => setIsInstitutionalModalOpen(false)}
+      />
+
       {/* Hero Section */}
       <section className="relative h-[100vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
         <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
           <Navbar/>
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-16  flex-col items-center text-center px-4 sm:px-6">
+          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
             {/* Trust Badge */}
             <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-3 sm:mt-0 md:mt- md:mb-2">
               <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
@@ -1606,7 +1995,7 @@ useEffect(() => {
               </button>
               
               {/* Conditional second button */}
-              {user && hasActiveSubscription ? (
+              {user ? (
                 <button
                   onClick={() => navigate("/dashboard?section=modules")}
                   className="border-2 border-white text-white font-semibold px-4 sm:px-8 py- sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
@@ -2229,6 +2618,12 @@ useEffect(() => {
                 <Link
                   to="/payment-required"
                   className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
+                  onClick={(e) => {
+                    if (plan.title === "INSTITUTIONAL PLAN") {
+                      e.preventDefault();
+                      setIsInstitutionalModalOpen(true);
+                    }
+                  }}
                 >
                   {plan.button}
                 </Link>
