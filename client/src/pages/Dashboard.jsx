@@ -846,23 +846,21 @@ const Dashboard = () => {
             {/* My Subscriptions Button - Only if NOT Admin */}
             {role !== "admin" && (
               <button
-                className={`flex items-center gap-3 hover:text-green-700 ${
+                className={`flex items-center gap-3 hover:text-gray-400 ${
                   selectedSection === "subscriptions"
-                    ? "text-green-600"
+                    ? "text-black"
                     : "text-gray-400"
                 }`}
                 onClick={() => setSelectedSection("subscriptions")}
               >
                 <img
-                  src="/dashboardDesign/profile.svg"
+                  src="/dashboardDesign/subscription.svg"
                   alt="Subscriptions"
-                  className="w-5 h-5"
-                  style={{
-                    filter:
-                      selectedSection === "subscriptions"
-                        ? "grayscale(0%)"
-                        : "grayscale(100%)",
-                  }}
+                  className={`w-5 h-5 transition duration-300 ${
+                    selectedSection === "subscriptions"
+                      ? "filter grayscale-0"
+                      : "filter grayscale"
+                  }`}
                 />
                 <span className="font-bold">My Subscription</span>
               </button>
@@ -958,7 +956,7 @@ const Dashboard = () => {
             onClick={() => setSelectedSection("subscriptions")}
           >
             <img
-              src="/dashboardDesign/profile.svg"
+              src="/dashboardDesign/subscription.svg"
               alt="Subscriptions"
               className="w-5 h-5"
               style={{
