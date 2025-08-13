@@ -81,7 +81,7 @@ const MatchingGameResult = () => {
           🎉 Game Complete! 🎉
         </h1>
         <p className=" text-xs md:text-2xl text-gray-800 mb-6">
-          Your score : {score}/4 🧠✨
+          Your score : {score > 4 ? 4 : score}/4 🧠✨
           <br />
           {remark}
         </p>
