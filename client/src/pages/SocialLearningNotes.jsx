@@ -396,29 +396,29 @@ const gradeOptions = [
 ];
 
 const notesSidebar6to8 = [
-  { id: "1", title: "Section 1: Listen to Understand" },
-  { id: "2", title: "Section 2: Feelings Explorer" },
-  { id: "3", title: "Section 3: Speak with Purpose" },
-  { id: "4", title: "Section 4: Fixing Conflicts" },
-  { id: "5", title: "Section 5: Communicating Online" },
+  { id: "1", title: "Section 1: Knowing Myself" },
+  { id: "2", title: "Section 2: Positive Relationships" },
+  { id: "3", title: "Section 3: Handling Stress" },
+  { id: "4", title: "Section 4: Self-Discipline" },
+  { id: "5", title: "Section 5: Decision Making" },
 ];
 
 const notesSidebar9to10 = [
-  { id: "m-1", title: "Module 1: Introduction" },
-  { id: "m-2", title: "Module 2: Active Listening " },
-  { id: "m-3", title: "Module 3: Speaking" },
-  { id: "m-4", title: "Module 4: Tone and Body Language" },
-  { id: "m-5", title: "Module 5: Conflict Resolution " },
-  { id: "m-6", title: "Module 6: Public Speaking " },
+  { id: "m-1", title: "Module 1: Understanding Yourself" },
+  { id: "m-2", title: "Module 2: Positive Relationships" },
+  { id: "m-3", title: "Module 3: Handling Stress" },
+  { id: "m-4", title: "Module 4: Self-Discipline" },
+  { id: "m-5", title: "Module 5: Decision Making " },
+  { id: "m-6", title: "Module 6: Personal Values " },
 ];
 
 const notesSidebar11to12 = [
-  { id: "s-1", title: "Unit 1: Introduction" },
-  { id: "s-2", title: "Unit 2: Verbal & Non-Verbal " },
-  { id: "s-3", title: "Unit 3: Persuasion & Influence" },
-  { id: "s-4", title: "Unit 4: Conflict Resolution " },
-  { id: "s-5", title: "Unit 5: Professional " },
-  { id: "s-6", title: "Unit 6: Digital & Social Media" },
+  { id: "s-1", title: "Unit 1: Inner Awareness" },
+  { id: "s-2", title: "Unit 2: Human Dynamics " },
+  { id: "s-3", title: "Unit 3: Emotional Mastery" },
+  { id: "s-4", title: "Unit 4: Self-Leadership " },
+  { id: "s-5", title: "Unit 5: Ethical Reasoning " },
+  { id: "s-6", title: "Unit 6: Evolving Identity " },
  
 
 ];
@@ -667,7 +667,7 @@ const DigitalMarketingFullNotes = () => {
                 : "-translate-x-full md:translate-x-0"
             }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Social Learning
               
             </h2>
@@ -721,7 +721,7 @@ const DigitalMarketingFullNotes = () => {
                 : "-translate-x-full md:translate-x-0"
             }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Social Learning
               
             </h2>
@@ -730,10 +730,10 @@ const DigitalMarketingFullNotes = () => {
                 <li
                   key={section.id}
                   data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20${
                     activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
+                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                      : "hover:bg-green-50 text-gray-800"
                   }`}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -780,10 +780,10 @@ const DigitalMarketingFullNotes = () => {
           <li
             key={section.id}
             data-scroll-id={section.id}
-            className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+            className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20${
               activeId === section.id
-                ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                : "hover:bg-blue-50 text-gray-800"
+                ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                : "hover:bg-green-50 text-gray-800"
             }`}
             onClick={() => scrollTo(section.id)}
           >

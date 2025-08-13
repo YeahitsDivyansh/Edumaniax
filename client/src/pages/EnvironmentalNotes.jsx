@@ -414,11 +414,11 @@ const notesSidebar9to10 = [
 
 
 const notesSidebar11to12 = [
-  { id: "s-1", title: "Unit 1: Introduction" },
-  { id: "s-2", title: "Unit 2: Verbal & Non-Verbal " },
-  { id: "s-3", title: "Unit 3: Persuasion & Influence" },
-  { id: "s-4", title: "Unit 4: Conflict Resolution " },
-  { id: "s-5", title: "Unit 5: Professional " },
+  { id: "s-1", title: "Unit 1: Biogeochemical Cycles" },
+  { id: "s-2", title: "Unit 2: Environmental Health" },
+  { id: "s-3", title: "Unit 3: Environmental Ethics" },
+  { id: "s-4", title: "Unit 4: India and Sustainability " },
+  { id: "s-5", title: "Unit 5: Environmental Laws" },
   
 
 ];
@@ -665,7 +665,7 @@ const DigitalMarketingFullNotes = () => {
                 : "-translate-x-full md:translate-x-0"
             }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Environmental
               
             </h2>
@@ -674,10 +674,10 @@ const DigitalMarketingFullNotes = () => {
                 <li
                   key={section.id}
                   data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
                     activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
+                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                      : "hover:bg-green-50 text-gray-800"
                   }`}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -719,7 +719,7 @@ const DigitalMarketingFullNotes = () => {
                 : "-translate-x-full md:translate-x-0"
             }`}
           >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+            <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
               Environmental
               
             </h2>
@@ -770,7 +770,7 @@ const DigitalMarketingFullNotes = () => {
         showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
     >
-      <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+      <h2 className="text-xl font-bold text-green-700 mb-6 px-2">
         Environmental
       </h2>
       <ul className="space-y-3">
@@ -778,10 +778,10 @@ const DigitalMarketingFullNotes = () => {
           <li
             key={section.id}
             data-scroll-id={section.id}
-            className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
+            className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
               activeId === section.id
-                ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                : "hover:bg-blue-50 text-gray-800"
+                ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                : "hover:bg-green-50 text-gray-800"
             }`}
             onClick={() => scrollTo(section.id)}
           >
