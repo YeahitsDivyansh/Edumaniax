@@ -435,13 +435,24 @@ const Payment = () => {
       setFormStatus('sending');
       
       try {
-        // Send inquiry to backend
+        // Send inquiry to backend with properly mapped field names
+        const mappedData = {
+          contactName: formData.name,
+          contactEmail: formData.email,
+          contactPhone: formData.phone,
+          organizationName: formData.organization,
+          organizationType: formData.employees ? 'Educational' : 'Other', // Default to Educational if not specified
+          studentCount: formData.employees || '30+', // Default to 30+ if not specified
+          message: formData.message,
+          organizationalEmail: formData.organizationalEmail // Additional field
+        };
+        
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(mappedData)
         });
         
         const data = await response.json();

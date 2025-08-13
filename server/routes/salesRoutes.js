@@ -1,22 +1,43 @@
 import express from 'express';
 import { 
-  createInstitutionalInquiry,
+  createInstitutionalInquiry, 
   getInquiries, 
-  updateInquiry,
+  updateInquiry, 
   getSalesAnalytics,
-  handlePaymentWebhook
+  handlePaymentWebhook,
+  createFreeTrialRequest,
+  getFreeTrialRequests,
+  updateFreeTrialStatus,
+  getNotificationsByType,
+  deleteInquiry,
+  deleteFreeTrialRequest,
+  verifyDataIntegrity
 } from '../controllers/salesController.js';
-import { checkAuth, checkRole } from '../middlewares/authMiddleware.js';
-
-const router = express.Router();
+import authenticateUser from '../middlewares/authMiddleware.js';
+import checkRole from '../middlewares/roleMiddleware.js';const router = express.Router();
 
 // Public route for creating inquiries (from contact form)
 router.post('/inquiries', createInstitutionalInquiry);
 
+// Public route for creating free trial requests
+router.post('/free-trial', createFreeTrialRequest);
+
 // Protected routes requiring authentication and sales/admin role
-router.get('/inquiries', checkAuth, checkRole(['ADMIN', 'SALES']), getInquiries);
-router.put('/inquiries/:id', checkAuth, checkRole(['ADMIN', 'SALES']), updateInquiry);
-router.get('/analytics', checkAuth, checkRole(['ADMIN', 'SALES']), getSalesAnalytics);
+router.get('/inquiries', authenticateUser, checkRole(['ADMIN', 'SALES']), getInquiries);
+router.put('/inquiries/:id', authenticateUser, checkRole(['ADMIN', 'SALES']), updateInquiry);
+router.delete('/inquiries/:id', authenticateUser, checkRole(['ADMIN', 'SALES']), deleteInquiry);
+router.get('/analytics', authenticateUser, checkRole(['ADMIN', 'SALES']), getSalesAnalytics);
+
+// Free trial routes
+router.get('/free-trial', authenticateUser, checkRole(['ADMIN', 'SALES']), getFreeTrialRequests);
+router.put('/free-trial/:id', authenticateUser, checkRole(['ADMIN', 'SALES']), updateFreeTrialStatus);
+router.delete('/free-trial/:id', authenticateUser, checkRole(['ADMIN', 'SALES']), deleteFreeTrialRequest);
+
+// Notifications route
+router.get('/notifications', authenticateUser, checkRole(['ADMIN', 'SALES']), getNotificationsByType);
+
+// Data verification route (for debugging)
+router.get('/verify-data', authenticateUser, checkRole(['ADMIN', 'SALES']), verifyDataIntegrity);
 
 // Webhook endpoint for payment notifications
 router.post('/payment-webhook', handlePaymentWebhook);
