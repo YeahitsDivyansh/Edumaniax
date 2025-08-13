@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Trophy, Star, RotateCcw, Home, Clock, Target } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
+import { usePerformance } from "@/contexts/PerformanceContext";
 
 const ExternalityDetectiveGame = () => {
   const { completeEnvirnomentChallenge } = useEnvirnoment();
@@ -278,7 +279,7 @@ const ExternalityDetectiveGame = () => {
     const timeTakenSec = Math.floor((endTime - startTime) / 1000);
     const studyTimeMin = Math.ceil(timeTakenSec / 60);
     const accuracy = matchedPairs.length / cards.length;
-
+    const finalScore = score + (isWinner ? Math.max(0, timeLeft * 10) : 0);
     // Scale score out of 10
     const maxPossibleScore = cardPairs.length * 2 * 100 + 60 * 5; // match points + max move bonus
     const scaledScore = parseFloat(((finalScore / maxPossibleScore) * 10).toFixed(2));

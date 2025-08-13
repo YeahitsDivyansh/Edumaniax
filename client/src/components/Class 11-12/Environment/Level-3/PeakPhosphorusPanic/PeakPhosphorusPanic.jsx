@@ -105,7 +105,7 @@ const PeakPhosphorusPanic = () => {
       updatePerformance({
         moduleName: "Environment",
         topicName: "sustainableLeader",
-        score: Math.round((score / cards.length) * 10),
+        score: Math.round((score / scenarios.length) * 10),
         accuracy: parseFloat(((score / scenarios.length) * 100).toFixed(2)),
         avgResponseTimeSec: parseFloat((totalTimeMs / scenarios.length / 1000).toFixed(2)),
         studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),

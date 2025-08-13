@@ -57,13 +57,6 @@ const modulesfor6to8 = [
         duration: "50 min",
         path: "/legal-quiz",
       },
-      {
-        title: "Boss-Level Task: “Legal Around Me”",
-        description:
-          "Objective: Identify 3 real-life examples of laws in action.",
-        duration: "55 min",
-        path: "/legal-around-me",
-      },
     ],
   },
   {
@@ -83,13 +76,6 @@ const modulesfor6to8 = [
         duration: "50 min",
         path: "/catch-your-rights",
       },
-      {
-        title: "Boss-Level Task: “My Rights Journal”",
-        description:
-          "Objective: Reflect on 2 rights you use in your daily life.",
-        duration: "55 min",
-        path: "/rights-journal",
-      },
     ],
   },
   {
@@ -101,12 +87,6 @@ const modulesfor6to8 = [
         description: "Objective: Simulate a basic courtroom case with roles.",
         duration: "50 min",
         path: "/case-hear",
-      },
-      {
-        title: "Boss-Level Task: “Present Your Case”",
-        description: "Objective: Write and present your side of a simple case.",
-        duration: "55 min",
-        path: "/present-your-case",
       },
     ],
   },
@@ -120,13 +100,6 @@ const modulesfor6to8 = [
           "Objective: Break through several legal awareness questions.",
         duration: "50 min",
         path: "/maze-of-choices",
-      },
-      {
-        title: "Boss-Level Task: “Know the Law Scorecard”",
-        description:
-          "Objective: Reflect on what legal rights or duties you didn’t know before.",
-        duration: "55 min",
-        path: "/law-scorecard",
       },
     ],
   },
@@ -144,13 +117,13 @@ const modulesfor9to10 = [
         duration: "45 min",
         path: "/MatchTermsGame", // ✅
       },
-      {
-        title: "Legal Quiz Quest (Modular MCQ)",
-        description:
-          "Objective: Answer module-wise legal questions. Unlock next after a correct answer. Optional timer mode.",
-        duration: "50 min",
-        path: "/LegalQuizQuestLevel1", // Add this route if not yet created
-      },
+      //{
+      //   title: "Legal Quiz Quest (Modular MCQ)",
+      //   description:
+      //     "Objective: Answer module-wise legal questions. Unlock next after a correct answer. Optional timer mode.",
+      //   duration: "50 min",
+      //   path: "/LegalQuizQuestLevel1", // Add this route if not yet created
+      // },
       {
         title: "Boss-Level Task: MatchTermsGame Result",
         description:
@@ -172,13 +145,13 @@ const modulesfor9to10 = [
         duration: "50 min",
         path: "/JusticeThroneGame", // ✅
       },
-      {
-        title: "Boss-Level Task: Character Reflection",
-        description:
-          "Objective: Reflect on the role you played (Majesty, King, Minister) and one decision you would rethink.",
-        duration: "10 min",
-        path: "/justice-role-reflection", // Add if desired
-      },
+      // {
+      //   title: "Boss-Level Task: Character Reflection",
+      //   description:
+      //     "Objective: Reflect on the role you played (Majesty, King, Minister) and one decision you would rethink.",
+      //   duration: "10 min",
+      //   path: "/justice-role-reflection", // Add if desired
+      // },
     ],
   },
   {
@@ -192,13 +165,13 @@ const modulesfor9to10 = [
         duration: "50 min",
         path: "/LegalQuizQuestLevel3", // ✅
       },
-      {
-        title: "Boss-Level Task: Badge Claim & Review",
-        description:
-          "Objective: Reflect on your score, retry missed modules, and claim your Legal Whiz badge.",
-        duration: "10 min",
-        path: "/legal-whiz-review", // Add if desired
-      },
+      // {
+      //   title: "Boss-Level Task: Badge Claim & Review",
+      //   description:
+      //     "Objective: Reflect on your score, retry missed modules, and claim your Legal Whiz badge.",
+      //   duration: "10 min",
+      //   path: "/legal-whiz-review", // Add if desired
+      // },
     ],
   },
 ];
