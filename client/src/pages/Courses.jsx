@@ -23,15 +23,15 @@ import CoursesSkeleton from "@/CoursesDesign/CoursesSkeleton";
 
 // Module mapping for access control - centralized to avoid duplication
 const MODULE_MAPPING = {
-  'Fundamentals of Finance': 'finance',
-  'Computer Science': 'computers', 
-  'Fundamentals of Law': 'law',
-  'Communication Mastery': 'communication',
-  'Entrepreneurship Bootcamp': 'entrepreneurship',
-  'Digital Marketing Pro': 'digital-marketing',
-  'Leadership & Adaptability': 'leadership', 
-  'Environmental Sustainability': 'environment',
-  'Wellness & Mental Health': 'sel',
+  "Fundamentals of Finance": "finance",
+  "Computer Science": "computers",
+  "Fundamentals of Law": "law",
+  "Communication Mastery": "communication",
+  "Entrepreneurship Bootcamp": "entrepreneurship",
+  "Digital Marketing Pro": "digital-marketing",
+  "Leadership & Adaptability": "leadership",
+  "Environmental Sustainability": "environment",
+  "Wellness & Mental Health": "sel",
 };
 
 const courses = [
@@ -204,14 +204,20 @@ const categories = [
 ];
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
 
-const CourseCard = ({ course, index, userSubscriptions, userSelectedModule, isLoading }) => {
-  const { 
-    hasModuleAccess, 
-    hasGameAccess, 
-    currentPlan: cardCurrentPlan, 
+const CourseCard = ({
+  course,
+  index,
+  userSubscriptions,
+  userSelectedModule,
+  isLoading,
+}) => {
+  const {
+    hasModuleAccess,
+    hasGameAccess,
+    currentPlan: cardCurrentPlan,
     getRemainingTrialDays: cardGetRemainingTrialDays,
     shouldShowUpgradePrompt,
-    isModulePurchased
+    isModulePurchased,
   } = useAccessControl(userSubscriptions, userSelectedModule);
 
   const moduleKey =
@@ -355,18 +361,22 @@ const CourseCard = ({ course, index, userSubscriptions, userSelectedModule, isLo
                 <img src="/game.png" alt="Game" className="w-5 h-5" />
                 {(() => {
                   if (isLoading) {
-                    return 'Loading...';
+                    return "Loading...";
                   }
                   // Show "Play Now" for purchased modules (SOLO users who bought this module)
                   if (isPurchased) {
-                    return 'Play >';
+                    return "Play >";
                   }
                   // Show "Play (X days left)" for STARTER users with trial access
-                  if (cardCurrentPlan === 'STARTER' && remainingDays !== null && remainingDays > 0) {
-                    return `Play (${remainingDays} days left)`;
+                  if (
+                    cardCurrentPlan === "STARTER" &&
+                    remainingDays !== null &&
+                    remainingDays > 0
+                  ) {
+                    return `Play Now `;
                   }
                   // Default text for PRO/INSTITUTIONAL with access
-                  return 'Play Now >';
+                  return "Play Now >";
                 })()}
               </motion.button>
             </Link>
@@ -504,7 +514,7 @@ const Courses = () => {
   useEffect(() => {
     if (user?.id && subscriptions.length > 0) {
       const newAccessControl = new AccessController(
-        subscriptions, 
+        subscriptions,
         user?.registrationDate
       );
       setAccessControl(newAccessControl);
@@ -528,18 +538,21 @@ const Courses = () => {
           const data = await response.json();
           const subscriptionArray = data.success ? data.subscriptions : [];
           setSubscriptions(subscriptionArray);
-          
+
           // Find the highest active and valid subscription
-          const activeSubscriptions = subscriptionArray.filter(sub => 
-            sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = subscriptionArray.filter(
+            (sub) =>
+              sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
           );
-          
+
           // For multiple SOLO subscriptions, we don't need to set a single selectedModule
           // The AccessController will handle all purchased modules through getSoloModules()
-          
+
           // If there's at least one SOLO subscription, we can set selectedModule to the first one
           // This is mainly for backward compatibility with existing code
-          const soloSubscription = activeSubscriptions.find(sub => sub.planType === 'SOLO');
+          const soloSubscription = activeSubscriptions.find(
+            (sub) => sub.planType === "SOLO"
+          );
           if (soloSubscription && soloSubscription.notes) {
             try {
               const parsedNotes = JSON.parse(soloSubscription.notes);
@@ -566,30 +579,36 @@ const Courses = () => {
 
     // Listen for subscription updates from payment completion
     const handleSubscriptionUpdate = (event) => {
-      console.log('Courses: Subscription updated event received:', event.detail);
+      console.log(
+        "Courses: Subscription updated event received:",
+        event.detail
+      );
       setIsLoadingSubscriptions(true);
       fetchUserSubscriptions(); // Re-fetch subscription data
-      
+
       // Force re-initialization of access control
       if (event.detail?.subscriptions) {
         // Initialize access control with updated subscription data
         const newAccessControl = new AccessController(
-          event.detail.subscriptions, 
+          event.detail.subscriptions,
           user?.registrationDate
         );
-        
+
         setAccessControl(newAccessControl);
-        
+
         // Force UI refresh
-        setForceRefresh(prevRefresh => prevRefresh + 1);
+        setForceRefresh((prevRefresh) => prevRefresh + 1);
       }
     };
 
-    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    window.addEventListener("subscriptionUpdated", handleSubscriptionUpdate);
 
     // Cleanup event listener
     return () => {
-      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+      window.removeEventListener(
+        "subscriptionUpdated",
+        handleSubscriptionUpdate
+      );
     };
   }, [user?.id, user?.registrationDate, forceRefresh]);
 
