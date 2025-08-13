@@ -553,7 +553,7 @@ function AppContent() {
       {shouldShowNavbarAndFooter && <Navbar />}
       <main className="flex-grow ">
         <Routes>
-          <Route path="/" element={<Home />} />
+         
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/sales" element={<SalesLogin />} />
@@ -564,7 +564,7 @@ function AppContent() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/finance/games" element={<Finance />} />
-          <Route path="/finance/notes" element={<FinanceNotes />} />
+          
           <Route path="/finance/notes/section-1" element={<Section1 />} />
           <Route path="/finance/notes/section-2" element={<Section2 />} />
           <Route path="/finance/notes/section-3" element={<Section3 />} />
@@ -713,7 +713,7 @@ function AppContent() {
           {/* Legal Awareness Games Finish */}
 
           {/* Legal Awareness Notes Page */}
-          <Route path="/law/notes" element={<LegalAwarenessNotes />} />
+          
           <Route path="/law/notes/module-1" element={<Module1 />} />
           <Route path="/law/notes/module-2" element={<Module2 />} />
           <Route path="/law/notes/module-3" element={<Module3 />} />
@@ -754,10 +754,7 @@ function AppContent() {
           <Route path="/cool-the-conflict" element={<CoolTheConflict />} />
 
           {/*Communication Notes Page */}
-          <Route
-            path="/communications/notes"
-            element={<CommunicationsNotes />}
-          />
+          
           <Route
             path="/communications/notes/listen-to-understand"
             element={<Mod1 />}
@@ -844,10 +841,7 @@ function AppContent() {
           {/* Finish  Leadership Games 6-8*/}
 
           {/* Entrepreneurship Notes*/}
-          <Route
-            path="/entrepreneurship/notes"
-            element={<EntrepreneurshipNotes />}
-          />
+          
           {/* Entrepreneurship Games for 6th-8th */}
           <Route
             path="/entrepreneurship/games"
@@ -884,7 +878,7 @@ function AppContent() {
           <Route path="/dilemma-cards" element={<DilemmaCards />} />
 
           {/* Computer Notes*/}
-          <Route path="/computer/notes" element={<ComputerNotes />} />
+          
           <Route path="/computer/notes/module-1" element={<WhatIsAi />} />
           <Route path="/computer/notes/module-2" element={<WorkOfAi />} />
           <Route
@@ -1382,6 +1376,18 @@ function App() {
             <Route path="*" element={<AppContent />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
+             <Route path="/" element={<Home />} />
+             <Route path="/finance/notes" element={<FinanceNotes />} />
+             <Route path="/law/notes" element={<LegalAwarenessNotes />} />
+             <Route
+            path="/entrepreneurship/notes"
+            element={<EntrepreneurshipNotes />}
+          />
+          <Route
+            path="/communications/notes"
+            element={<CommunicationsNotes />}
+          />
+          <Route path="/computer/notes" element={<ComputerNotes />} />
           </Routes>
         </Router>
       )}
