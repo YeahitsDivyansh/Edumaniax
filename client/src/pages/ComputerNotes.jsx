@@ -62,12 +62,12 @@ const notesSidebar9to10 = [
 
 const notesSidebar11to12 = [
   { id: "s-1", title: "Unit 1: Introduction" },
-  { id: "s-2", title: "Unit 2: Verbal & Non-Verbal " },
-  { id: "s-3", title: "Unit 3: Persuasion & Influence" },
-  { id: "s-4", title: "Unit 4: Conflict Resolution " },
-  { id: "s-5", title: "Unit 5: Professional " },
-  { id: "s-6", title: "Unit 6: Digital & Social Media" },
-  { id: "s-7", title: "Unit 7: Leadership & Collaboration" },
+  { id: "s-2", title: "Unit 2: Types of AI " },
+  { id: "s-3", title: "Unit 3: How AI works " },
+  { id: "s-4", title: "Unit 4: Mastering AI tools " },
+  { id: "s-5", title: "Unit 5: Future Impact of AI " },
+  { id: "s-6", title: "Unit 6: Ethical consideration " },
+  { id: "s-7", title: "Unit 7: AI Algorithms " },
 
 
 ];
