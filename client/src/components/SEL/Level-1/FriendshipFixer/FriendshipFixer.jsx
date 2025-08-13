@@ -124,7 +124,7 @@ const FriendshipFixer = () => {
       } else {
         setShowResult(true);
       }
-    }, 4300);
+    }, 2000);
   };
 
   const restartGame = () => {
