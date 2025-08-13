@@ -257,7 +257,7 @@ const ToneFixer = () => {
       {gameFinished && (
         <div className="text-center mt-8">
           <h2 className="text-xl font-semibold text-green-600">
-            🎯 Your Scorecard: {score}/3 ({Math.round((score / 3) * 100)}%)
+            🎯 Your Scorecard: {score}/6 ({Math.round((score / 6) * 100)}%)
           </h2>
           <img
             src="https://media0.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3cGpiNWdnenB1N2p3aXdpZHdncjR3OWdzOGxjNXdrdDJyd2lneHVuOCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT1R9K1z6TM1NRUcBG/200.webp"

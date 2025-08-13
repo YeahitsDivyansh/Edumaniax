@@ -16,6 +16,7 @@ import clickSoundFileYay from "../../Sound/clickSoundFileYay.mp3";
 import clickSoundFileOops from "../../Sound/clickSoundFileOops.mp3";
 import confetti from "canvas-confetti";
 import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
+import { usePerformance } from "@/contexts/PerformanceContext"; 
 
 const FeedbackLoopGame = () => {
   const { completeEnvirnomentChallenge } = useEnvirnoment();
