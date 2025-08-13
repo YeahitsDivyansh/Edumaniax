@@ -6,9 +6,9 @@ import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { FaArrowUp } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAccessControl } from "../utils/accessControl";
-import { isCurrentPlan, shouldGrayOut, getButtonText, isButtonDisabled, getUpgradeSuggestion, handlePlanClick } from "../utils/pricingUtils";
 import emailjs from "@emailjs/browser";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Custom hook for mobile detection
 const useIsMobile = () => {
@@ -507,7 +507,7 @@ const ProgressCardComponent = () => {
           onMouseEnter={isMobile ? undefined : handleButtonHover}
           onMouseLeave={isMobile ? undefined : handleButtonLeave}
         >
-          ✨ Play Now
+          ✨ Let's Play
         </button>
       </div>
     </div>
@@ -917,16 +917,11 @@ const Home = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [selectedModule, setSelectedModule] = useState(null);
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
   const { user } = useAuth();
   const [showScroll, setShowScroll] = useState(false);
-  // Track if guest has played a level 1 game
-  const [guestPlayed, setGuestPlayed] = useState(false);
-  // Use access control with full subscription data
-  const accessControl = useAccessControl(subscriptions, selectedModule);
   useEffect(() => {
     const fetchUserSubscriptions = async () => {
       if (!user?.id) return;
@@ -938,14 +933,11 @@ const Home = () => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          
-          // Extract subscriptions from the response object
-          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
-          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptions) 
-            ? subscriptions.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -968,26 +960,61 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setSubscriptions([]);
+        setUserSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }
     };
 
     fetchUserSubscriptions();
+  }, [user?.id]);
 
-    // Listen for subscription updates from payment completion
-    const handleSubscriptionUpdate = (event) => {
-      console.log('Home: Subscription updated event received:', event.detail);
-      fetchUserSubscriptions(); // Re-fetch subscription data
+  // Fetch user subscriptions to determine button state
+  useEffect(() => {
+    const fetchUserSubscriptions = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+        );
+        
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Find active subscriptions
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
+                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+              )
+            : [];
+          
+          if (activeSubscriptions.length > 0) {
+            setHasActiveSubscription(true);
+            // Find the highest tier plan
+            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            for (const plan of [...planHierarchy].reverse()) {
+              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              if (subscription) {
+                setUserPlan(subscription.planType);
+                break;
+              }
+            }
+          } else {
+            setHasActiveSubscription(false);
+            setUserPlan(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error);
+        setUserSubscriptions([]);
+        setHasActiveSubscription(false);
+        setUserPlan(null);
+      }
     };
 
-    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
-
-    // Cleanup event listener
-    return () => {
-      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
-    };
+    fetchUserSubscriptions();
   }, [user?.id]);
 
 const [isZoomed, setIsZoomed] = useState(false);
@@ -1018,14 +1045,11 @@ useEffect(() => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          
-          // Extract subscriptions from the response object
-          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
-          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
+          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptions) 
-            ? subscriptions.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptionData) 
+            ? subscriptionData.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -1048,7 +1072,7 @@ useEffect(() => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setSubscriptions([]);
+        setUserSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }
@@ -1515,7 +1539,9 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen -mt-8 bg-white overflow-x-hidden">
+  
+    <div>
+    <div className="min-h-screen  bg-white overflow-x-hidden">
       {/* Trial Booking Modal */}
       <TrialBookingModal
         isOpen={isTrialModalOpen}
@@ -1523,12 +1549,13 @@ useEffect(() => {
       />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] sm:h-[100vh] lg:h-[95vh] w-full p-0 -mt-8">
+      <section className="relative h-[90vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
         <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-9  flex-col items-center text-center px-4 sm:px-6">
+          <Navbar/>
+          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
             {/* Trust Badge */}
-            <div className="mb-3 sm:mb-5 pt-3 sm:pt-3 mt-4 sm:mt-6 md:mt-6 md:mb-3">
-              <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 mt-14 sm:mt-8 border border-white/20">
+            <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-4 sm:mt-0 md:mt- md:mb-2">
+              <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
                 <span className="text-white text-xs sm:text-sm flex items-center gap-2">
                   ⭐ Loved by 1K+ users worldwide
                 </span>
@@ -1536,21 +1563,21 @@ useEffect(() => {
             </div>
 
             {/* Main Heading */}
-            <div className="mb-2 sm:mb- md:-mb-2">
+            <div className="mb-2 sm:mb-0 md:-mb-0 lg:-mb-3 xl:-mb-0">
               <h1
-                className="text-white text-2xl sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                className="text-white text-2xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl leading-tight"
                 style={{ fontFamily: '"Sigmar", sans-serif' }}
               >
                 Master AI, Finance, Law
               </h1>
               <h1
-                className="text-white flex text-2xl ml-8 sm:text-2xl md:text-2xl lg:text-5xl  leading-tight"
+                className="text-white flex text-2xl ml-8 sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl  leading-tight"
                 style={{ fontFamily: '"Sigmar", sans-serif' }}
               >
                 With a Twist of Fun{" "}
                 <div className=" sm:h-15 sm:w-15 ">
                   <img
-                    className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-15 lg:w-15"
+                    className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-10 lg:w-10 xl:h-15 xl:w-15 "
                     src="/Fire.gif"
                     alt="fire"
                   />
@@ -1559,17 +1586,17 @@ useEffect(() => {
             </div>
 
             {/* Subtitle */}
-            <p className="text-white/90 text-md sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt-3 lg:mx-60 mb-4 sm:mb-8 leading-tight">
+            <p className="text-white/90 text-md sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt- xl:mt-3 xl:mb-3 lg:mx-60 mb-4 sm:mb- leading-tight">
               Explore Artificial Intelligence, Machine Learning, Communication,
               Coding, and more through interactive games, real-world challenges,
               and bite-sized notes
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 xl:mt-3 w-full sm:w-auto px-4 sm:px-0">
               <button
                 onClick={() => navigate(user ? "/pricing" : "/courses")}
-                className="bg-white text-black font-semibold px-4 sm:px-8 py-3 sm:py-4 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
+                className="bg-white text-black font-semibold px-4 sm:px-5 py-3 sm:py- lg:px-5 lg:py-3 xl:px-8 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
               >
                 {user ? (
                   hasActiveSubscription && (userPlan === 'STARTER' || userPlan === 'SOLO') 
@@ -1589,7 +1616,7 @@ useEffect(() => {
               ) : (
                 <button
                   onClick={() => setIsTrialModalOpen(true)}
-                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py- rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
                 >
                   Book a trial
                 </button>
@@ -2049,47 +2076,16 @@ useEffect(() => {
 
                   {/* Buttons Row - Improved Spacing */}
                   <div className="flex gap-2 mt-auto">
-                    {user ? (
-                      hasActiveSubscription ? (
-                        <Link to={course.gamesLink} className="flex-1">
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
-                          >
-                            <img src="/game.png" alt="Game" className="w-5 h-5" />
-                            Play &gt;
-                          </motion.button>
-                        </Link>
-                      ) : (
-                        <Link to="/pricing" className="flex-1">
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gray-400 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-gray-500 transition duration-300 text-sm flex items-center justify-center gap-2"
-                            title="Upgrade to access games"
-                          >
-                            <img src="/game.png" alt="Game" className="w-5 h-5 opacity-70" />
-                            Upgrade &gt;
-                          </motion.button>
-                        </Link>
-                      )
-                    ) : (
-                      <button
-                        className={`w-[60%] bg-[#10903E] text-white font-medium py-1 px-2 rounded-lg transition duration-300 text-sm flex items-center justify-center gap-2 ${guestPlayed ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'}`}
-                        onClick={() => {
-                          if (!guestPlayed) {
-                            setGuestPlayed(true);
-                            window.open(course.gamesLink + '?level=1', '_blank');
-                          }
-                        }}
-                        disabled={guestPlayed}
-                        title={guestPlayed ? 'You have already played your free trial game.' : 'Play Level 1 Game'}
+                    <Link to={course.gamesLink} className="flex-1">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
                       >
                         <img src="/game.png" alt="Game" className="w-5 h-5" />
-                        {guestPlayed ? 'Trial Used' : 'Play Now'}
-                      </button>
-                    )}
+                        Let's Play &gt;
+                      </motion.button>
+                    </Link>
 
                     <Link to={course.notesLink}>
                       <motion.button
@@ -2166,36 +2162,17 @@ useEffect(() => {
             {plans.map((plan, idx) => (
               <div
                 key={idx}
-                className={`bg-white rounded-3xl p-6 border shadow-lg transition-all duration-300 flex flex-col justify-between relative ${
-                  isCurrentPlan(plan.title)
-                    ? "border-green-500 ring-2 ring-green-200 bg-green-50"
-                    : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
-                    ? "border-gray-400 bg-gray-50"
-                    : plan.title === "PRO PLAN"
-                    ? "border-[#068F36]"
-                    : "border-gray-200 hover:border-[#068F36]"
-                }`}
-                style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
+                className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
               >
                 <div className="relative mb-4">
-                  {isCurrentPlan(plan.title) && (
-                    <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
-                      ✓ Current Plan
-                    </div>
-                  )}
-                  {shouldGrayOut(plan.title) && !isCurrentPlan(plan.title) && (
-                    <div className="absolute -top-3 -right-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
-                      ✓ Owned
-                    </div>
-                  )}
-                  {plan.title === "PRO PLAN" && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
+                  {plan.title === "PRO PLAN" && (
                     <img
                       src="/pricingDesign/save20.svg"
                       alt="Save 20%"
                       className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                     />
                   )}
-                  {plan.tag && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
+                  {plan.tag && (
                     <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
                       {plan.tag}
                     </span>
@@ -2213,21 +2190,8 @@ useEffect(() => {
                 <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
                 <hr className="my-3 border-gray-300" />
                 <p className="text-4xl font-extrabold text-[#000B33] mt-1">
-                  {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 ? (
-                    <span>
-                      <span className="text-2xl line-through text-gray-500">₹1433</span>
-                      <br />
-                      <span className="text-green-600">₹{accessControl.calculateUpgradePrice('PRO').totalPrice}</span>
-                    </span>
-                  ) : (
-                    plan.price
-                  )}
+                  {plan.price}
                 </p>
-                {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 && (
-                  <p className="text-xs text-green-600 font-semibold mt-1">
-                    Save ₹{accessControl.calculateUpgradePrice('PRO').soloDiscount} from your SOLO plans!
-                  </p>
-                )}
                 <p className="text-xs text-black font-semibold mt-1">
                   {plan.frequency}
                 </p>
@@ -2262,47 +2226,12 @@ useEffect(() => {
                   })}
                 </ul>
 
-                <button
-                  onClick={() => handlePlanClick(accessControl, plan, user, navigate)}
-                  className={`font-semibold py-2 px-4 rounded-md transition mt-4 inline-block text-center w-full ${
-                    isCurrentPlan(accessControl, plan.title, user)
-                      ? "bg-green-500 text-white cursor-default"
-                      : shouldGrayOut(accessControl, plan.title, user) && !isCurrentPlan(accessControl, plan.title, user)
-                      ? "bg-gray-500 text-white cursor-not-allowed"
-                      : isButtonDisabled(accessControl, plan, user)
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-[#068F36] text-white hover:brightness-110"
-                  }`}
-                  disabled={isButtonDisabled(accessControl, plan, user)}
+                <Link
+                  to="/payment-required"
+                  className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
                 >
-                  {getButtonText(accessControl, plan, user)}
-                </button>
-                
-                {/* Upgrade suggestion for current plan users or special SOLO case */}
-                {(isCurrentPlan(accessControl, plan.title, user) || (plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO')) && getUpgradeSuggestion(accessControl, plan, user) && (
-                  <div className="mt-3 text-center">
-                    <p className="text-xs text-gray-600 mb-2">{getUpgradeSuggestion(accessControl, plan, user)}</p>
-                    {plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.getAvailableForPurchase().length === 0 ? (
-                      <button
-                        onClick={() => navigate(`/payment?plan=PRO`)}
-                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
-                      >
-                        Upgrade to PRO
-                      </button>
-                    ) : isCurrentPlan(accessControl, plan.title, user) ? (
-                      <button
-                        onClick={() => navigate(`/payment?plan=${
-                          plan.title === "STARTER PLAN" ? "SOLO" :
-                          plan.title === "SOLO PLAN" ? "PRO" :
-                          plan.title === "PRO PLAN" ? "INSTITUTIONAL" : ""
-                        }`)}
-                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
-                      >
-                       Upgrade Now
-                      </button>
-                    ) : null}
-                  </div>
-                )}
+                  {plan.button}
+                </Link>
               </div>
             ))}
           </div>
@@ -2379,6 +2308,8 @@ useEffect(() => {
           <FaArrowUp className="text-lg" />
         </button>
       )}
+    </div>
+    <Footer />
     </div>
   );
 };

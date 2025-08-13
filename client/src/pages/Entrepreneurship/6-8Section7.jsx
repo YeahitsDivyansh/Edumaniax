@@ -1,146 +1,168 @@
 import React, { useState, useEffect } from 'react';
+import { Lightbulb, Users, Target, CheckCircle, Rocket, Brain, Globe, Laptop, ArrowRight, Star, Eye, Zap, Building, Gamepad2 } from 'lucide-react';
 
 const Module7 = ({ topicRefs }) => {
   const [visibleCards, setVisibleCards] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [entrepreneurSkills, setEntrepreneurSkills] = useState([]);
-  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [currentSkill, setCurrentSkill] = useState(0);
+  const [userIdea, setUserIdea] = useState({
+    problem: '',
+    customer: '',
+    solution: '',
+    marketFit: '',
+    prototype: '',
+    aiTools: ''
+  });
+  const [completedSteps, setCompletedSteps] = useState([]);
 
-  const journeySteps = [
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisibleCards([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep((prev) => (prev + 1) % 6);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSkill((prev) => (prev + 1) % 4);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
+  const entrepreneurSteps = [
     {
-      step: "Spot the Problem",
-      icon: "🔍",
-      description: "Look around you. Is there something people struggle with?",
-      example: "Students can't find healthy snacks at school",
-      color: "from-red-400 to-pink-500",
-      bgColor: "bg-red-50"
+      step: 1,
+      title: "Spot the Problem",
+      description: "Look around you. Is there something people struggle with? Something annoying or missing?",
+      example: "Students can't find healthy snacks at school. That's a real problem!",
+      icon: <Eye className="w-8 h-8" />,
+      questions: ["What frustrates you daily?", "What do your friends complain about?", "What's missing in your school/community?"],
+      color: "from-green-500 to-emerald-500"
     },
     {
-      step: "Understand Customers",
-      icon: "👥", 
-      description: "Before jumping to solutions, ask the right questions",
-      example: "Interview friends and family about their needs",
-      color: "from-blue-400 to-indigo-500",
-      bgColor: "bg-blue-50"
+      step: 2,
+      title: "Understand Customer Needs",
+      description: "Before jumping to solutions, ask: Who has this problem? What do they really want?",
+      example: "Interview your friends or family. Ask questions. Listen carefully. That's how real entrepreneurs start!",
+      icon: <Users className="w-8 h-8" />,
+      questions: ["Who exactly has this problem?", "How does it affect their daily life?", "What would make their life easier?"],
+      color: "from-emerald-500 to-teal-500"
     },
     {
-      step: "Brainstorm Ideas",
-      icon: "💡",
-      description: "Come up with creative solutions using AI tools",
-      example: "Use ChatGPT to help generate new ideas",
-      color: "from-yellow-400 to-orange-500", 
-      bgColor: "bg-yellow-50"
+      step: 3,
+      title: "Come Up with Ideas",
+      description: "Brainstorm creative solutions. Use tools like ChatGPT to help generate new ideas.",
+      example: "Use mind maps or sticky notes. No idea is too silly—just write everything down!",
+      icon: <Lightbulb className="w-8 h-8" />,
+      questions: ["What are 5 different ways to solve this?", "How can technology help?", "What would the ideal solution look like?"],
+      color: "from-teal-500 to-green-600"
     },
     {
-      step: "Find Product-Market Fit",
-      icon: "🎯",
-      description: "Do people actually want what you're offering?",
-      example: "Test if your idea solves the problem better than existing solutions",
-      color: "from-green-400 to-emerald-500",
-      bgColor: "bg-green-50"
+      step: 4,
+      title: "Identify Product-Market Fit",
+      description: "Do people actually want what you're offering? How is your idea better than existing solutions?",
+      example: "Even the coolest idea doesn't work if nobody needs it. That's why this step is super important!",
+      icon: <Target className="w-8 h-8" />,
+      questions: ["Will people actually use this?", "How is it better than alternatives?", "Are people willing to pay for it?"],
+      color: "from-green-600 to-emerald-600"
     },
     {
-      step: "Create Prototype",
-      icon: "🛠️",
-      description: "Sketch, describe, or make a basic version",
-      example: "Draw what your app might look like",
-      color: "from-purple-400 to-indigo-500",
-      bgColor: "bg-purple-50"
+      step: 5,
+      title: "Create a Simple Prototype",
+      description: "You don't need to build the product yet. Just sketch it, describe it, or make a basic version.",
+      example: "Draw what your app might look like or write how your service will work.",
+      icon: <Building className="w-8 h-8" />,
+      questions: ["What's the simplest version that solves the problem?", "How can you test this quickly?", "What features are absolutely essential?"],
+      color: "from-emerald-600 to-teal-600"
     },
     {
-      step: "Use AI to Build",
-      icon: "🤖",
-      description: "Leverage AI tools to build smarter and faster",
-      example: "Use AI for design, coding, or market research",
-      color: "from-cyan-400 to-blue-500",
-      bgColor: "bg-cyan-50"
+      step: 6,
+      title: "Use AI to Build Smarter",
+      description: "Leverage AI tools to enhance your solution and make it more efficient.",
+      example: "AI can help with design, customer service, data analysis, and much more!",
+      icon: <Brain className="w-8 h-8" />,
+      questions: ["Which AI tools can help your business?", "How can AI make your solution better?", "What tasks can AI automate for you?"],
+      color: "from-teal-600 to-green-500"
     }
   ];
 
   const futureSkills = [
     {
       skill: "Digital Literacy",
-      icon: "💻",
       description: "Know how to use tech tools smartly",
-      examples: ["Code with AI assistance", "Use design tools", "Understand data"],
-      color: "bg-blue-100 hover:bg-blue-200"
+      icon: <Laptop className="w-6 h-6" />,
+      importance: "Essential for using AI tools, understanding digital platforms, and staying current with technology",
+      examples: ["Understanding how AI works", "Using no-code platforms", "Digital marketing skills"],
+      color: "from-green-100 to-emerald-100"
     },
     {
-      skill: "Critical Thinking", 
-      icon: "🧠",
+      skill: "Critical Thinking",
       description: "Think clearly, solve problems creatively",
-      examples: ["Analyze market trends", "Question assumptions", "Find root causes"],
-      color: "bg-green-100 hover:bg-green-200"
+      icon: <Brain className="w-6 h-6" />,
+      importance: "Helps you identify real problems, evaluate solutions, and make smart business decisions",
+      examples: ["Analyzing market data", "Identifying biases", "Problem-solving strategies"],
+      color: "from-emerald-100 to-teal-100"
     },
     {
       skill: "Collaboration",
-      icon: "🤝", 
       description: "Work in teams, share ideas, build together",
-      examples: ["Lead diverse teams", "Communicate across cultures", "Build partnerships"],
-      color: "bg-purple-100 hover:bg-purple-200"
+      icon: <Users className="w-6 h-6" />,
+      importance: "Modern businesses are built by teams. You'll need to work with others to succeed",
+      examples: ["Team communication", "Conflict resolution", "Shared decision-making"],
+      color: "from-teal-100 to-green-100"
     },
     {
       skill: "Ethical Awareness",
-      icon: "⚖️",
-      description: "Use AI responsibly, think about fairness and privacy", 
-      examples: ["Consider AI bias", "Protect user privacy", "Build inclusive products"],
-      color: "bg-orange-100 hover:bg-orange-200"
+      description: "Use AI responsibly, think about fairness and privacy",
+      icon: <CheckCircle className="w-6 h-6" />,
+      importance: "As AI becomes more powerful, using it ethically becomes more important for business success",
+      examples: ["Fair AI practices", "Data privacy", "Transparent communication"],
+      color: "from-green-100 to-emerald-100"
     }
   ];
 
-  const aiStartupExamples = [
+  const futureOpportunities = [
     {
-      name: "EcoTrack",
-      problem: "People don't know their carbon footprint",
-      solution: "AI app that tracks daily activities and suggests eco-friendly alternatives",
-      icon: "🌱",
-      age: "17 years old",
-      impact: "10K+ users reducing their carbon footprint"
+      title: "AI Startups Everywhere",
+      description: "Young people are starting businesses using AI to solve real problems",
+      examples: ["Health monitoring apps", "Educational games", "Environmental solutions"],
+      icon: "🚀"
     },
     {
-      name: "StudyBuddy AI",
-      problem: "Students struggle with personalized learning",
-      solution: "AI tutor that adapts to individual learning styles",
-      icon: "📚", 
-      age: "16 years old",
-      impact: "Improved test scores by 25% for users"
+      title: "Work From Anywhere",
+      description: "You don't need a big office—just a great idea and the right tools",
+      examples: ["Remote collaboration", "Global markets", "Digital-first businesses"],
+      icon: "🌍"
     },
     {
-      name: "HealthMind",
-      problem: "Teens need mental health support",
-      solution: "AI chatbot providing 24/7 emotional support and resources",
-      icon: "💚",
-      age: "18 years old", 
-      impact: "Helped 5K+ teens access mental health resources"
+      title: "Learning Through Play",
+      description: "Schools are using AI-powered learning tools that feel like games",
+      examples: ["Gamified education", "Personalized learning", "Interactive simulations"],
+      icon: "🎮"
     }
   ];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % journeySteps.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
+  const handleInputChange = (field, value) => {
+    setUserIdea(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-card');
-            setVisibleCards(prev => [...new Set([...prev, id])]);
-          }
-        });
-      },
-      { threshold: 0.1 }
+  const toggleStepCompletion = (stepIndex) => {
+    setCompletedSteps(prev => 
+      prev.includes(stepIndex)
+        ? prev.filter(i => i !== stepIndex)
+        : [...prev, stepIndex]
     );
-
-    document.querySelectorAll('[data-card]').forEach(card => {
-      observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  };
 
   return (
     <div
@@ -153,342 +175,374 @@ const Module7 = ({ topicRefs }) => {
       className="mb-10"
     >
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white">
+        <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 animate-bounce">
-              <span className="text-4xl">🚀</span>
+            <div className="flex justify-center mb-6">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 animate-bounce">
+                <Rocket className="w-16 h-16 text-white" />
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Turn Ideas into Reality!
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
+              Turning Ideas into Reality
             </h1>
-            <p className="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto leading-relaxed">
-              Your step-by-step guide to becoming an AI-powered entrepreneur! 💡🤖
+            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto leading-relaxed">
+              Build your business idea step by step with the help of AI technology! 🤖💡
             </p>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-50 to-transparent"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-20">
+        
         {/* Introduction */}
-        <div 
-          data-card="intro"
-          className={`mb-16 transform transition-all duration-1000 ${visibleCards.includes('intro') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 md:p-12 border border-indigo-200">
-            <div className="text-center mb-8">
-              <span className="text-6xl mb-4 block">👩‍🏫</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Ready to Build Your Business?
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
-                Now that you know how to think like an entrepreneur and use AI tools, 
-                let's bring everything together. This module is all about building your business idea — step by step — with the help of technology!
-              </p>
-            </div>
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 border-l-4 border-green-400">
+          <div className="text-center">
+            <div className="text-5xl mb-6">👩‍🏫</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+              Let's Bring Everything Together!
+            </h2>
+            <p className="text-xl text-gray-700 max-w-4xl mx-auto font-medium">
+              Now that you know how to think like an entrepreneur and use AI tools, 
+              let's build your business idea—step by step—with the help of technology!
+            </p>
           </div>
         </div>
 
-        {/* Step-by-Step Journey */}
-        <div 
-          data-card="journey"
-          className={`mb-16 transform transition-all duration-1000 delay-200 ${visibleCards.includes('journey') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🚶‍♂️</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Your Entrepreneur Journey
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                Follow these steps to transform your ideas into real solutions that help people!
-              </p>
+        {/* Step-by-Step Entrepreneur Journey */}
+        <div className="space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Step-by-Step Entrepreneur Journey 🚶‍♂️
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Follow this proven path from problem to solution:
+            </p>
+          </div>
+          
+          {/* Featured Step (Auto-rotating) */}
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
+            <div className="text-center mb-8">
+              <div className="text-lg text-gray-600 mb-4">Currently Highlighting</div>
+              <div className={`bg-gradient-to-r ${entrepreneurSteps[currentStep].color} text-white rounded-2xl p-8 max-w-4xl mx-auto transform hover:scale-105 transition-all duration-500`}>
+                <div className="flex items-center justify-center space-x-6 mb-6">
+                  <div className="bg-white/20 rounded-full p-4">
+                    {entrepreneurSteps[currentStep].icon}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-4xl font-bold mb-2">Step {entrepreneurSteps[currentStep].step}</div>
+                    <h3 className="text-3xl font-bold mb-2">{entrepreneurSteps[currentStep].title}</h3>
+                    <p className="text-xl opacity-90">{entrepreneurSteps[currentStep].description}</p>
+                  </div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-6 mb-4">
+                  <p className="text-lg">{entrepreneurSteps[currentStep].example}</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {entrepreneurSteps[currentStep].questions.map((question, index) => (
+                    <div key={index} className="bg-white/20 rounded-lg p-3">
+                      <p className="text-sm font-medium">{question}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
+          </div>
 
-            {/* Interactive Journey Steps */}
-            <div className="max-w-5xl mx-auto">
-              <div className="relative">
-                {journeySteps.map((step, index) => (
-                  <div 
-                    key={index}
-                    className={`relative transition-all duration-1000 mb-8 ${
-                      currentStep === index ? 'scale-105 z-10' : 'scale-100'
+          {/* All Steps Grid with Progress Tracking */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {entrepreneurSteps.map((step, index) => (
+              <div
+                key={index}
+                className={`bg-gradient-to-r from-green-50 to-emerald-50 border-2 rounded-2xl p-6 transform hover:scale-105 transition-all duration-300 cursor-pointer ${
+                  currentStep === index ? 'border-green-400 ring-4 ring-green-300 scale-105' : 'border-green-200'
+                } ${
+                  completedSteps.includes(index) ? 'bg-green-100 border-green-400' : ''
+                } ${
+                  visibleCards.includes(index) ? 'animate-fade-in' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${index * 150}ms` }}
+                onClick={() => setCurrentStep(index)}
+              >
+                <div className="text-center mb-4">
+                  <div className={`rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 ${
+                    completedSteps.includes(index) 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                  }`}>
+                    {completedSteps.includes(index) ? <CheckCircle className="w-8 h-8" /> : step.icon}
+                  </div>
+                  <div className="text-sm text-green-600 font-bold mb-1">STEP {step.step}</div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm mb-4">{step.description}</p>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStepCompletion(index);
+                    }}
+                    className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-300 ${
+                      completedSteps.includes(index)
+                        ? 'bg-green-500 text-white'
+                        : 'bg-white text-green-600 border border-green-300 hover:bg-green-50'
                     }`}
                   >
-                    <div className={`${step.bgColor} rounded-2xl p-6 border-2 ${
-                      currentStep === index ? 'border-indigo-400 shadow-lg' : 'border-transparent'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center flex-1">
-                          <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center mr-6 text-white text-2xl font-bold`}>
-                            {step.icon}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">{index + 1}. {step.step}</h3>
-                            <p className="text-gray-700 mb-2">{step.description}</p>
-                            <div className="bg-white rounded-lg p-3 border border-gray-200">
-                              <p className="text-sm text-gray-600 italic">💡 Example: {step.example}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {index < journeySteps.length - 1 && (
-                      <div className="flex justify-center my-4">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                          <span className="text-2xl text-gray-400">⬇️</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                    {completedSteps.includes(index) ? '✓ Completed' : 'Mark Complete'}
+                  </button>
+                </div>
               </div>
-              
-              {/* Progress indicator */}
-              <div className="flex justify-center mt-8 space-x-2">
-                {journeySteps.map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      currentStep === index ? 'bg-indigo-600 w-8' : 'bg-gray-300'
-                    }`}
-                  ></div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
 
-        {/* Product-Market Fit Deep Dive */}
-        <div 
-          data-card="fit"
-          className={`mb-16 transform transition-all duration-1000 delay-400 ${visibleCards.includes('fit') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 border border-green-200">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🎯</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Understanding Product-Market Fit
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                This means: Do people actually want what you're offering? Even the coolest idea doesn't work if nobody needs it!
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="text-center">
-                  <span className="text-4xl mb-4 block">👥</span>
-                  <h3 className="text-xl font-bold text-green-700 mb-3">Will People Use It?</h3>
-                  <p className="text-gray-700">Survey potential users, run small tests, and gather feedback before building the full product.</p>
+          {/* Progress Summary */}
+          <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Your Progress</h3>
+              <div className="flex justify-center mb-4">
+                <div className="bg-green-100 rounded-full px-6 py-3">
+                  <span className="text-2xl font-bold text-green-600">
+                    {completedSteps.length}/{entrepreneurSteps.length}
+                  </span>
+                  <span className="text-green-600 ml-2">Steps Completed</span>
                 </div>
               </div>
-              
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="text-center">
-                  <span className="text-4xl mb-4 block">⚡</span>
-                  <h3 className="text-xl font-bold text-green-700 mb-3">Better Than Existing?</h3>
-                  <p className="text-gray-700">Research competitors and find what makes your solution unique and more valuable.</p>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="text-center">
-                  <span className="text-4xl mb-4 block">✅</span>
-                  <h3 className="text-xl font-bold text-green-700 mb-3">Solves Real Problems?</h3>
-                  <p className="text-gray-700">Make sure you're addressing a genuine pain point, not just a nice-to-have feature.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Startup Examples */}
-        <div 
-          data-card="examples"
-          className={`mb-16 transform transition-all duration-1000 delay-600 ${visibleCards.includes('examples') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-blue-100">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🌟</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Young AI Entrepreneurs Making Impact
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                Real examples of young people starting AI businesses to solve problems they care about!
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {aiStartupExamples.map((startup, index) => (
-                <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
-                  <div className="text-center">
-                    <span className="text-5xl mb-4 block">{startup.icon}</span>
-                    <h3 className="text-xl font-bold text-blue-800 mb-2">{startup.name}</h3>
-                    <p className="text-sm text-blue-600 mb-4">Founded by {startup.age} entrepreneur</p>
-                    
-                    <div className="space-y-3 text-left">
-                      <div className="bg-white rounded-lg p-3 border border-blue-100">
-                        <p className="text-sm font-semibold text-red-700 mb-1">❌ Problem:</p>
-                        <p className="text-sm text-gray-700">{startup.problem}</p>
-                      </div>
-                      
-                      <div className="bg-white rounded-lg p-3 border border-blue-100">
-                        <p className="text-sm font-semibold text-green-700 mb-1">✅ AI Solution:</p>
-                        <p className="text-sm text-gray-700">{startup.solution}</p>
-                      </div>
-                      
-                      <div className="bg-blue-100 rounded-lg p-3">
-                        <p className="text-sm font-semibold text-blue-800 mb-1">🎯 Impact:</p>
-                        <p className="text-sm text-blue-700">{startup.impact}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Future Skills */}
-        <div 
-          data-card="skills"
-          className={`mb-16 transform transition-all duration-1000 delay-800 ${visibleCards.includes('skills') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl p-8 md:p-12 border border-purple-200">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🧠</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Must-Have Skills for Young Entrepreneurs
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                The world is changing fast — and YOU are going to be part of shaping it!
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {futureSkills.map((skill, index) => (
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
                 <div 
-                  key={index}
-                  className={`${skill.color} rounded-2xl p-6 transition-all duration-300 cursor-pointer transform hover:-translate-y-2`}
-                  onClick={() => setSelectedSkill(selectedSkill === index ? null : index)}
-                >
-                  <div className="text-center">
-                    <span className="text-4xl mb-4 block">{skill.icon}</span>
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">{skill.skill}</h3>
-                    <p className="text-gray-700 mb-4">{skill.description}</p>
-                    
-                    {selectedSkill === index && (
-                      <div className="bg-white rounded-lg p-4 mt-4 border border-gray-200 animate-fadeIn">
-                        <h4 className="font-semibold text-gray-800 mb-2">Examples:</h4>
-                        <ul className="space-y-1">
-                          {skill.examples.map((example, i) => (
-                            <li key={i} className="text-sm text-gray-600">• {example}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    <button className="text-sm text-gray-500 mt-2">
-                      {selectedSkill === index ? 'Click to collapse' : 'Click to see examples'}
-                    </button>
-                  </div>
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 h-4 rounded-full transition-all duration-500"
+                  style={{ width: `${(completedSteps.length / entrepreneurSteps.length) * 100}%` }}
+                ></div>
+              </div>
+              {completedSteps.length === entrepreneurSteps.length && (
+                <div className="bg-green-100 rounded-lg p-4">
+                  <p className="text-green-800 font-bold">🎉 Congratulations! You've completed all the entrepreneur steps!</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
 
-        {/* Future of Entrepreneurship */}
-        <div 
-          data-card="future"
-          className={`mb-16 transform transition-all duration-1000 delay-1000 ${visibleCards.includes('future') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🌍</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                The Future of Entrepreneurship with AI
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                Let's look ahead! The world is changing fast — and YOU are going to be part of shaping it.
-              </p>
-            </div>
+        {/* Interactive Idea Builder */}
+        <div className="space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Build Your Idea! ✏️
+            </h2>
+            <p className="text-xl text-gray-600">
+              Use this space to develop your own business idea step by step:
+            </p>
+          </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl text-white">🚀</span>
+          <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                { key: 'problem', title: 'What Problem Did You Spot?', placeholder: 'e.g., Students can\'t find healthy snacks at school...' },
+                { key: 'customer', title: 'Who Are Your Customers?', placeholder: 'e.g., High school students who want healthy options...' },
+                { key: 'solution', title: 'What\'s Your Solution?', placeholder: 'e.g., A healthy snack subscription service for schools...' },
+                { key: 'marketFit', title: 'Why Will People Want This?', placeholder: 'e.g., It\'s convenient, healthy, and affordable...' },
+                { key: 'prototype', title: 'How Will You Test It?', placeholder: 'e.g., Start with a survey, then a small pilot program...' },
+                { key: 'aiTools', title: 'How Can AI Help?', placeholder: 'e.g., AI can predict popular snacks, manage inventory...' }
+              ].map((field, index) => (
+                <div key={field.key} className="space-y-3">
+                  <label className="block text-lg font-bold text-gray-800">
+                    {field.title}
+                  </label>
+                  <textarea
+                    value={userIdea[field.key]}
+                    onChange={(e) => handleInputChange(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-green-400 focus:outline-none transition-colors duration-300 min-h-[120px] resize-none"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">More AI Startups</h3>
-                <p className="text-gray-700">Young people are starting businesses using AI to solve real problems like health, education, and the environment.</p>
+              ))}
+            </div>
+            
+            {Object.values(userIdea).some(value => value.trim() !== '') && (
+              <div className="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
+                <h4 className="text-lg font-bold text-green-800 mb-3">Great work! You're thinking like an entrepreneur! 🎉</h4>
+                <p className="text-green-700">Keep developing your idea and don't be afraid to iterate and improve based on feedback.</p>
               </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl text-white">🌎</span>
+            )}
+          </div>
+        </div>
+
+        {/* The Future of Entrepreneurship with AI */}
+        <div className="space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              The Future of Entrepreneurship with AI 🌍🚀
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              The world is changing fast—and YOU are going to be part of shaping it. 
+              With AI and entrepreneurial thinking, you can solve real problems and help people in new ways.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {futureOpportunities.map((opportunity, index) => (
+              <div
+                key={index}
+                className={`bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 border-2 border-green-200 text-center transform hover:scale-105 transition-all duration-300 ${
+                  visibleCards.includes(index + 6) ? 'animate-fade-in' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${(index + 6) * 200}ms` }}
+              >
+                <div className="text-6xl mb-6">{opportunity.icon}</div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">{opportunity.title}</h3>
+                <p className="text-gray-600 mb-6">{opportunity.description}</p>
+                <div className="space-y-3">
+                  {opportunity.examples.map((example, exampleIndex) => (
+                    <div key={exampleIndex} className="bg-white rounded-lg p-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-gray-700 text-sm">{example}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Entrepreneurs Everywhere</h3>
-                <p className="text-gray-700">You don't need a big office — just a great idea and the right tools to start making a difference.</p>
               </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl text-white">🎮</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Must-Have Skills for Young Entrepreneurs */}
+        <div className="space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Must-Have Skills for Young Entrepreneurs 🧠
+            </h2>
+            <p className="text-xl text-gray-600">
+              These skills will help you succeed in the AI-powered future:
+            </p>
+          </div>
+
+          {/* Featured Skill (Auto-rotating) */}
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
+            <div className="text-center mb-8">
+              <div className="text-lg text-gray-600 mb-4">Featured Skill</div>
+              <div className={`bg-gradient-to-r ${futureSkills[currentSkill].color} rounded-2xl p-8 max-w-4xl mx-auto border-2 border-green-200`}>
+                <div className="flex items-center justify-center space-x-6 mb-6">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-16 h-16 flex items-center justify-center">
+                    {futureSkills[currentSkill].icon}
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{futureSkills[currentSkill].skill}</h3>
+                    <p className="text-xl text-gray-600">{futureSkills[currentSkill].description}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Learning Through Play</h3>
-                <p className="text-gray-700">Schools are using AI-powered learning tools that feel like games but teach serious entrepreneurial skills.</p>
+                <div className="bg-white rounded-lg p-6 mb-4">
+                  <p className="text-gray-700">{futureSkills[currentSkill].importance}</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {futureSkills[currentSkill].examples.map((example, index) => (
+                    <div key={index} className="bg-white rounded-lg p-3">
+                      <p className="text-sm text-gray-700 font-medium">{example}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* All Skills Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {futureSkills.map((skill, index) => (
+              <div
+                key={index}
+                className={`${skill.color} rounded-2xl p-6 border-2 border-green-200 text-center transform hover:scale-105 transition-all duration-300 cursor-pointer ${
+                  currentSkill === index ? 'ring-4 ring-green-300 scale-105' : ''
+                } ${
+                  visibleCards.includes(index + 9) ? 'animate-fade-in' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${(index + 9) * 150}ms` }}
+                onClick={() => setCurrentSkill(index)}
+              >
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  {skill.icon}
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">{skill.skill}</h3>
+                <p className="text-sm text-gray-600">{skill.description}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Call to Action */}
-        <div 
-          data-card="action"
-          className={`transform transition-all duration-1000 delay-1200 ${visibleCards.includes('action') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white">
-            <div className="text-center">
-              <span className="text-6xl mb-6 block animate-bounce">🎯</span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Your Entrepreneurial Journey Starts Now!
-              </h2>
-              <p className="text-xl opacity-90 max-w-3xl mx-auto leading-relaxed mb-8">
-                You now have all the tools and knowledge to start building something amazing. 
-                Remember: every successful entrepreneur started with just an idea and the courage to begin.
-              </p>
-              
-              <div className="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                  <span className="text-3xl block mb-2">💡</span>
-                  <p className=" text-black font-semibold">Start with problems you see</p>
-                </div>
-                <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                  <span className="text-3xl block mb-2">🤖</span>
-                  <p className=" text-black font-semibold">Use AI as your co-pilot</p>
-                </div>
-                <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                  <span className="text-3xl block mb-2">👥</span>
-                  <p className=" text-black font-semibold">Listen to your users</p>
-                </div>
-                <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                  <span className="text-3xl block mb-2">🌟</span>
-                  <p className="text-black font-semibold">Build for good</p>
-                </div>
-              </div>
-              
-              <div className="mt-8">
-                <p className="text-lg font-semibold">
-                  The future needs young entrepreneurs like you. Go make it happen! 🚀
-                </p>
+        <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white rounded-3xl p-8 md:p-12">
+          <div className="text-center">
+            <div className="text-6xl mb-6">🚀</div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to Change the World?
+            </h2>
+            <p className="text-xl text-green-100 max-w-4xl mx-auto leading-relaxed mb-8">
+              You now have all the tools and knowledge to start your entrepreneurial journey. 
+              The future belongs to young innovators like you who can combine creativity, 
+              technology, and ethical thinking to solve real problems.
+            </p>
+            
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold mb-4">Your Next Steps:</h3>
+              <div className="space-y-3 text-left">
+                {[
+                  "Identify a problem you're passionate about solving",
+                  "Talk to potential customers to understand their needs",
+                  "Start small with a simple prototype or pilot",
+                  "Use AI tools to enhance your solution",
+                  "Stay ethical and think about your impact on society"
+                ].map((step, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center text-green-600 font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <span className="text-green-100">{step}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Key Takeaway */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 border-l-4 border-green-400">
+          <div className="text-center">
+            <div className="text-5xl mb-6">💡</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+              Remember This
+            </h2>
+            <p className="text-xl text-gray-700 max-w-4xl mx-auto font-medium mb-6">
+              Every great business started with someone who saw a problem and decided to solve it. 
+              With AI as your partner and ethical thinking as your guide, there's no limit to what you can achieve!
+            </p>
+            <div className="bg-white rounded-xl p-6 shadow-sm max-w-3xl mx-auto">
+              <p className="text-lg text-gray-600">
+                <strong className="text-green-600">Your Ideas</strong> + 
+                <strong className="text-emerald-600"> AI Tools</strong> + 
+                <strong className="text-teal-600"> Ethical Thinking</strong> = 
+                <strong className="text-green-700"> Future Success! 🌟</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
