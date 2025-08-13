@@ -20,6 +20,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import CoursesSkeleton from "@/CoursesDesign/CoursesSkeleton";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 // Module mapping for access control - centralized to avoid duplication
 const MODULE_MAPPING = {
@@ -770,6 +771,8 @@ const Courses = () => {
           </motion.div>
         </div>
       </div>
+
+      <ScrollToTopButton />
 
       {/* Filters Section - Non-sticky with Dropdown */}
       <div ref={filtersRef} className="max-w-7xl mx-auto px-6 py-6">

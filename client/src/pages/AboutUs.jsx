@@ -4,6 +4,7 @@ import { BookOpen, Linkedin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import AboutUsSkeleton from "@/AboutUsDesign/AboutUsSkeleton";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const AnimatedCard = ({ children, delay = 0, className = "" }) => (
   <motion.div
@@ -240,6 +241,8 @@ const AboutUs = () => {
             </div>
           </div>
         </div>
+
+        <ScrollToTopButton />
 
         {/* Stats Section */}
         <div
