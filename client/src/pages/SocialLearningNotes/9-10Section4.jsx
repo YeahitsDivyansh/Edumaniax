@@ -10,7 +10,7 @@ const Module4SelfDiscipline = ({ topicRefs }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setVisibleCards([0, 1, 2, 3, 4, 5, 6]);
+      setVisibleCards([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -74,7 +74,7 @@ const Module4SelfDiscipline = ({ topicRefs }) => {
 
   return (
     <div
-      id=",-4"
+      id="m-4"
       ref={(el) => {
         if (topicRefs?.current) {
           topicRefs.current["m-4"] = el;

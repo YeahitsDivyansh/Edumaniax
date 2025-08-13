@@ -1941,7 +1941,7 @@ useEffect(() => {
       <section className="relative h-[100vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
         <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
           <Navbar/>
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-16  flex-col items-center text-center px-4 sm:px-6">
+          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
             {/* Trust Badge */}
             <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-3 sm:mt-0 md:mt- md:mb-2">
               <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
