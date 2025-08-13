@@ -149,8 +149,8 @@ const MODULE_CONFIGS = {
  */
 class AccessController {
   constructor(userSubscription = null, selectedModule = null) {
-    console.log('AccessController: Initializing with subscriptions:', userSubscription);
-    console.log('AccessController: Selected module:', selectedModule);
+    // console.log('AccessController: Initializing with subscriptions:', userSubscription);
+    // console.log('AccessController: Selected module:', selectedModule);
     
     this.userSubscription = userSubscription;
     this.selectedModule = selectedModule;
@@ -158,11 +158,11 @@ class AccessController {
     this.soloModules = this.getSoloModules();
     this.trialStartDate = this.getTrialStartDate();
     
-    console.log('AccessController: Initialized with currentPlan:', this.currentPlan);
-    console.log('AccessController: Initialized with soloModules:', this.soloModules);
-    console.log('AccessController: Trial start date:', this.trialStartDate);
-    console.log('AccessController: Trial valid:', this.isTrialValid());
-    console.log('AccessController: Remaining trial days:', this.getRemainingTrialDays());
+    // console.log('AccessController: Initialized with currentPlan:', this.currentPlan);
+    // console.log('AccessController: Initialized with soloModules:', this.soloModules);
+    // console.log('AccessController: Trial start date:', this.trialStartDate);
+    // console.log('AccessController: Trial valid:', this.isTrialValid());
+    // console.log('AccessController: Remaining trial days:', this.getRemainingTrialDays());
   }
 
   /**
@@ -170,7 +170,7 @@ class AccessController {
    */
   getCurrentPlan() {
     if (!this.userSubscription || !Array.isArray(this.userSubscription)) {
-      console.log('AccessController: No subscriptions, defaulting to STARTER (trial access)');
+      // console.log('AccessController: No subscriptions, defaulting to STARTER (trial access)');
       return 'STARTER';
     }
 
@@ -184,22 +184,22 @@ class AccessController {
       return isActive && isNotExpired && hasRemainingDays;
     });
 
-    console.log('AccessController: Found', activeSubscriptions.length, 'active subscriptions');
+    // console.log('AccessController: Found', activeSubscriptions.length, 'active subscriptions');
 
     if (activeSubscriptions.length === 0) {
-      console.log('AccessController: No active subscriptions, defaulting to STARTER (trial access)');
+      // console.log('AccessController: No active subscriptions, defaulting to STARTER (trial access)');
       return 'STARTER';
     }
 
     // Return the highest tier among active subscriptions (don't mutate original array)
     for (const plan of [...PLAN_HIERARCHY].reverse()) {
       if (activeSubscriptions.some(sub => sub.planType === plan)) {
-        console.log('AccessController: Current plan determined as', plan);
+        // console.log('AccessController: Current plan determined as', plan);
         return plan;
       }
     }
 
-    console.log('AccessController: No matching plan found, defaulting to STARTER (trial access)');
+    // console.log('AccessController: No matching plan found, defaulting to STARTER (trial access)');
     return 'STARTER';
   }
 
@@ -208,7 +208,7 @@ class AccessController {
    */
   getSoloModules() {
     if (!this.userSubscription || !Array.isArray(this.userSubscription)) {
-      console.log('AccessController: No subscriptions or not an array');
+      // console.log('AccessController: No subscriptions or not an array');
       return [];
     }
 
@@ -222,11 +222,11 @@ class AccessController {
       return isActive && isSolo && isNotExpired && hasRemainingDays;
     });
 
-    console.log('AccessController: Found', activeSoloSubscriptions.length, 'active SOLO subscriptions');
+    // console.log('AccessController: Found', activeSoloSubscriptions.length, 'active SOLO subscriptions');
 
     // Extract module names from SOLO subscriptions
     const modules = activeSoloSubscriptions.map(sub => {
-      console.log('AccessController: Processing subscription', sub.id);
+      // console.log('AccessController: Processing subscription', sub.id);
       
       // First try to get from enriched selectedModule field (from server)
       if (sub.selectedModule) {
@@ -243,7 +243,7 @@ class AccessController {
         };
         
         const moduleKey = moduleMapping[sub.selectedModule] || sub.selectedModule?.toLowerCase();
-        console.log('AccessController: From enriched data, mapped', sub.selectedModule, 'to', moduleKey);
+        // console.log('AccessController: From enriched data, mapped', sub.selectedModule, 'to', moduleKey);
         return moduleKey;
       }
       
@@ -265,7 +265,7 @@ class AccessController {
             };
             
             const moduleKey = moduleMapping[parsedNotes.selectedModule] || parsedNotes.selectedModule?.toLowerCase();
-            console.log('AccessController: From notes JSON, mapped', parsedNotes.selectedModule, 'to', moduleKey);
+            // console.log('AccessController: From notes JSON, mapped', parsedNotes.selectedModule, 'to', moduleKey);
             return moduleKey;
           }
         } catch {
@@ -283,18 +283,18 @@ class AccessController {
           };
           
           const moduleKey = moduleMapping[sub.notes] || sub.notes?.toLowerCase();
-          console.log('AccessController: From notes directly, mapped', sub.notes, 'to', moduleKey);
+          // console.log('AccessController: From notes directly, mapped', sub.notes, 'to', moduleKey);
           return moduleKey;
         }
       }
       
       // Fallback to module field if it exists
       const fallback = sub.module;
-      console.log('AccessController: Using fallback', fallback);
+      // console.log('AccessController: Using fallback', fallback);
       return fallback;
     }).filter(Boolean);
 
-    console.log('AccessController: Final SOLO modules:', modules);
+    // console.log('AccessController: Final SOLO modules:', modules);
     return modules;
   }
 
@@ -314,7 +314,7 @@ class AccessController {
     
     // For users without subscriptions (new users), start trial from current date
     // This ensures they get full trial access
-    console.log('AccessController: No STARTER subscription found, starting trial from current date');
+    // console.log('AccessController: No STARTER subscription found, starting trial from current date');
     return new Date();
   }
 
@@ -326,7 +326,7 @@ class AccessController {
     
     // If no trial start date, allow trial (new users)
     if (!this.trialStartDate) {
-      console.log('AccessController: No trial start date, allowing trial access');
+      // console.log('AccessController: No trial start date, allowing trial access');
       return true;
     }
     
@@ -334,7 +334,7 @@ class AccessController {
     const daysDifference = Math.floor((currentDate - this.trialStartDate) / (1000 * 60 * 60 * 24));
     const isValid = daysDifference <= 7;
     
-    console.log('AccessController: Trial validation - days difference:', daysDifference, 'isValid:', isValid);
+    // console.log('AccessController: Trial validation - days difference:', daysDifference, 'isValid:', isValid);
     return isValid;
   }
 
@@ -346,7 +346,7 @@ class AccessController {
     
     // If no trial start date, give full 7 days (new users)
     if (!this.trialStartDate) {
-      console.log('AccessController: No trial start date, returning 7 days');
+      // console.log('AccessController: No trial start date, returning 7 days');
       return 7;
     }
     
@@ -354,7 +354,7 @@ class AccessController {
     const daysDifference = Math.floor((currentDate - this.trialStartDate) / (1000 * 60 * 60 * 24));
     const remainingDays = Math.max(0, 7 - daysDifference);
     
-    console.log('AccessController: Remaining trial days:', remainingDays);
+    // console.log('AccessController: Remaining trial days:', remainingDays);
     return remainingDays;
   }
 
@@ -371,7 +371,7 @@ class AccessController {
     // STARTER plan users can see all modules during trial period
     if (this.currentPlan === 'STARTER') {
       const hasAccess = this.isTrialValid();
-      console.log('AccessController: STARTER plan access to', moduleKey, ':', hasAccess);
+      // console.log('AccessController: STARTER plan access to', moduleKey, ':', hasAccess);
       return hasAccess;
     }
 
@@ -442,7 +442,7 @@ class AccessController {
     // STARTER plan users can access games for all modules (level 1 only) during trial
     if (this.currentPlan === 'STARTER') {
       const hasAccess = this.hasModuleAccess(moduleKey) && this.isTrialValid();
-      console.log('AccessController: STARTER plan game access to', moduleKey, ':', hasAccess);
+      // console.log('AccessController: STARTER plan game access to', moduleKey, ':', hasAccess);
       return hasAccess;
     }
 
@@ -969,18 +969,18 @@ class AccessController {
  * Hook for React components to use access control
  */
 export const useAccessControl = (userSubscription = null, selectedModule = null) => {
-  console.log('useAccessControl: Called with userSubscription:', userSubscription);
-  console.log('useAccessControl: Called with selectedModule:', selectedModule);
+  // console.log('useAccessControl: Called with userSubscription:', userSubscription);
+  // console.log('useAccessControl: Called with selectedModule:', selectedModule);
   
   // Use React.useMemo to recreate the AccessController only when dependencies change
   const accessController = React.useMemo(() => {
-    console.log('useAccessControl: Creating new AccessController');
+    // console.log('useAccessControl: Creating new AccessController');
     return new AccessController(userSubscription, selectedModule);
   }, [userSubscription, selectedModule]);
 
   // Use React.useMemo for the return object to avoid recreating it on every render
   return React.useMemo(() => {
-    console.log('useAccessControl: Returning access control methods');
+    // console.log('useAccessControl: Returning access control methods');
     return {
       currentPlan: accessController.currentPlan,
       soloModules: accessController.soloModules,

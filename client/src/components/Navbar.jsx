@@ -176,7 +176,7 @@ const cancelLogout = () => {
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      My Subscriptions
+                      My Subscription
                     </Link>
                   </div>
                   <hr className="my-1 border-gray-200" />

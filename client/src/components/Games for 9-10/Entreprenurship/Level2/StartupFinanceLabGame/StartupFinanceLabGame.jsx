@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Card, CardContent } from "../../Level1/LeanMachineGame/Card";
 import { Button } from "../../Level1/LeanMachineGame/Button";
 import {
@@ -63,7 +63,9 @@ export default function StartupFinanceFunGame() {
 
   //for performance
   const { updatePerformance } = usePerformance();
- const [startTime,setStartTime] = useState(Date.now());
+  const [startTime,setStartTime] = useState(Date.now());
+  const currentDilemma = dilemmas[dilemmaIndex];
+
   useEffect(() => {
     if (!currentDilemma && decisionLog.length === dilemmas.length) {
       const endTime = Date.now();
@@ -153,8 +155,6 @@ export default function StartupFinanceFunGame() {
       return nextIndex;
     });
   };
-
-  const currentDilemma = dilemmas[dilemmaIndex];
 
   const estimatedLeads = Math.floor((allocations["Marketing"] || 0) / 500);
   const conversionRate = 0.15; // from 0.1

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { useDM } from "@/contexts/DMContext";
@@ -8,14 +8,17 @@ const MatchingGameResult = () => {
   const { completeDMChallenge } = useDM();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    completeDMChallenge(1,2);
-  }, []);
-
-
   const location = useLocation();
-  console.log(location);
-  const score = location.state.score;
+  const score = location.state?.score;
+
+  useEffect(() => {
+    if (typeof score === "number") {
+      completeDMChallenge(1, 2);
+    }
+    // Only run when score changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [score]);
+
 
   let remark = "";
 
@@ -35,36 +38,48 @@ const MatchingGameResult = () => {
 
   useEffect(() => {
     const myCanvas = canvasRef.current;
-    const myConfetti = confetti.create(myCanvas, {
-      resize: true,
-      useWorker: true,
-    });
+    if (!myCanvas) return;
 
-    const duration = 5 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-    const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-    const interval = window.setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-      myConfetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+    // Prevent multiple confetti initializations
+    let isConfettiInitialized = false;
+    if (!isConfettiInitialized) {
+      const myConfetti = confetti.create(myCanvas, {
+        resize: false,
+        useWorker: true,
       });
-      myConfetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-      });
-    }, 250);
+      isConfettiInitialized = true;
+
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+      const interval = window.setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        myConfetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        });
+        myConfetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        });
+      }, 250);
+
+      // Cleanup to avoid multiple initializations
+      return () => {
+        clearInterval(interval);
+      };
+    }
   }, []);
 
   return (
@@ -75,13 +90,15 @@ const MatchingGameResult = () => {
       <div className="w-full h-[60%] md:h-[80%] lg:h-[90%] rounded-2xl relative shadow-2xl flex flex-col justify-center items-center bg-gradient-to-br from-pink-200 to-yellow-100 text-center p-6">
         <canvas
           ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-full pointer-events-none"
+          width={800}
+          height={600}
+          className="absolute top-0 left-0 pointer-events-none"
         />
         <h1 className="text-xl md:text-5xl font-extrabold text-purple-700 mb-4 animate-bounce">
           🎉 Game Complete! 🎉
         </h1>
         <p className=" text-xs md:text-2xl text-gray-800 mb-6">
-          Your score : {score}/4 🧠✨
+          Your score : {score > 4 ? 4 : score}/4 🧠✨
           <br />
           {remark}
         </p>
