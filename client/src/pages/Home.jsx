@@ -6,6 +6,8 @@ import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { FaArrowUp } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccessControl } from "../utils/accessControl";
+import { isCurrentPlan, shouldGrayOut, getButtonText, isButtonDisabled, getUpgradeSuggestion, handlePlanClick } from "../utils/pricingUtils";
 import emailjs from "@emailjs/browser";
 
 // Custom hook for mobile detection
@@ -505,7 +507,7 @@ const ProgressCardComponent = () => {
           onMouseEnter={isMobile ? undefined : handleButtonHover}
           onMouseLeave={isMobile ? undefined : handleButtonLeave}
         >
-          ✨ Let's Play
+          ✨ Play Now
         </button>
       </div>
     </div>
@@ -915,11 +917,16 @@ const Home = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
-  const [userSubscriptions, setUserSubscriptions] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
   const { user } = useAuth();
   const [showScroll, setShowScroll] = useState(false);
+  // Track if guest has played a level 1 game
+  const [guestPlayed, setGuestPlayed] = useState(false);
+  // Use access control with full subscription data
+  const accessControl = useAccessControl(subscriptions, selectedModule);
   useEffect(() => {
     const fetchUserSubscriptions = async () => {
       if (!user?.id) return;
@@ -931,11 +938,14 @@ const Home = () => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Extract subscriptions from the response object
+          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptions) 
+            ? subscriptions.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -958,13 +968,26 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setUserSubscriptions([]);
+        setSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }
     };
 
     fetchUserSubscriptions();
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log('Home: Subscription updated event received:', event.detail);
+      fetchUserSubscriptions(); // Re-fetch subscription data
+    };
+
+    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    };
   }, [user?.id]);
 
 const [isZoomed, setIsZoomed] = useState(false);
@@ -995,11 +1018,14 @@ useEffect(() => {
         
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
+          
+          // Extract subscriptions from the response object
+          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
           
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
+          const activeSubscriptions = Array.isArray(subscriptions) 
+            ? subscriptions.filter(sub => 
                 sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
               )
             : [];
@@ -1022,7 +1048,7 @@ useEffect(() => {
         }
       } catch (error) {
         console.error('Error fetching subscriptions:', error);
-        setUserSubscriptions([]);
+        setSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
       }
@@ -2023,16 +2049,47 @@ useEffect(() => {
 
                   {/* Buttons Row - Improved Spacing */}
                   <div className="flex gap-2 mt-auto">
-                    <Link to={course.gamesLink} className="flex-1">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+                    {user ? (
+                      hasActiveSubscription ? (
+                        <Link to={course.gamesLink} className="flex-1">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+                          >
+                            <img src="/game.png" alt="Game" className="w-5 h-5" />
+                            Play &gt;
+                          </motion.button>
+                        </Link>
+                      ) : (
+                        <Link to="/pricing" className="flex-1">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full bg-gray-400 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-gray-500 transition duration-300 text-sm flex items-center justify-center gap-2"
+                            title="Upgrade to access games"
+                          >
+                            <img src="/game.png" alt="Game" className="w-5 h-5 opacity-70" />
+                            Upgrade &gt;
+                          </motion.button>
+                        </Link>
+                      )
+                    ) : (
+                      <button
+                        className={`w-[60%] bg-[#10903E] text-white font-medium py-1 px-2 rounded-lg transition duration-300 text-sm flex items-center justify-center gap-2 ${guestPlayed ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'}`}
+                        onClick={() => {
+                          if (!guestPlayed) {
+                            setGuestPlayed(true);
+                            window.open(course.gamesLink + '?level=1', '_blank');
+                          }
+                        }}
+                        disabled={guestPlayed}
+                        title={guestPlayed ? 'You have already played your free trial game.' : 'Play Level 1 Game'}
                       >
                         <img src="/game.png" alt="Game" className="w-5 h-5" />
-                        Let's Play &gt;
-                      </motion.button>
-                    </Link>
+                        {guestPlayed ? 'Trial Used' : 'Play Now'}
+                      </button>
+                    )}
 
                     <Link to={course.notesLink}>
                       <motion.button
@@ -2109,17 +2166,36 @@ useEffect(() => {
             {plans.map((plan, idx) => (
               <div
                 key={idx}
-                className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
+                className={`bg-white rounded-3xl p-6 border shadow-lg transition-all duration-300 flex flex-col justify-between relative ${
+                  isCurrentPlan(plan.title)
+                    ? "border-green-500 ring-2 ring-green-200 bg-green-50"
+                    : shouldGrayOut(plan.title) && !isCurrentPlan(plan.title)
+                    ? "border-gray-400 bg-gray-50"
+                    : plan.title === "PRO PLAN"
+                    ? "border-[#068F36]"
+                    : "border-gray-200 hover:border-[#068F36]"
+                }`}
+                style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
               >
                 <div className="relative mb-4">
-                  {plan.title === "PRO PLAN" && (
+                  {isCurrentPlan(plan.title) && (
+                    <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                      ✓ Current Plan
+                    </div>
+                  )}
+                  {shouldGrayOut(plan.title) && !isCurrentPlan(plan.title) && (
+                    <div className="absolute -top-3 -right-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20">
+                      ✓ Owned
+                    </div>
+                  )}
+                  {plan.title === "PRO PLAN" && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
                     <img
                       src="/pricingDesign/save20.svg"
                       alt="Save 20%"
                       className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                     />
                   )}
-                  {plan.tag && (
+                  {plan.tag && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
                     <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
                       {plan.tag}
                     </span>
@@ -2137,8 +2213,21 @@ useEffect(() => {
                 <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
                 <hr className="my-3 border-gray-300" />
                 <p className="text-4xl font-extrabold text-[#000B33] mt-1">
-                  {plan.price}
+                  {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 ? (
+                    <span>
+                      <span className="text-2xl line-through text-gray-500">₹1433</span>
+                      <br />
+                      <span className="text-green-600">₹{accessControl.calculateUpgradePrice('PRO').totalPrice}</span>
+                    </span>
+                  ) : (
+                    plan.price
+                  )}
                 </p>
+                {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 && (
+                  <p className="text-xs text-green-600 font-semibold mt-1">
+                    Save ₹{accessControl.calculateUpgradePrice('PRO').soloDiscount} from your SOLO plans!
+                  </p>
+                )}
                 <p className="text-xs text-black font-semibold mt-1">
                   {plan.frequency}
                 </p>
@@ -2173,12 +2262,47 @@ useEffect(() => {
                   })}
                 </ul>
 
-                <Link
-                  to="/payment-required"
-                  className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
+                <button
+                  onClick={() => handlePlanClick(accessControl, plan, user, navigate)}
+                  className={`font-semibold py-2 px-4 rounded-md transition mt-4 inline-block text-center w-full ${
+                    isCurrentPlan(accessControl, plan.title, user)
+                      ? "bg-green-500 text-white cursor-default"
+                      : shouldGrayOut(accessControl, plan.title, user) && !isCurrentPlan(accessControl, plan.title, user)
+                      ? "bg-gray-500 text-white cursor-not-allowed"
+                      : isButtonDisabled(accessControl, plan, user)
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#068F36] text-white hover:brightness-110"
+                  }`}
+                  disabled={isButtonDisabled(accessControl, plan, user)}
                 >
-                  {plan.button}
-                </Link>
+                  {getButtonText(accessControl, plan, user)}
+                </button>
+                
+                {/* Upgrade suggestion for current plan users or special SOLO case */}
+                {(isCurrentPlan(accessControl, plan.title, user) || (plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO')) && getUpgradeSuggestion(accessControl, plan, user) && (
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-gray-600 mb-2">{getUpgradeSuggestion(accessControl, plan, user)}</p>
+                    {plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.getAvailableForPurchase().length === 0 ? (
+                      <button
+                        onClick={() => navigate(`/payment?plan=PRO`)}
+                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                      >
+                        Upgrade to PRO
+                      </button>
+                    ) : isCurrentPlan(accessControl, plan.title, user) ? (
+                      <button
+                        onClick={() => navigate(`/payment?plan=${
+                          plan.title === "STARTER PLAN" ? "SOLO" :
+                          plan.title === "SOLO PLAN" ? "PRO" :
+                          plan.title === "PRO PLAN" ? "INSTITUTIONAL" : ""
+                        }`)}
+                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                      >
+                       Upgrade Now
+                      </button>
+                    ) : null}
+                  </div>
+                )}
               </div>
             ))}
           </div>

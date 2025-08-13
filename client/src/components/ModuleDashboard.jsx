@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubscription } from '../contexts/SubscriptionContext';
+import { useSubscription } from '../contexts/useSubscription';
 import { useAccessControl } from '../utils/accessControl';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { 

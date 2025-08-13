@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, NavLink, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronRight } from "lucide-react";
@@ -26,7 +26,6 @@ const Dashboard = () => {
   const [payments, setPayments] = useState([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const [userSubscription, setUserSubscription] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
 
   // Image cropping states
@@ -101,7 +100,157 @@ const Dashboard = () => {
     fetchUserComments();
   }, [user?.id, user?.name, getUserComments]);
 
-  // Fetch user subscription and payment data
+  // Auto-refresh subscription data daily and handle real-time updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Function to refresh subscription data
+    const refreshSubscriptionData = async () => {
+      console.log("🔄 Auto-refreshing subscription data...");
+      await fetchUserSubscriptionData();
+    };
+
+    // Set up daily refresh (24 hours)
+    const dailyRefreshInterval = setInterval(
+      refreshSubscriptionData,
+      24 * 60 * 60 * 1000
+    );
+
+    // Set up hourly refresh for more frequent updates during active usage
+    const hourlyRefreshInterval = setInterval(
+      refreshSubscriptionData,
+      60 * 60 * 1000
+    );
+
+    // Refresh on window focus (when user returns to the tab)
+    const handleWindowFocus = () => {
+      console.log("👁️ Window focused, refreshing subscription data...");
+      refreshSubscriptionData();
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    // Cleanup intervals and event listeners on unmount
+    return () => {
+      clearInterval(dailyRefreshInterval);
+      clearInterval(hourlyRefreshInterval);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [user?.id]);
+
+  // Move fetchUserSubscriptionData function outside useEffect so it can be reused
+  const fetchUserSubscriptionData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoadingSubscriptions(true);
+      setLoadingPayments(true);
+
+      // Use Promise.all to fetch both subscription and payment data in parallel
+      const [subscriptionResponse, paymentResponse] = await Promise.all([
+        fetch(
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
+        ),
+        fetch(
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/payments/${user.id}`
+        ),
+      ]);
+
+      // Process subscription data
+      if (subscriptionResponse.ok) {
+        const subscriptionData = await subscriptionResponse.json();
+        // Handle the API response format {success: true, subscriptions: [...]}
+        const userSubscriptions = subscriptionData.success
+          ? subscriptionData.subscriptions
+          : [];
+        setSubscriptions(userSubscriptions);
+
+        console.log("📊 Updated subscription data:", userSubscriptions);
+
+        // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+        // but the access control will handle all purchased modules
+        if (userSubscriptions.length > 0) {
+          const firstActiveSubscription = userSubscriptions.find(
+            (sub) =>
+              (sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()) ||
+              (sub.isExpired === false && sub.remainingDays > 0)
+          );
+
+          if (firstActiveSubscription) {
+            // Parse notes to get selectedModule if it exists (for SOLO plans)
+            if (
+              firstActiveSubscription.notes &&
+              firstActiveSubscription.planType === "SOLO"
+            ) {
+              try {
+                const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                const rawModule = parsedNotes.selectedModule;
+
+                // Map the display name to the correct module key
+                const moduleMapping = {
+                  "Fundamentals of Finance": "finance",
+                  "Computer Science": "computers",
+                  "Fundamentals of Law": "law",
+                  "Communication Mastery": "communication",
+                  "Entrepreneurship Bootcamp": "entrepreneurship",
+                  "Digital Marketing Pro": "digital-marketing",
+                  "Leadership & Adaptability": "leadership",
+                  "Environmental Sustainability": "environment",
+                  "Wellness & Mental Health": "sel",
+                };
+
+                const mappedModule =
+                  moduleMapping[rawModule] || rawModule?.toLowerCase();
+                setSelectedModule(mappedModule);
+              } catch {
+                // If notes is not JSON, treat as plain text and map it
+                const moduleMapping = {
+                  "Fundamentals of Finance": "finance",
+                  "Computer Science": "computers",
+                  "Fundamentals of Law": "law",
+                  "Communication Mastery": "communication",
+                  "Entrepreneurship Bootcamp": "entrepreneurship",
+                  "Digital Marketing Pro": "digital-marketing",
+                  "Leadership & Adaptability": "leadership",
+                  "Environmental Sustainability": "environment",
+                  "Wellness & Mental Health": "sel",
+                };
+
+                const mappedModule =
+                  moduleMapping[firstActiveSubscription.notes] ||
+                  firstActiveSubscription.notes?.toLowerCase();
+                setSelectedModule(mappedModule);
+              }
+            }
+          }
+        }
+      }
+
+      // Process payment data
+      if (paymentResponse.ok) {
+        const paymentData = await paymentResponse.json();
+        setPayments(Array.isArray(paymentData) ? paymentData : []);
+      }
+    } catch (error) {
+      console.error("Error fetching user subscription/payment data:", error);
+      setSubscriptions([]);
+      setPayments([]);
+    } finally {
+      setLoadingSubscriptions(false);
+      setLoadingPayments(false);
+    }
+  }, [user?.id]);
+
+  // Fetch user subscription and payment data on component mount
+  useEffect(() => {
+    fetchUserSubscriptionData();
+  }, [user?.id]);
+
+  // Original fetch useEffect (keeping for compatibility but moving logic to function above)
   useEffect(() => {
     const fetchUserSubscriptionData = async () => {
       if (!user?.id) return;
@@ -110,124 +259,69 @@ const Dashboard = () => {
         setLoadingSubscriptions(true);
         setLoadingPayments(true);
 
-        // Fetch user subscriptions
-        const subscriptionResponse = await fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/subscriptions/${user.id}`
-        );
+        // Use Promise.all to fetch both subscription and payment data in parallel
+        const [subscriptionResponse, paymentResponse] = await Promise.all([
+          fetch(
+            `${
+              import.meta.env.VITE_API_URL || "http://localhost:3000"
+            }/payment/subscriptions/${user.id}`
+          ),
+          fetch(
+            `${
+              import.meta.env.VITE_API_URL || "http://localhost:3000"
+            }/payment/payments/${user.id}`
+          ),
+        ]);
 
+        // Process subscription data
         if (subscriptionResponse.ok) {
           const subscriptionData = await subscriptionResponse.json();
-          setSubscriptions(
-            Array.isArray(subscriptionData) ? subscriptionData : []
-          );
-
-          // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptionData)
-            ? subscriptionData.filter(
-                (sub) =>
-                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
-              )
+          // Handle the API response format {success: true, subscriptions: [...]}
+          const userSubscriptions = subscriptionData.success
+            ? subscriptionData.subscriptions
             : [];
+          setSubscriptions(userSubscriptions);
 
-          // Define plan hierarchy to find the highest plan
-          const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
-
-          let highestActiveSubscription = null;
-
-          // Find the highest tier among active and valid subscriptions
-          for (const plan of planHierarchy.reverse()) {
-            const subscription = activeSubscriptions.find(
-              (sub) => sub.planType === plan
+          // For multiple SOLO subscriptions, we'll use the first one for selectedModule
+          // but the access control will handle all purchased modules
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(
+              (sub) =>
+                sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
             );
-            if (subscription) {
-              highestActiveSubscription = subscription;
-              break;
-            }
-          }
 
-          if (highestActiveSubscription) {
-            // Parse notes to get selectedModule if it exists
-            let selectedModuleFromSub = null;
-            if (highestActiveSubscription.notes) {
-              try {
-                const parsedNotes = JSON.parse(highestActiveSubscription.notes);
-                const rawModule = parsedNotes.selectedModule;
+            if (firstActiveSubscription) {
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (
+                firstActiveSubscription.notes &&
+                firstActiveSubscription.planType === "SOLO"
+              ) {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
 
-                // Map the display name to the correct module key
-                const moduleMapping = {
-                  // Full display names from UI
-                  "Finance Management": "finance",
-                  "Digital Marketing": "digital-marketing",
-                  "Communication Skills": "communication",
-                  "Computer Science": "computers",
-                  Entrepreneurship: "entrepreneurship",
-                  "Environmental Science": "environment",
-                  "Legal Awareness": "law",
-                  "Leadership Skills": "leadership",
-                  "Social Emotional Learning": "sel",
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    "Fundamentals of Finance": "finance",
+                    "Computer Science": "computers",
+                    "Fundamentals of Law": "law",
+                    "Communication Mastery": "communication",
+                    "Entrepreneurship Bootcamp": "entrepreneurship",
+                    "Digital Marketing Pro": "digital-marketing",
+                    "Leadership & Adaptability": "leadership",
+                    "Environmental Sustainability": "environment",
+                    "Wellness & Mental Health": "sel",
+                  };
 
-                  // Short names (legacy support)
-                  Leadership: "leadership",
-                  Finance: "finance",
-                  Communication: "communication",
-
-                  // Course-specific names from screenshots
-                  "Fundamentals of Finance": "finance",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                };
-
-                selectedModuleFromSub =
-                  moduleMapping[rawModule] || rawModule?.toLowerCase();
-              } catch {
-                // If notes is not JSON, treat as plain text and map it
-                const moduleMapping = {
-                  // Full display names from UI
-                  "Finance Management": "finance",
-                  "Digital Marketing": "digital-marketing",
-                  "Communication Skills": "communication",
-                  "Computer Science": "computers",
-                  Entrepreneurship: "entrepreneurship",
-                  "Environmental Science": "environment",
-                  "Legal Awareness": "law",
-                  "Leadership Skills": "leadership",
-                  "Social Emotional Learning": "sel",
-
-                  // Short names (legacy support)
-                  Leadership: "leadership",
-                  Finance: "finance",
-                  Communication: "communication",
-
-                  // Course-specific names from screenshots
-                  "Fundamentals of Finance": "finance",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                };
-
-                selectedModuleFromSub =
-                  moduleMapping[highestActiveSubscription.notes] ||
-                  highestActiveSubscription.notes?.toLowerCase();
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error("Error parsing subscription notes:", error);
+                }
               }
             }
-
-            setSelectedModule(selectedModuleFromSub);
-            setUserSubscription({
-              plan: highestActiveSubscription.planType,
-              status: highestActiveSubscription.status,
-              startDate: highestActiveSubscription.startDate,
-              endDate: highestActiveSubscription.endDate,
-              selectedModule: selectedModuleFromSub,
-            });
+          } else {
+            setSelectedModule(null);
           }
         } else {
           console.log(
@@ -237,13 +331,7 @@ const Dashboard = () => {
           setSubscriptions([]);
         }
 
-        // Fetch user payments
-        const paymentResponse = await fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/payments/${user.id}`
-        );
-
+        // Process payment data
         if (paymentResponse.ok) {
           const paymentData = await paymentResponse.json();
           setPayments(Array.isArray(paymentData) ? paymentData : []);
@@ -262,6 +350,22 @@ const Dashboard = () => {
     };
 
     fetchUserSubscriptionData();
+
+    // Listen for subscription updates from payment completion
+    const handleSubscriptionUpdate = (event) => {
+      console.log("Subscription updated event received:", event.detail);
+      fetchUserSubscriptionData(); // Re-fetch subscription data
+    };
+
+    window.addEventListener("subscriptionUpdated", handleSubscriptionUpdate);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener(
+        "subscriptionUpdated",
+        handleSubscriptionUpdate
+      );
+    };
   }, [user?.id]);
 
   // Refresh comments when user returns to the dashboard (page focus)
@@ -302,6 +406,75 @@ const Dashboard = () => {
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [user?.id, user?.name, getUserComments]);
+
+  // Listen for subscription updates from payment completion
+  useEffect(() => {
+    const handleSubscriptionUpdate = async (event) => {
+      console.log("Dashboard: Subscription update detected", event.detail);
+
+      if (user?.id && event.detail?.subscriptions) {
+        // Set loading state
+        setLoadingSubscriptions(true);
+
+        try {
+          // Update subscription state with the new data
+          const userSubscriptions = event.detail.subscriptions;
+          setSubscriptions(userSubscriptions);
+
+          // Update selected module if needed
+          if (userSubscriptions.length > 0) {
+            const firstActiveSubscription = userSubscriptions.find(
+              (sub) =>
+                sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
+            );
+
+            if (firstActiveSubscription) {
+              // Parse notes to get selectedModule if it exists (for SOLO plans)
+              if (
+                firstActiveSubscription.notes &&
+                firstActiveSubscription.planType === "SOLO"
+              ) {
+                try {
+                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+                  const rawModule = parsedNotes.selectedModule;
+
+                  // Map the display name to the correct module key
+                  const moduleMapping = {
+                    "Fundamentals of Finance": "finance",
+                    "Computer Science": "computers",
+                    "Fundamentals of Law": "law",
+                    "Communication Mastery": "communication",
+                    "Entrepreneurship Bootcamp": "entrepreneurship",
+                    "Digital Marketing Pro": "digital-marketing",
+                    "Leadership & Adaptability": "leadership",
+                    "Environmental Sustainability": "environment",
+                    "Wellness & Mental Health": "sel",
+                  };
+
+                  const mappedModule = moduleMapping[rawModule] || rawModule;
+                  setSelectedModule(mappedModule);
+                } catch (error) {
+                  console.error("Error parsing subscription notes:", error);
+                }
+              }
+            }
+          }
+        } finally {
+          // Clear loading state
+          setLoadingSubscriptions(false);
+        }
+      }
+    };
+
+    window.addEventListener("subscriptionUpdated", handleSubscriptionUpdate);
+
+    return () => {
+      window.removeEventListener(
+        "subscriptionUpdated",
+        handleSubscriptionUpdate
+      );
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user && role !== "admin" && role !== "ADMIN" && role !== "SALES") {
@@ -586,7 +759,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen font-sans">
       {/* Sidebar */}
-      <aside className="w-56 bg-white shadow-lg flex flex-col py-8 px-4">
+      <aside className="hidden lg:flex w-56 bg-white shadow-lg flex-col py-8 px-4">
         <div>
           <Link to="/" className="flex items-center gap-2 mb-10">
             <img
@@ -710,6 +883,108 @@ const Dashboard = () => {
         </div>
       </aside>
 
+      {/* Bottom Navigation (Mobile only) */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 flex justify-around py-2">
+        <button
+          className={`flex flex-col items-center ${
+            selectedSection === "profile" ? "text-green-600" : "text-gray-400"
+          }`}
+          onClick={() => setSelectedSection("profile")}
+        >
+          <img
+            src="/dashboardDesign/profile.svg"
+            alt="Profile"
+            className="w-5 h-5"
+            style={{
+              filter:
+                selectedSection === "profile"
+                  ? "grayscale(0%)"
+                  : "grayscale(100%)",
+            }}
+          />
+          <span className="text-xs">Profile</span>
+        </button>
+
+        {role !== "admin" && role !== "ADMIN" && role !== "SALES" && (
+          <button
+            className={`flex flex-col items-center ${
+              selectedSection === "modules" ? "text-green-600" : "text-gray-400"
+            }`}
+            onClick={() => setSelectedSection("modules")}
+          >
+            <img
+              src={
+                selectedSection === "modules"
+                  ? "/dashboardDesign/moduleGreen.svg"
+                  : "/dashboardDesign/modules.svg"
+              }
+              alt="Modules"
+              className="w-5 h-5"
+            />
+            <span className="text-xs">Modules</span>
+          </button>
+        )}
+
+        {role === "SALES" && (
+          <Link
+            to="/sales/dashboard"
+            className="flex flex-col items-center text-blue-500"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            <span className="text-xs">Sales</span>
+          </Link>
+        )}
+
+        {role !== "admin" && (
+          <button
+            className={`flex flex-col items-center ${
+              selectedSection === "subscriptions"
+                ? "text-green-600"
+                : "text-gray-400"
+            }`}
+            onClick={() => setSelectedSection("subscriptions")}
+          >
+            <img
+              src="/dashboardDesign/profile.svg"
+              alt="Subscriptions"
+              className="w-5 h-5"
+              style={{
+                filter:
+                  selectedSection === "subscriptions"
+                    ? "grayscale(0%)"
+                    : "grayscale(100%)",
+              }}
+            />
+            <span className="text-xs">Subs</span>
+          </button>
+        )}
+
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center text-red-500"
+        >
+          <img
+            src="/dashboardDesign/logout.svg"
+            alt="Logout"
+            className="w-5 h-5"
+          />
+          <span className="text-xs">Logout</span>
+        </button>
+      </nav>
+
       {/* Main Content */}
       <main className="flex-1 bg-gray-100 overflow-x-hidden">
         {/* Admin View */}
@@ -781,36 +1056,36 @@ const Dashboard = () => {
                                   [
                                     {
                                       key: "finance",
-                                      name: "Finance Management",
-                                    },
-                                    {
-                                      key: "digital-marketing",
-                                      name: "Digital Marketing",
-                                    },
-                                    {
-                                      key: "communication",
-                                      name: "Communication Skills",
+                                      name: "Fundamentals of Finance",
                                     },
                                     {
                                       key: "computers",
                                       name: "Computer Science",
                                     },
+                                    { key: "law", name: "Fundamentals of Law" },
+                                    {
+                                      key: "communication",
+                                      name: "Communication Mastery",
+                                    },
                                     {
                                       key: "entrepreneurship",
-                                      name: "Entrepreneurship",
+                                      name: "Entrepreneurship Bootcamp",
+                                    },
+                                    {
+                                      key: "digital-marketing",
+                                      name: "Digital Marketing Pro",
+                                    },
+                                    {
+                                      key: "leadership",
+                                      name: "Leadership & Adaptability",
                                     },
                                     {
                                       key: "environment",
-                                      name: "Environmental Science",
-                                    },
-                                    { key: "law", name: "Legal Awareness" },
-                                    {
-                                      key: "leadership",
-                                      name: "Leadership Skills",
+                                      name: "Environmental Sustainability",
                                     },
                                     {
                                       key: "sel",
-                                      name: "Social Emotional Learning",
+                                      name: "Wellness & Mental Health",
                                     },
                                   ].filter((module) =>
                                     hasModuleAccess(module.key)
@@ -1671,7 +1946,7 @@ const Dashboard = () => {
                 {/* Current Plan Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Current Plan
+                    Current Plans
                   </h3>
                   {loadingSubscriptions ? (
                     <div className="flex justify-center items-center py-8">
@@ -1680,89 +1955,174 @@ const Dashboard = () => {
                         Loading subscription data...
                       </span>
                     </div>
-                  ) : userSubscription ? (
-                    <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="text-xl font-semibold text-green-800">
-                            {userSubscription.plan.toUpperCase()} PLAN
-                          </h4>
-                          <p className="text-gray-600 text-sm">
-                            Subscribed on:{" "}
-                            {new Date(
-                              userSubscription.startDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              userSubscription.status === "ACTIVE"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {userSubscription.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Valid Until:</p>
-                          <p className="font-semibold">
-                            {new Date(
-                              userSubscription.endDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Plan Type:</p>
-                          <p className="font-semibold">
-                            {userSubscription.plan}
-                          </p>
-                        </div>
-                        {userSubscription.selectedModule && (
-                          <div className="md:col-span-2">
-                            <p className="text-gray-500">Selected Module:</p>
-                            <p className="font-semibold">
-                              {userSubscription.selectedModule}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                  ) : subscriptions && subscriptions.length > 0 ? (
+                    <div className="space-y-4">
+                      {subscriptions
+                        .filter(
+                          (sub) =>
+                            sub.status === "ACTIVE" &&
+                            new Date(sub.endDate) > new Date()
+                        )
+                        .map((subscription, index) => {
+                          let selectedModule = null;
+                          if (
+                            subscription.notes &&
+                            subscription.planType === "SOLO"
+                          ) {
+                            try {
+                              const parsedNotes = JSON.parse(
+                                subscription.notes
+                              );
+                              selectedModule = parsedNotes.selectedModule;
+                            } catch (error) {
+                              console.error(
+                                "Error parsing subscription notes:",
+                                error
+                              );
+                            }
+                          }
 
-                      {/* Add upgrade button for STARTER and PRO plans */}
-                      {(userSubscription.plan === "STARTER" ||
-                        userSubscription.plan === "PRO") && (
-                        <div className="mt-4 pt-4 border-t border-green-200">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm text-gray-600">
-                                {userSubscription.plan === "STARTER"
-                                  ? "Unlock premium modules and certificates"
-                                  : "Get institutional features and live sessions"}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() =>
-                                navigate(
-                                  `/payment?plan=${
-                                    userSubscription.plan === "STARTER"
-                                      ? "SOLO"
-                                      : "INSTITUTIONAL"
-                                  }`
-                                )
-                              }
-                              className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition duration-300 text-sm"
+                          return (
+                            <div
+                              key={subscription.id || index}
+                              className="border border-green-200 rounded-lg p-4 bg-green-50"
                             >
-                              Upgrade to{" "}
-                              {userSubscription.plan === "STARTER"
-                                ? "SOLO"
-                                : "INSTITUTIONAL"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h4 className="text-xl font-semibold text-green-800">
+                                    {subscription.planType.toUpperCase()} PLAN
+                                  </h4>
+                                  <p className="text-gray-600 text-sm">
+                                    Subscribed on:{" "}
+                                    {new Date(
+                                      subscription.startDate
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                      subscription.status === "ACTIVE"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {subscription.status}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-500">Valid Until:</p>
+                                  <p className="font-semibold">
+                                    {new Date(
+                                      subscription.endDate
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">Plan Type:</p>
+                                  <p className="font-semibold">
+                                    {subscription.planType}
+                                  </p>
+                                </div>
+                                {selectedModule && (
+                                  <div className="md:col-span-2">
+                                    <p className="text-gray-500">
+                                      Selected Module:
+                                    </p>
+                                    <p className="font-semibold">
+                                      {selectedModule}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Show remaining days with enhanced display */}
+                              <div className="mt-3 pt-3 border-t border-green-200">
+                                {(() => {
+                                  // Use enriched data if available, otherwise calculate manually
+                                  let remainingDays;
+                                  let isExpired = false;
+
+                                  if (
+                                    subscription.remainingDays !== undefined
+                                  ) {
+                                    // Use enriched data from subscription manager
+                                    remainingDays = subscription.remainingDays;
+                                    isExpired =
+                                      subscription.isExpired ||
+                                      remainingDays <= 0;
+                                  } else {
+                                    // Fallback to manual calculation
+                                    const endDate = new Date(
+                                      subscription.endDate
+                                    );
+                                    const currentDate = new Date();
+                                    const timeDiff =
+                                      endDate.getTime() - currentDate.getTime();
+                                    remainingDays = Math.ceil(
+                                      timeDiff / (1000 * 3600 * 24)
+                                    );
+                                    isExpired = remainingDays <= 0;
+                                  }
+
+                                  if (!isExpired && remainingDays > 0) {
+                                    // Active subscription
+                                    let textColor = "text-green-600";
+                                    let bgColor = "bg-green-50";
+
+                                    // Change color based on urgency
+                                    if (remainingDays <= 3) {
+                                      textColor = "text-red-600";
+                                      bgColor = "bg-red-50";
+                                    } else if (remainingDays <= 7) {
+                                      textColor = "text-yellow-600";
+                                      bgColor = "bg-yellow-50";
+                                    }
+
+                                    return (
+                                      <div
+                                        className={`p-2 rounded-lg ${bgColor}`}
+                                      >
+                                        <p
+                                          className={`${textColor} text-sm font-medium flex items-center gap-2`}
+                                        >
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          {remainingDays} day
+                                          {remainingDays !== 1 ? "s" : ""}{" "}
+                                          remaining
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expires on{" "}
+                                          {new Date(
+                                            subscription.endDate
+                                          ).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    );
+                                  } else {
+                                    // Expired subscription
+                                    return (
+                                      <div className="p-2 rounded-lg bg-red-50">
+                                        <p className="text-red-600 text-sm font-medium flex items-center gap-2">
+                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
+                                          Expired
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Expired on{" "}
+                                          {new Date(
+                                            subscription.endDate
+                                          ).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   ) : (
                     <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
@@ -1786,15 +2146,24 @@ const Dashboard = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { name: "Finance Management", key: "finance" },
-                      { name: "Digital Marketing", key: "digital-marketing" },
-                      { name: "Communication Skills", key: "communication" },
+                      { name: "Fundamentals of Finance", key: "finance" },
                       { name: "Computer Science", key: "computers" },
-                      { name: "Entrepreneurship", key: "entrepreneurship" },
-                      { name: "Environmental Science", key: "environment" },
-                      { name: "Legal Awareness", key: "law" },
-                      { name: "Leadership Skills", key: "leadership" },
-                      { name: "Social Emotional Learning", key: "sel" },
+                      { name: "Fundamentals of Law", key: "law" },
+                      { name: "Communication Mastery", key: "communication" },
+                      {
+                        name: "Entrepreneurship Bootcamp",
+                        key: "entrepreneurship",
+                      },
+                      {
+                        name: "Digital Marketing Pro",
+                        key: "digital-marketing",
+                      },
+                      { name: "Leadership & Adaptability", key: "leadership" },
+                      {
+                        name: "Environmental Sustainability",
+                        key: "environment",
+                      },
+                      { name: "Wellness & Mental Health", key: "sel" },
                     ].map((module) => {
                       const hasAccess = hasModuleAccess(module.key);
                       return (

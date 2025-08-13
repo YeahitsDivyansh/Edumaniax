@@ -181,7 +181,7 @@ const CommonLevelsDisplay = ({
                     {accessInfo.hasAccess ? (
                       <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700">
                         <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        <span>Unlocked</span>
+                        <span>{currentPlan === 'STARTER' ? 'Try Now' : 'Unlocked'}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">

@@ -8,14 +8,14 @@
 // Define all available modules in the platform
 const MODULES = {
   FINANCE: 'finance',
-  DIGITAL_MARKETING: 'digital-marketing',
-  COMMUNICATION: 'communication',
   COMPUTERS: 'computers',
-  ENTREPRENEURSHIP: 'entrepreneurship',
-  ENVIRONMENT: 'environment',
   LAW: 'law',
+  COMMUNICATION: 'communication',
+  ENTREPRENEURSHIP: 'entrepreneurship',
+  DIGITAL_MARKETING: 'digital-marketing',
   LEADERSHIP: 'leadership',
-  SEL: 'sel' // Social Emotional Learning
+  ENVIRONMENT: 'environment',
+  SEL: 'sel' // Social Emotional Learning (Wellness & Mental Health)
 };
 
 // Define all available features in the platform
@@ -116,7 +116,8 @@ const ACCESS_RULES = {
     },
     benefits: [
       'Full access to one premium module',
-      'All interactive activities and assessments',
+      'All interactive activities and assessments for selected module',
+      'Trial access to Challenge 1 of Level 1 in other modules',
       'Completion certificates for selected module',
       'Progress tracking and basic analytics',
       'Downloadable notes and resources',
@@ -279,12 +280,208 @@ const MODULE_ACCESS_RULES = {
       aiAssessment: true,
       customContent: true
     }
+  },
+  
+  [MODULES.COMPUTERS]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Programming Basics', 'Algorithm Introduction'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
+  },
+  
+  [MODULES.LAW]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Legal Basics', 'Rights & Responsibilities'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
+  },
+  
+  [MODULES.ENTREPRENEURSHIP]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Business Basics', 'Idea Generation'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
+  },
+  
+  [MODULES.LEADERSHIP]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Leadership Basics', 'Team Building'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
+  },
+  
+  [MODULES.ENVIRONMENT]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Environmental Basics', 'Sustainability 101'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
+  },
+  
+  [MODULES.SEL]: {
+    STARTER: {
+      levels: ['Level 1'],
+      activities: ['Wellness Basics', 'Mental Health Introduction'],
+      maxActivities: 3
+    },
+    SOLO: {
+      levels: ['Level 1', 'Level 2', 'Level 3'],
+      activities: 'all',
+      maxActivities: 'unlimited'
+    },
+    PRO: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true
+    },
+    INSTITUTIONAL: {
+      levels: 'all',
+      activities: 'all',
+      maxActivities: 'unlimited',
+      aiAssessment: true,
+      customContent: true
+    }
   }
 };
 
 /**
  * FEATURE ACCESS CHECKER FUNCTIONS
  */
+
+/**
+ * MODULE_DISPLAY_MAPPING
+ * 
+ * This maps the display names of modules (as shown in the UI) to their internal keys
+ */
+const MODULE_DISPLAY_MAPPING = {
+  'Fundamentals of Finance': MODULES.FINANCE,
+  'Computer Science': MODULES.COMPUTERS,
+  'Fundamentals of Law': MODULES.LAW,
+  'Communication Mastery': MODULES.COMMUNICATION,
+  'Entrepreneurship Bootcamp': MODULES.ENTREPRENEURSHIP,
+  'Digital Marketing Pro': MODULES.DIGITAL_MARKETING,
+  'Leadership & Adaptability': MODULES.LEADERSHIP,
+  'Environmental Sustainability': MODULES.ENVIRONMENT,
+  'Wellness & Mental Health': MODULES.SEL
+};
+
+/**
+ * Get the internal module key from its display name
+ * @param {string} displayName - The module display name
+ * @returns {string} - The internal module key
+ */
+function getModuleKey(displayName) {
+  return MODULE_DISPLAY_MAPPING[displayName] || displayName;
+}
+
+/**
+ * Get the module display name from its internal key
+ * @param {string} moduleKey - The internal module key
+ * @returns {string} - The module display name
+ */
+function getModuleDisplayName(moduleKey) {
+  for (const [displayName, key] of Object.entries(MODULE_DISPLAY_MAPPING)) {
+    if (key === moduleKey) {
+      return displayName;
+    }
+  }
+  return moduleKey; // Return the key itself if no display name is found
+}
 
 /**
  * Check if a user has access to a specific module
@@ -297,18 +494,23 @@ function hasModuleAccess(userPlan, module, selectedModule = null) {
   const plan = ACCESS_RULES[userPlan];
   if (!plan) return false;
 
+  // Convert display names to internal keys if needed
+  const moduleKey = getModuleKey(module);
+  const selectedModuleKey = selectedModule ? getModuleKey(selectedModule) : null;
+
   // STARTER plan only has access to their selected module
   if (userPlan === 'STARTER') {
-    return selectedModule === module;
+    return selectedModuleKey === moduleKey;
   }
 
-  // SOLO plan only has access to their selected module
+  // SOLO plan has full access to their selected module
+  // AND trial access to all other modules
   if (userPlan === 'SOLO') {
-    return selectedModule === module;
+    return true; // Allow access to all modules (with level restrictions handled elsewhere)
   }
 
   // PRO and INSTITUTIONAL have access to all modules
-  return plan.modules.includes(module) || plan.modules === Object.values(MODULES);
+  return plan.modules.includes(moduleKey) || plan.modules === Object.values(MODULES);
 }
 
 /**
@@ -342,16 +544,69 @@ function getMaxActivities(userPlan, module) {
  * @param {string} userPlan - User's subscription plan
  * @param {string} module - Module to check
  * @param {string} level - Level to check (e.g., 'Level 1', 'Level 2')
+ * @param {string} selectedModule - User's selected module (for SOLO plans)
  * @returns {boolean}
  */
-function hasLevelAccess(userPlan, module, level) {
-  const moduleRules = MODULE_ACCESS_RULES[module];
+function hasLevelAccess(userPlan, module, level, selectedModule = null) {
+  // Convert display names to internal keys if needed
+  const moduleKey = getModuleKey(module);
+  const selectedModuleKey = selectedModule ? getModuleKey(selectedModule) : null;
+  
+  const moduleRules = MODULE_ACCESS_RULES[moduleKey];
   if (!moduleRules || !moduleRules[userPlan]) return false;
+
+  // Special handling for SOLO plan users
+  if (userPlan === 'SOLO') {
+    if (selectedModuleKey === moduleKey) {
+      // Full access to all levels of their selected module
+      return true;
+    } else {
+      // Trial access - only Level 1 for other modules
+      return level === 'Level 1';
+    }
+  }
 
   const planLevels = moduleRules[userPlan].levels;
   if (planLevels === 'all') return true;
   
   return Array.isArray(planLevels) && planLevels.includes(level);
+}
+
+/**
+ * Check if a user can access a specific challenge within a level
+ * @param {string} userPlan - User's subscription plan
+ * @param {string} module - Module to check
+ * @param {string} level - Level to check (e.g., 'Level 1')
+ * @param {number} challengeIndex - Challenge index (0-based)
+ * @param {string} selectedModule - User's selected module (for SOLO plans)
+ * @returns {boolean}
+ */
+function hasChallengeAccess(userPlan, module, level, challengeIndex, selectedModule = null) {
+  // Convert display names to internal keys if needed
+  const moduleKey = getModuleKey(module);
+  const selectedModuleKey = selectedModule ? getModuleKey(selectedModule) : null;
+
+  // First check if user has level access
+  if (!hasLevelAccess(userPlan, moduleKey, level, selectedModuleKey)) return false;
+
+  // STARTER plan users can only access Challenge 1 (index 0) of Level 1
+  if (userPlan === 'STARTER') {
+    return level === 'Level 1' && challengeIndex === 0;
+  }
+
+  // SOLO plan users
+  if (userPlan === 'SOLO') {
+    if (selectedModuleKey === moduleKey) {
+      // Full access to all challenges in their selected module
+      return true;
+    } else {
+      // Trial access - only Challenge 1 of Level 1 for other modules
+      return level === 'Level 1' && challengeIndex === 0;
+    }
+  }
+
+  // PRO and INSTITUTIONAL have full access
+  return true;
 }
 
 /**
@@ -434,10 +689,14 @@ export {
   FEATURES,
   ACCESS_RULES,
   MODULE_ACCESS_RULES,
+  MODULE_DISPLAY_MAPPING,
+  getModuleKey,
+  getModuleDisplayName,
   hasModuleAccess,
   hasFeatureAccess,
   getMaxActivities,
   hasLevelAccess,
+  hasChallengeAccess,
   getPlanDetails,
   getUpgradeInfo,
   checkAccessMiddleware

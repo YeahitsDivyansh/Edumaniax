@@ -18,6 +18,9 @@ import blogRoutes from './routes/blogRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import accessRoutes from './routes/accessRoutes.js';
 import specialRoutes from './routes/specialRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import { initializeSubscriptionMonitoring } from './utils/subscriptionManager.js';
+
 dotenv.config();
 
 const app = express();
@@ -45,6 +48,7 @@ app.use("/blogs", blogRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/access", accessRoutes);
 app.use("/special", specialRoutes); // Changed from /sales to /special
+app.use("/subscriptions", subscriptionRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -77,7 +81,17 @@ app.use((err, req, res, next) => {
 });
 
 // Create Express server and start listening
-const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  
+  // Initialize subscription monitoring after server starts
+  try {
+    initializeSubscriptionMonitoring();
+    console.log('✅ Subscription monitoring initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize subscription monitoring:', error);
+  }
+});
 
 // Graceful shutdown handling
 process.on('SIGINT', () => {
