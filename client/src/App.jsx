@@ -655,10 +655,7 @@ function AppContent() {
           {/*End of Games of digital marketing */}
 
           {/* Notes Page of digital marketing */}
-          <Route
-            path="/digital-marketing/notes"
-            element={<DigitalMarketingNotes />}
-          />
+          
           <Route
             path="/digitalmarketing/notes/section-1"
             element={<Section1dm />}
@@ -796,10 +793,7 @@ function AppContent() {
           <Route path="/my-circle-mission" element={<MyCircleMission />} />
 
           {/* Social Learning Notes */}
-          <Route
-            path="/social-learning/notes"
-            element={<SocialLearningNotes />}
-          />
+          
           <Route path="/social-learning/module-1" element={<KnowingMyself />} />
           <Route
             path="/social-learning/module-2"
@@ -819,7 +813,7 @@ function AppContent() {
           />
 
           {/* Leadership Notes*/}
-          <Route path="/leadership/notes" element={<LeadershipNotes />} />
+          
           {/* Leadership Games 6-8*/}
           <Route path="/leadership/games" element={<Leadership />} />
           {/* level 1*/}
@@ -861,7 +855,7 @@ function AppContent() {
           <Route path="/mvp-test" element={<MVPTest />} />
 
           {/* Environmental Notes*/}
-          <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
+          
           {/* Environmental Games for 6th-8th */}
           <Route path="/environmental/games" element={<Environment />} />
           {/* Level 1 */}
@@ -1387,7 +1381,17 @@ function App() {
             path="/communications/notes"
             element={<CommunicationsNotes />}
           />
+          <Route
+            path="/social-learning/notes"
+            element={<SocialLearningNotes />}
+          />
           <Route path="/computer/notes" element={<ComputerNotes />} />
+          <Route path="/leadership/notes" element={<LeadershipNotes />} />
+          <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
+          <Route
+            path="/digital-marketing/notes"
+            element={<DigitalMarketingNotes />}
+          />
           </Routes>
         </Router>
       )}
