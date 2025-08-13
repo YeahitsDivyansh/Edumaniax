@@ -1,15 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Star, 
-  ChevronDown, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  ChevronDown,
   X,
   CheckCircle,
   Building,
   Users,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useKeenSlider } from "keen-slider/react";
@@ -36,18 +36,42 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-
-
 // List of Indian states
 const indianStates = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
-  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
-  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
-  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
-  "Lakshadweep", "Puducherry"
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Lakshadweep",
+  "Puducherry",
 ];
 
 // Custom State Combobox Component with filtering
@@ -77,7 +101,7 @@ const StateCombobox = ({ value, onChange, label, placeholder, name }) => {
     onChange({ target: { name, value: newValue } });
 
     // Filter the states based on input
-    const newFilteredStates = indianStates.filter(state =>
+    const newFilteredStates = indianStates.filter((state) =>
       state.toLowerCase().includes(newValue.toLowerCase())
     );
     setFilteredStates(newFilteredStates);
@@ -92,7 +116,10 @@ const StateCombobox = ({ value, onChange, label, placeholder, name }) => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
         {label}
       </label>
       <input
@@ -128,12 +155,12 @@ const StateCombobox = ({ value, onChange, label, placeholder, name }) => {
 // Trial Booking Modal Component
 const TrialBookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    class: '',
-    state: '',
-    city: ''
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    class: "",
+    state: "",
+    city: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -156,12 +183,12 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        fullName: '',
-        email: '',
-        phoneNumber: '',
-        class: '',
-        state: '',
-        city: ''
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        class: "",
+        state: "",
+        city: "",
       });
       setShowSuccess(false);
       setError("");
@@ -184,11 +211,13 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
     try {
       // Send free trial request to sales dashboard
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/free-trial`,
+        `${
+          import.meta.env.VITE_API_URL || "http://localhost:3000"
+        }/special/free-trial`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             fullName: formData.fullName,
@@ -196,24 +225,24 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
             phoneNumber: formData.phoneNumber,
             class: formData.class,
             state: formData.state,
-            city: formData.city
-          })
+            city: formData.city,
+          }),
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to submit request');
+        throw new Error("Failed to submit request");
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setShowSuccess(true);
         setTimeout(() => {
           onClose();
         }, 2000);
       } else {
-        throw new Error(result.message || 'Failed to submit request');
+        throw new Error(result.message || "Failed to submit request");
       }
     } catch (error) {
       console.error("Error submitting free trial request:", error);
@@ -241,7 +270,7 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto mt-[10vh]" 
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto mt-[10vh]"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
@@ -364,7 +393,10 @@ const TrialBookingModal = ({ isOpen, onClose }) => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="city"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       City
                     </label>
                     <input
@@ -992,27 +1024,27 @@ const plans = [
 const InstitutionalContactModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    organizationalEmail: '',
-    organization: '',
-    phone: '',
-    employees: '',
-    message: ''
+    name: user?.name || "",
+    email: user?.email || "",
+    organizationalEmail: "",
+    organization: "",
+    phone: "",
+    employees: "",
+    message: "",
   });
   const [formStatus, setFormStatus] = useState(null); // null, 'sending', 'success', 'error'
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     }
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     };
   }, [isOpen]);
 
@@ -1021,42 +1053,42 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
     if (!isOpen) {
       setFormStatus(null);
       setFormData({
-        name: user?.name || '',
-        email: user?.email || '',
-        organizationalEmail: '',
-        organization: '',
-        phone: '',
-        employees: '',
-        message: ''
+        name: user?.name || "",
+        email: user?.email || "",
+        organizationalEmail: "",
+        organization: "",
+        phone: "",
+        employees: "",
+        message: "",
       });
     }
   }, [isOpen, user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation for the organizational email
     if (!formData.organizationalEmail) {
       alert("Please provide your organization's email address");
       return;
     }
-    
+
     // Validate if organization name is provided
     if (!formData.organization) {
       alert("Please provide your organization name");
       return;
     }
-    
-    setFormStatus('sending');
-    
+
+    setFormStatus("sending");
+
     try {
       // Send inquiry to backend with properly mapped field names
       const mappedData = {
@@ -1064,38 +1096,43 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
         contactEmail: formData.email,
         contactPhone: formData.phone,
         organizationName: formData.organization,
-        organizationType: formData.employees ? 'Educational' : 'Other', // Default to Educational if not specified
-        studentCount: formData.employees || '30+', // Default to 30+ if not specified
+        organizationType: formData.employees ? "Educational" : "Other", // Default to Educational if not specified
+        studentCount: formData.employees || "30+", // Default to 30+ if not specified
         message: formData.message,
-        organizationalEmail: formData.organizationalEmail // Additional field
+        organizationalEmail: formData.organizationalEmail, // Additional field
       };
-      
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(mappedData)
-      });
-      
+
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_URL || "http://localhost:3000"
+        }/special/inquiries`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(mappedData),
+        }
+      );
+
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit inquiry');
+        throw new Error(data.message || "Failed to submit inquiry");
       }
-      
-      console.log('Institutional plan inquiry submitted:', data);
-      setFormStatus('success');
-      
+
+      console.log("Institutional plan inquiry submitted:", data);
+      setFormStatus("success");
+
       // Redirect after a delay if user is logged in
       if (user) {
         setTimeout(() => {
           onClose();
-          navigate('/dashboard');
+          navigate("/dashboard");
         }, 3000);
       }
     } catch (error) {
-      console.error('Error submitting inquiry:', error);
+      console.error("Error submitting inquiry:", error);
       alert(`Failed to submit inquiry: ${error.message}`);
       setFormStatus(null);
     }
@@ -1103,19 +1140,26 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  if (formStatus === 'success') {
+  if (formStatus === "success") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border-4 border-green-400">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-green-800 mb-2">Request Sent Successfully!</h1>
+          <h1 className="text-2xl font-bold text-green-800 mb-2">
+            Request Sent Successfully!
+          </h1>
           <p className="text-green-700 mb-4">
-            Thank you for your interest in our Institutional Plan for <strong>{formData.organization}</strong>.
+            Thank you for your interest in our Institutional Plan for{" "}
+            <strong>{formData.organization}</strong>.
           </p>
           <p className="text-gray-700 mb-4">
-            Our team will contact you shortly at <strong>{formData.organizationalEmail}</strong> to discuss your requirements and provide a customized solution.
+            Our team will contact you shortly at{" "}
+            <strong>{formData.organizationalEmail}</strong> to discuss your
+            requirements and provide a customized solution.
           </p>
-          {user && <p className="text-sm text-gray-600">Redirecting to dashboard...</p>}
+          {user && (
+            <p className="text-sm text-gray-600">Redirecting to dashboard...</p>
+          )}
           <button
             onClick={onClose}
             className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -1135,10 +1179,7 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <div
-          className="absolute inset-0"
-          onClick={onClose}
-        />
+        <div className="absolute inset-0" onClick={onClose} />
 
         <motion.div
           className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto mt-[5vh] max-h-[90vh] overflow-y-auto"
@@ -1158,17 +1199,27 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
           <div className="grid md:grid-cols-2 gap-8 p-8">
             {/* Institutional Plan Info */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Institutional Plan</h2>
-              
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Institutional Plan
+              </h2>
+
               <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="text-xl font-semibold text-green-700 mb-4">Perfect for:</h3>
+                <h3 className="text-xl font-semibold text-green-700 mb-4">
+                  Perfect for:
+                </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
-                    <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                    <Building
+                      size={20}
+                      className="text-green-600 mt-1 shrink-0"
+                    />
                     <span>Schools and educational institutions</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Building size={20} className="text-green-600 mt-1 shrink-0" />
+                    <Building
+                      size={20}
+                      className="text-green-600 mt-1 shrink-0"
+                    />
                     <span>Corporate training programs</span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -1176,41 +1227,61 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     <span>Organizations with 30+ users</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle size={20} className="text-green-500 mt-1 shrink-0" />
+                    <CheckCircle
+                      size={20}
+                      className="text-green-500 mt-1 shrink-0"
+                    />
                     <span>Custom learning requirements</span>
                   </li>
                 </ul>
-                
+
                 <div className="mt-4 bg-green-50 p-3 rounded-lg border border-green-200">
                   <p className="text-sm text-green-800">
-                    <strong>Note:</strong> This plan requires verification of your organizational status. Our team will review your application and contact you for further details.
+                    <strong>Note:</strong> This plan requires verification of
+                    your organizational status. Our team will review your
+                    application and contact you for further details.
                   </p>
                 </div>
               </div>
 
               <div className="mt-6 bg-green-50 p-6 rounded-2xl border border-green-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Institutional Benefits:</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Institutional Benefits:
+                </h3>
                 <ul className="space-y-2 text-gray-700">
-                  {plans.find(p => p.title === "INSTITUTIONAL PLAN")?.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle size={16} className="text-green-500 mt-1 shrink-0" />
-                      <span>{typeof feature === 'string' ? feature : feature.text}</span>
-                    </li>
-                  ))}
+                  {plans
+                    .find((p) => p.title === "INSTITUTIONAL PLAN")
+                    ?.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle
+                          size={16}
+                          className="text-green-500 mt-1 shrink-0"
+                        />
+                        <span>
+                          {typeof feature === "string" ? feature : feature.text}
+                        </span>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>
 
             {/* Contact Form */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Contact Us
+              </h2>
               <p className="text-gray-600 mb-6">
-                Please fill out this form to get a custom quote for your organization. Our team will contact you shortly.
+                Please fill out this form to get a custom quote for your
+                organization. Our team will contact you shortly.
               </p>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Name*
                   </label>
                   <input
@@ -1221,16 +1292,28 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     onChange={handleInputChange}
                     required
                     readOnly={!!user?.name}
-                    className={`w-full p-3 border ${user?.name ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!user?.name ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                    className={`w-full p-3 border ${
+                      user?.name ? "bg-gray-100" : "border-gray-300"
+                    } rounded-lg ${
+                      !user?.name
+                        ? "focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        : ""
+                    }`}
                     placeholder="Your name"
                   />
                   {user?.name && (
-                    <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This field is pre-filled from your profile and cannot be
+                      changed
+                    </p>
                   )}
                 </div>
-                
+
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email*
                   </label>
                   <input
@@ -1241,16 +1324,28 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     onChange={handleInputChange}
                     required
                     readOnly={!!user?.email}
-                    className={`w-full p-3 border ${user?.email ? 'bg-gray-100' : 'border-gray-300'} rounded-lg ${!user?.email ? 'focus:ring-2 focus:ring-green-500 focus:border-green-500' : ''}`}
+                    className={`w-full p-3 border ${
+                      user?.email ? "bg-gray-100" : "border-gray-300"
+                    } rounded-lg ${
+                      !user?.email
+                        ? "focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        : ""
+                    }`}
                     placeholder="Your email"
                   />
                   {user?.email && (
-                    <p className="text-xs text-gray-500 mt-1">This field is pre-filled from your profile and cannot be changed</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This field is pre-filled from your profile and cannot be
+                      changed
+                    </p>
                   )}
                 </div>
-                
+
                 <div>
-                  <label htmlFor="organizationalEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="organizationalEmail"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Organizational Email*
                   </label>
                   <input
@@ -1264,9 +1359,12 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     placeholder="Your organization's email (e.g., info@yourschool.edu)"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="organization"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Organization Name*
                   </label>
                   <input
@@ -1280,9 +1378,12 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     placeholder="Your organization"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Phone Number
                   </label>
                   <input
@@ -1295,9 +1396,12 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     placeholder="Your phone number"
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="employees" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="employees"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Number of Users/Students
                   </label>
                   <select
@@ -1314,9 +1418,12 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     <option value="500+">500+ users</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Message
                   </label>
                   <textarea
@@ -1329,24 +1436,25 @@ const InstitutionalContactModal = ({ isOpen, onClose }) => {
                     placeholder="Tell us about your specific requirements..."
                   ></textarea>
                 </div>
-                
+
                 <button
                   type="submit"
-                  disabled={formStatus === 'sending'}
+                  disabled={formStatus === "sending"}
                   className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
-                  {formStatus === 'sending' ? (
+                  {formStatus === "sending" ? (
                     <>
                       <Loader2 className="animate-spin" size={20} />
                       Sending...
                     </>
                   ) : (
-                    'Request Information'
+                    "Request Information"
                   )}
                 </button>
-                
+
                 <p className="text-xs text-gray-500 mt-4">
-                  By submitting this form, you agree to our Terms of Service and Privacy Policy
+                  By submitting this form, you agree to our Terms of Service and
+                  Privacy Policy
                 </p>
               </form>
             </div>
@@ -1364,7 +1472,8 @@ const Home = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
-  const [isInstitutionalModalOpen, setIsInstitutionalModalOpen] = useState(false);
+  const [isInstitutionalModalOpen, setIsInstitutionalModalOpen] =
+    useState(false);
   const [userSubscriptions, setUserSubscriptions] = useState([]);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
@@ -1376,26 +1485,33 @@ const Home = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
         );
-        
+
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
-          
+          setUserSubscriptions(
+            Array.isArray(subscriptionData) ? subscriptionData : []
+          );
+
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = Array.isArray(subscriptionData)
+            ? subscriptionData.filter(
+                (sub) =>
+                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
               )
             : [];
-          
+
           if (activeSubscriptions.length > 0) {
             setHasActiveSubscription(true);
             // Find the highest tier plan
-            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
             for (const plan of [...planHierarchy].reverse()) {
-              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              const subscription = activeSubscriptions.find(
+                (sub) => sub.planType === plan
+              );
               if (subscription) {
                 setUserPlan(subscription.planType);
                 break;
@@ -1407,7 +1523,7 @@ const Home = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching subscriptions:', error);
+        console.error("Error fetching subscriptions:", error);
         setUserSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
@@ -1424,26 +1540,33 @@ const Home = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
         );
-        
+
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
-          
+          setUserSubscriptions(
+            Array.isArray(subscriptionData) ? subscriptionData : []
+          );
+
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = Array.isArray(subscriptionData)
+            ? subscriptionData.filter(
+                (sub) =>
+                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
               )
             : [];
-          
+
           if (activeSubscriptions.length > 0) {
             setHasActiveSubscription(true);
             // Find the highest tier plan
-            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
             for (const plan of [...planHierarchy].reverse()) {
-              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              const subscription = activeSubscriptions.find(
+                (sub) => sub.planType === plan
+              );
               if (subscription) {
                 setUserPlan(subscription.planType);
                 break;
@@ -1455,7 +1578,7 @@ const Home = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching subscriptions:', error);
+        console.error("Error fetching subscriptions:", error);
         setUserSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
@@ -1465,22 +1588,22 @@ const Home = () => {
     fetchUserSubscriptions();
   }, [user?.id]);
 
-const [isZoomed, setIsZoomed] = useState(false);
-// Use useRef to store the initial pixel ratio when the component first loads
-const basePixelRatio = useRef(window.devicePixelRatio);
+  const [isZoomed, setIsZoomed] = useState(false);
+  // Use useRef to store the initial pixel ratio when the component first loads
+  const basePixelRatio = useRef(window.devicePixelRatio);
 
-useEffect(() => {
-  const checkZoom = () => {
-    // Calculate effective zoom by comparing the current ratio to the initial one
-    const effectiveZoom = window.devicePixelRatio / basePixelRatio.current;
-    setIsZoomed(effectiveZoom >= 1.25);
-  };
+  useEffect(() => {
+    const checkZoom = () => {
+      // Calculate effective zoom by comparing the current ratio to the initial one
+      const effectiveZoom = window.devicePixelRatio / basePixelRatio.current;
+      setIsZoomed(effectiveZoom >= 1.25);
+    };
 
-  checkZoom(); // Check on initial load
-  window.addEventListener('resize', checkZoom); // Check on resize/zoom
+    checkZoom(); // Check on initial load
+    window.addEventListener("resize", checkZoom); // Check on resize/zoom
 
-  return () => window.removeEventListener('resize', checkZoom);
-}, []);
+    return () => window.removeEventListener("resize", checkZoom);
+  }, []);
   // Fetch user subscriptions to determine button state
   useEffect(() => {
     const fetchUserSubscriptions = async () => {
@@ -1488,26 +1611,33 @@ useEffect(() => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
         );
-        
+
         if (response.ok) {
           const subscriptionData = await response.json();
-          setUserSubscriptions(Array.isArray(subscriptionData) ? subscriptionData : []);
-          
+          setUserSubscriptions(
+            Array.isArray(subscriptionData) ? subscriptionData : []
+          );
+
           // Find active subscriptions
-          const activeSubscriptions = Array.isArray(subscriptionData) 
-            ? subscriptionData.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = Array.isArray(subscriptionData)
+            ? subscriptionData.filter(
+                (sub) =>
+                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
               )
             : [];
-          
+
           if (activeSubscriptions.length > 0) {
             setHasActiveSubscription(true);
             // Find the highest tier plan
-            const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+            const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
             for (const plan of [...planHierarchy].reverse()) {
-              const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+              const subscription = activeSubscriptions.find(
+                (sub) => sub.planType === plan
+              );
               if (subscription) {
                 setUserPlan(subscription.planType);
                 break;
@@ -1519,7 +1649,7 @@ useEffect(() => {
           }
         }
       } catch (error) {
-        console.error('Error fetching subscriptions:', error);
+        console.error("Error fetching subscriptions:", error);
         setUserSubscriptions([]);
         setHasActiveSubscription(false);
         setUserPlan(null);
@@ -1645,7 +1775,7 @@ useEffect(() => {
         "https://images.unsplash.com/photo-1605792657660-596af9009e82?auto=format&fit=crop&w=800&q=80",
     },
     {
-      title: "Computers",
+      title: "Computers and Artificial Intelligence",
       description:
         "Understand computer fundamentals, hardware, software, and digital literacy essentials.",
       rating: 4.6,
@@ -1922,789 +2052,798 @@ useEffect(() => {
   };
 
   return (
-  
     <div>
-    <div className="min-h-screen  bg-white overflow-x-hidden">
-      {/* Trial Booking Modal */}
-      <TrialBookingModal
-        isOpen={isTrialModalOpen}
-        onClose={() => setIsTrialModalOpen(false)}
-      />
+      <div className="min-h-screen  bg-white overflow-x-hidden">
+        {/* Trial Booking Modal */}
+        <TrialBookingModal
+          isOpen={isTrialModalOpen}
+          onClose={() => setIsTrialModalOpen(false)}
+        />
 
-      {/* Institutional Contact Modal */}
-      <InstitutionalContactModal
-        isOpen={isInstitutionalModalOpen}
-        onClose={() => setIsInstitutionalModalOpen(false)}
-      />
+        {/* Institutional Contact Modal */}
+        <InstitutionalContactModal
+          isOpen={isInstitutionalModalOpen}
+          onClose={() => setIsInstitutionalModalOpen(false)}
+        />
 
-      {/* Hero Section */}
-      <section className="relative h-[100vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
-        <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
-          <Navbar/>
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
-            {/* Trust Badge */}
-            <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-3 sm:mt-0 md:mt- md:mb-2">
-              <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
-                <span className="text-white text-xs sm:text-sm flex items-center gap-2">
-                  ⭐ Loved by 1K+ users worldwide
-                </span>
-              </div>
-            </div>
-
-            {/* Main Heading */}
-            <div className="mb-2 sm:mb-0 md:-mb-0 lg:-mb-3 xl:-mb-0">
-              <h1
-                className="text-white text-2xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl leading-tight"
-                style={{ fontFamily: '"Sigmar", sans-serif' }}
-              >
-                Master AI, Finance, Law
-              </h1>
-              <h1
-                className="text-white flex text-2xl ml-8 sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl  leading-tight"
-                style={{ fontFamily: '"Sigmar", sans-serif' }}
-              >
-                With a Twist of Fun{" "}
-                <div className=" sm:h-15 sm:w-15 ">
-                  <img
-                    className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-10 lg:w-10 xl:h-15 xl:w-15 "
-                    src="/Fire.gif"
-                    alt="fire"
-                  />
+        {/* Hero Section */}
+        <section className="relative h-[100vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
+          <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
+            <Navbar />
+            <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
+              {/* Trust Badge */}
+              <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-3 sm:mt-0 md:mt- md:mb-2">
+                <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
+                  <span className="text-white text-xs sm:text-sm flex items-center gap-2">
+                    ⭐ Loved by 1K+ users worldwide
+                  </span>
                 </div>
-              </h1>
-            </div>
-
-            {/* Subtitle */}
-            <p className="text-white/90 text-sm sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt- xl:mt-3 xl:mb-3 lg:mx-60 mb-4 sm:mb- leading-tight">
-              Explore Artificial Intelligence, Machine Learning, Communication,
-              Coding, and more through interactive games, real-world challenges,
-              and bite-sized notes
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 xl:mt-3 w-full sm:w-auto px-4 sm:px-0">
-              <button
-                onClick={() => navigate(user ? "/pricing" : "/courses")}
-                className="bg-white text-black font-semibold px-4 sm:px-5 py-2 sm:py- lg:px-5 lg:py-3 xl:px-8 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
-              >
-                {user ? (
-                  hasActiveSubscription && (userPlan === 'STARTER' || userPlan === 'SOLO') 
-                    ? "Upgrade Plan" 
-                    : "Purchase Plan"
-                ) : "Get Started Free"}
-              </button>
-              
-              {/* Conditional second button */}
-              {user ? (
-                <button
-                  onClick={() => navigate("/dashboard?section=modules")}
-                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py- sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
-                >
-                  Continue Reading
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsTrialModalOpen(true)}
-                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py- rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
-                >
-                  Book a trial
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Hero Illustration */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 px-4 py-2 max-w-2xl mx-auto">
-            {/* Main characters illustration */}
-            <div className="relative h-[395px] w-[395px] sm:h-[350px] sm:w-[350px] md:h-[300px] md:w-[300px] lg:h-[500px] lg:w-[500px]">
-              <img
-                src="/heroIMG.png"
-                alt="Full"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why You'll Love It Section */}
-      <section className="py-10 sm:py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col lg:flex-row justify-between items-start mb-8 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-4 lg:mb-0">
-              Why you'll love it
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Feature 1 - Notes */}
-            <motion.div
-              className="bg-[#C3E2FF] rounded-2xl p-4 sm:p-6 min-h-[300px] sm:h-80 overflow-hidden"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
-                Get the special Curated Notes
-              </h3>
-              <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
-                Choose from 100+ expert-made topic notes. Read it while doing
-                fun activities
-              </p>
-
-              {/* Animated Card Container with LOCAL state */}
-              <div className="p-0 m-0">
-                <BitcoinCard bitcoinImages={bitcoinImages} />
               </div>
-            </motion.div>
 
-            {/* Feature 2 - Learn anywhere */}
-            <motion.div
-              className="bg-[url('/F2.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-6 h-full sm:h-80 flex flex-col"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <h3 className="text-lg font-bold text-black mb-3">
-                Learn and have fun, from anywhere
-              </h3>
-              <p className="text-gray-700 mb-6 text-sm">
-                Just google edumaniax, to start your fun learning journey
+              {/* Main Heading */}
+              <div className="mb-2 sm:mb-0 md:-mb-0 lg:-mb-3 xl:-mb-0">
+                <h1
+                  className="text-white text-2xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl leading-tight"
+                  style={{ fontFamily: '"Sigmar", sans-serif' }}
+                >
+                  Master AI, Finance, Law
+                </h1>
+                <h1
+                  className="text-white flex text-2xl ml-8 sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl  leading-tight"
+                  style={{ fontFamily: '"Sigmar", sans-serif' }}
+                >
+                  With a Twist of Fun{" "}
+                  <div className=" sm:h-15 sm:w-15 ">
+                    <img
+                      className="w-8 h-7 sm:h-9 sm:w-9 md:h-9 md:w-9 lg:h-10 lg:w-10 xl:h-15 xl:w-15 "
+                      src="/Fire.gif"
+                      alt="fire"
+                    />
+                  </div>
+                </h1>
+              </div>
+
+              {/* Subtitle */}
+              <p className="text-white/90 text-sm sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt- xl:mt-3 xl:mb-3 lg:mx-60 mb-4 sm:mb- leading-tight">
+                Explore Artificial Intelligence, Machine Learning,
+                Communication, Coding, and more through interactive games,
+                real-world challenges, and bite-sized notes
               </p>
-              <div className="flex-1 flex items-center -mt-5 justify-center">
-                <div className="relative group ">
-                  {/* OUTER circle (on hover of this) */}
-                  <div
-                    className="outer w-50 h-50 border-1 border-green-300 rounded-[80px] flex items-center justify-center group"
-                    onMouseEnter={
-                      isMobile ? undefined : () => setFeature2AutoHover(true)
-                    }
-                    onMouseLeave={
-                      isMobile ? undefined : () => setFeature2AutoHover(false)
-                    }
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 xl:mt-3 w-full sm:w-auto px-4 sm:px-0">
+                <button
+                  onClick={() => navigate(user ? "/pricing" : "/courses")}
+                  className="bg-white text-black font-semibold px-4 sm:px-5 py-2 sm:py- lg:px-5 lg:py-3 xl:px-8 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
+                >
+                  {user
+                    ? hasActiveSubscription &&
+                      (userPlan === "STARTER" || userPlan === "SOLO")
+                      ? "Upgrade Plan"
+                      : "Purchase Plan"
+                    : "Get Started Free"}
+                </button>
+
+                {/* Conditional second button */}
+                {user ? (
+                  <button
+                    onClick={() => navigate("/dashboard?section=modules")}
+                    className="border-2 border-white text-white font-semibold px-4 sm:px-8 py- sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
                   >
-                    <div className="w-40 h-40 border-1 border-green-400 rounded-[67px] flex items-center justify-center">
-                      <div className="w-30 h-30 border-1 border-green-400 rounded-[47px] flex items-center justify-center">
-                        {/* INNER circle */}
-                        <div
-                          className={`inner border-2 bg-white border-green-500 rounded-[20px] flex items-center justify-center transition-all duration-500 delay-500 ${
-                            feature2AutoHover
-                              ? "w-24 h-24 shadow-lg shadow-green-500/50"
-                              : "w-20 h-20 group-hover:w-24 group-hover:h-24 group-hover:shadow-lg group-hover:shadow-green-500/50"
-                          }`}
-                        >
-                          <img
-                            className={`w-17 h-15 transition-transform duration-500 ${
+                    Continue Reading
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsTrialModalOpen(true)}
+                    className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py- rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                  >
+                    Book a trial
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Hero Illustration */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 px-4 py-2 max-w-2xl mx-auto">
+              {/* Main characters illustration */}
+              <div className="relative h-[395px] w-[395px] sm:h-[350px] sm:w-[350px] md:h-[300px] md:w-[300px] lg:h-[500px] lg:w-[500px]">
+                <img
+                  src="/heroIMG.png"
+                  alt="Full"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Why You'll Love It Section */}
+        <section className="py-10 sm:py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start mb-8 sm:mb-16">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-4 lg:mb-0">
+                Why you'll love it
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* Feature 1 - Notes */}
+              <motion.div
+                className="bg-[#C3E2FF] rounded-2xl p-4 sm:p-6 min-h-[300px] sm:h-80 overflow-hidden"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
+                  Get the special Curated Notes
+                </h3>
+                <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
+                  Choose from 100+ expert-made topic notes. Read it while doing
+                  fun activities
+                </p>
+
+                {/* Animated Card Container with LOCAL state */}
+                <div className="p-0 m-0">
+                  <BitcoinCard bitcoinImages={bitcoinImages} />
+                </div>
+              </motion.div>
+
+              {/* Feature 2 - Learn anywhere */}
+              <motion.div
+                className="bg-[url('/F2.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-6 h-full sm:h-80 flex flex-col"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <h3 className="text-lg font-bold text-black mb-3">
+                  Learn and have fun, from anywhere
+                </h3>
+                <p className="text-gray-700 mb-6 text-sm">
+                  Just google edumaniax, to start your fun learning journey
+                </p>
+                <div className="flex-1 flex items-center -mt-5 justify-center">
+                  <div className="relative group ">
+                    {/* OUTER circle (on hover of this) */}
+                    <div
+                      className="outer w-50 h-50 border-1 border-green-300 rounded-[80px] flex items-center justify-center group"
+                      onMouseEnter={
+                        isMobile ? undefined : () => setFeature2AutoHover(true)
+                      }
+                      onMouseLeave={
+                        isMobile ? undefined : () => setFeature2AutoHover(false)
+                      }
+                    >
+                      <div className="w-40 h-40 border-1 border-green-400 rounded-[67px] flex items-center justify-center">
+                        <div className="w-30 h-30 border-1 border-green-400 rounded-[47px] flex items-center justify-center">
+                          {/* INNER circle */}
+                          <div
+                            className={`inner border-2 bg-white border-green-500 rounded-[20px] flex items-center justify-center transition-all duration-500 delay-500 ${
                               feature2AutoHover
-                                ? "rotate-[-115deg] delay-[1000ms]"
-                                : "group-hover:rotate-[-115deg] group-hover:delay-[1000ms]"
+                                ? "w-24 h-24 shadow-lg shadow-green-500/50"
+                                : "w-20 h-20 group-hover:w-24 group-hover:h-24 group-hover:shadow-lg group-hover:shadow-green-500/50"
                             }`}
-                            src="/midLogo.png"
-                          />
+                          >
+                            <img
+                              className={`w-17 h-15 transition-transform duration-500 ${
+                                feature2AutoHover
+                                  ? "rotate-[-115deg] delay-[1000ms]"
+                                  : "group-hover:rotate-[-115deg] group-hover:delay-[1000ms]"
+                              }`}
+                              src="/midLogo.png"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* Feature 3 - Connect & learn */}
-            <motion.div
-              className="bg-[url('/F3.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-4 sm:p-6 min-h-[300px] sm:h-80 h-full"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
-                Connect & learn together
-              </h3>
-              <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
-                Students and teachers, both can learn together without any
-                hussle, at their on ease
-              </p>
-              <div className="flex-1 flex items-center h-[60%] justify-center">
-                <PeopleAvatars defaultImages={defaultImages} />
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="grid mt-4 sm:mt-5 grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {/* Feature 4 - Games */}
-            <motion.div
-              className="bg-[url('/F4.png')] bg-cover bg-center bg-no-repeat rounded-2xl relative w-full p-4 sm:p-6 min-h-[250px] sm:h-90"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <h3 className="text-lg font-bold text-black mb-3">
-                Jump-start amazing games
-              </h3>
-              <p className="text-gray-700 mb-4 text-sm">
-                You can start playing amazing simple games any time, anywhere to
-                learn
-              </p>
-
-              {/* Progress Card Component */}
-              <div className=" ml-10 h-40">
-                <img
-                  className=" absolute sm:h-[45%] h-[34%] -ml-6 sm:mt-2 z-50 sm:w-[57%]"
-                  src="/mid4.png"
-                  alt="mid"
-                />
-                <div className="flex sm:w-[60%] w-[60%] ml-15 sm:ml-25 absolute bottom-0 mb-5 left-0 h-18 sm:h-28">
-                  <ProgressCardComponent />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Feature 5 - Skills */}
-            <motion.div
-              className="bg-[url('/F5.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-4 sm:p-6 min-h-[250px] sm:h-90 w-full"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
-                Learn any of trending skill, with fun
-              </h3>
-              <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
-                You can learn subjects like AI, Law, Science etc. while having
-                fun and playing simple games
-              </p>
-              <div className="flex-1 flex items-center justify-center">
-                <div
-                  className="grid mt-4 sm:mt-10 grid-cols-5 gap-2 sm:gap-5 group"
-                  onMouseEnter={
-                    isMobile ? undefined : () => setFeature5AutoHover(true)
-                  }
-                  onMouseLeave={
-                    isMobile ? undefined : () => setFeature5AutoHover(false)
-                  }
-                >
-                  {/* 5 child divs, each has two <img> tags */}
-                  <div
-                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
-                      feature5AutoHover
-                        ? "-translate-y-4 sm:-translate-y-10"
-                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
-                    }`}
-                  >
-                    <img
-                      src="/Link1.png"
-                      className="w-full h-auto"
-                      alt="Link 1"
-                    />
-                    <img
-                      src="/Link2.png"
-                      className="w-full h-auto"
-                      alt="Link 2"
-                    />
-                  </div>
-                  <div
-                    className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
-                      feature5AutoHover
-                        ? "translate-y-4 sm:translate-y-10"
-                        : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
-                    }`}
-                  >
-                    <img
-                      src="/Link3.png"
-                      className="w-full h-auto"
-                      alt="Link 3"
-                    />
-                    <img
-                      src="/Link4.png"
-                      className="w-full h-auto"
-                      alt="Link 4"
-                    />
-                  </div>
-                  <div
-                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
-                      feature5AutoHover
-                        ? "-translate-y-4 sm:-translate-y-10"
-                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
-                    }`}
-                  >
-                    <img
-                      src="/Link5.png"
-                      className="w-full h-auto"
-                      alt="Link 5"
-                    />
-                    <img
-                      src="/Link6.png"
-                      className="w-full h-auto"
-                      alt="Link 6"
-                    />
-                  </div>
-                  <div
-                    className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
-                      feature5AutoHover
-                        ? "translate-y-4 sm:translate-y-10"
-                        : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
-                    }`}
-                  >
-                    <img
-                      src="/Link7.png"
-                      className="w-full h-auto"
-                      alt="Link 7"
-                    />
-                    <img
-                      src="/Link8.png"
-                      className="w-full h-auto"
-                      alt="Link 8"
-                    />
-                  </div>
-                  <div
-                    className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
-                      feature5AutoHover
-                        ? "-translate-y-4 sm:-translate-y-10"
-                        : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
-                    }`}
-                  >
-                    <img
-                      src="/Link9.png"
-                      className="w-full h-auto"
-                      alt="Link 9"
-                    />
-                    <img
-                      src="/Link10.png"
-                      className="w-full h-auto"
-                      alt="Link 10"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Success Stats Section */}
-      <section className="py-10 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-2 items-center gap-8">
-            {/* Heading - order 1 on mobile, positioned in desktop grid */}
-            <div className="order-1 lg:order-none lg:col-start-2 lg:row-start-1 lg:self-start">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4 sm:mb-8 leading-tight">
-                Join thousands of curious minds from top schools and
-                institutions using Edumaniax to -
-                <span className="text-green-600">
-                  {" "}
-                  make learning fun, engaging, and effective
-                </span>
-              </h2>
-            </div>
-
-            {/* Image - order 2 on mobile, spans both rows on desktop */}
-            <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2">
-              <div className="bg-green-500 rounded-2xl lg:rounded-tl-4xl lg:rounded-bl-4xl text-center h-[300px] sm:h-[430px] w-full lg:w-[550px] relative overflow-hidden">
-                {/* Character illustration */}
-                <div className="relative w-full pt-5 -mb-10 h-full z-10">
-                  <img
-                    src="/5.gif"
-                    alt="Full"
-                    className="absolute inset-0 w-full   object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats - order 3 on mobile, positioned in desktop grid */}
-            <div className="order-3 lg:order-none lg:col-start-2 lg:row-start-2 lg:self-end">
-              <div className="bg-gray-200 rounded-2xl p-4">
-                <div className="grid grid-cols-3  divide-x sm:grid-cols-3 gap-4 sm:gap-0 sm:divide-x divide-gray-400">
-                  <div className="text-center sm:pr-6">
-                    <div className="text-4xl sm:text-4xl font-bold text-green-600 mb-2">
-                      50+
-                    </div>
-                    <div className="text-xs sm:text-sm pr-2 sm:pr-0 text-gray-600">
-                      Partners School overall India
-                    </div>
-                  </div>
-                  <div className="text-center  sm:px-6">
-                    <div className="text-3xl pr-4 mt-1 sm:mt-0 sm:pr-0 sm:text-4xl font-bold text-green-600 mb-2">
-                      12K+
-                    </div>
-                    <div className="text-xs pr-2 sm:pr-0 sm:text-sm text-gray-600">
-                      Students across the globe
-                    </div>
-                  </div>
-                  <div className="text-center  sm:pl-6">
-                    <div className="text-4xl sm:text-4xl font-bold text-green-600 mb-2">
-                      20+
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-600">
-                      Trending topics from different categories
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Courses Section */}
-      <section className="py-10 sm:py-20 ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-4">
-            Courses, curated with love
-          </h2>
-
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-3 sm:px-4 py-2 text-xs whitespace-nowrap rounded-full font-medium transition duration-300 ${
-                  category === activeCategory
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Course Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-6 px-2 sm:px-0">
-            {filteredCourses.map((course, index) => (
+              {/* Feature 3 - Connect & learn */}
               <motion.div
-                key={`${course.title}-${index}`}
-                className="bg-white rounded-2xl w-full overflow-hidden shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+                className="bg-[url('/F3.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-4 sm:p-6 min-h-[300px] sm:h-80 h-full"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.05 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
               >
-                {/* Image Section */}
-                <div className="relative h-32 sm:h-40 bg-gray-900 flex-shrink-0">
-                  <div className="absolute inset-0">
-                    <img
-                      src={course.image}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black opacity-40"></div>
-                  </div>
+                <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
+                  Connect & learn together
+                </h3>
+                <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
+                  Students and teachers, both can learn together without any
+                  hussle, at their on ease
+                </p>
+                <div className="flex-1 flex items-center h-[60%] justify-center">
+                  <PeopleAvatars defaultImages={defaultImages} />
+                </div>
+              </motion.div>
+            </div>
 
-                  {/* Category tag */}
-                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
-                    <span className="bg-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
-                      {course.category}
-                    </span>
+            <div className="grid mt-4 sm:mt-5 grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Feature 4 - Games */}
+              <motion.div
+                className="bg-[url('/F4.png')] bg-cover bg-center bg-no-repeat rounded-2xl relative w-full p-4 sm:p-6 min-h-[250px] sm:h-90"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <h3 className="text-lg font-bold text-black mb-3">
+                  Jump-start amazing games
+                </h3>
+                <p className="text-gray-700 mb-4 text-sm">
+                  You can start playing amazing simple games any time, anywhere
+                  to learn
+                </p>
+
+                {/* Progress Card Component */}
+                <div className=" ml-10 h-40">
+                  <img
+                    className=" absolute sm:h-[45%] h-[34%] -ml-6 sm:mt-2 z-50 sm:w-[57%]"
+                    src="/mid4.png"
+                    alt="mid"
+                  />
+                  <div className="flex sm:w-[60%] w-[60%] ml-15 sm:ml-25 absolute bottom-0 mb-5 left-0 h-18 sm:h-28">
+                    <ProgressCardComponent />
                   </div>
                 </div>
+              </motion.div>
 
-                {/* Content Section - Fixed Padding */}
-                <div className="p-4 sm:p-5 flex flex-col flex-grow">
-                  {/* Title and Rating Row */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 pr-3">
-                      <h4 className="text-sm sm:text-base font-bold text-black line-clamp-2 leading-tight">
-                        {course.title}
-                      </h4>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Star className="w-3 sm:w-4 h-3 sm:h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs sm:text-sm font-medium">
-                        {course.rating}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-2 leading-relaxed">
-                    {course.description}
-                  </p>
-
-                  {/* Metadata Badges - Fixed Layout */}
-                  <div className="flex flex-nowrap gap-1.5 mb-4">
-                    {/* Level Badge */}
+              {/* Feature 5 - Skills */}
+              <motion.div
+                className="bg-[url('/F5.png')] bg-cover bg-center bg-no-repeat rounded-2xl p-4 sm:p-6 min-h-[250px] sm:h-90 w-full"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <h3 className="text-base sm:text-lg font-bold text-black mb-2 sm:mb-3">
+                  Learn any of trending skill, with fun
+                </h3>
+                <p className="text-gray-700 mb-4 sm:mb-6 text-sm">
+                  You can learn subjects like AI, Law, Science etc. while having
+                  fun and playing simple games
+                </p>
+                <div className="flex-1 flex items-center justify-center">
+                  <div
+                    className="grid mt-4 sm:mt-10 grid-cols-5 gap-2 sm:gap-5 group"
+                    onMouseEnter={
+                      isMobile ? undefined : () => setFeature5AutoHover(true)
+                    }
+                    onMouseLeave={
+                      isMobile ? undefined : () => setFeature5AutoHover(false)
+                    }
+                  >
+                    {/* 5 child divs, each has two <img> tags */}
                     <div
-                      className={`px-1.5 py-1 rounded-lg flex items-center gap-1 text-xs font-medium ${
-                        course.level === "Beginner"
-                          ? "bg-green-100 text-green-600"
-                          : course.level === "Intermediate"
-                          ? "bg-yellow-100 text-yellow-600"
-                          : "bg-red-100 text-red-600"
+                      className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                        feature5AutoHover
+                          ? "-translate-y-4 sm:-translate-y-10"
+                          : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
                       }`}
                     >
                       <img
-                        src={getLevelIcon(course.level)}
-                        alt={course.level}
-                        className="w-3 h-3"
+                        src="/Link1.png"
+                        className="w-full h-auto"
+                        alt="Link 1"
                       />
-                      <span className="pb-0.5">{course.level}</span>
+                      <img
+                        src="/Link2.png"
+                        className="w-full h-auto"
+                        alt="Link 2"
+                      />
+                    </div>
+                    <div
+                      className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
+                        feature5AutoHover
+                          ? "translate-y-4 sm:translate-y-10"
+                          : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
+                      }`}
+                    >
+                      <img
+                        src="/Link3.png"
+                        className="w-full h-auto"
+                        alt="Link 3"
+                      />
+                      <img
+                        src="/Link4.png"
+                        className="w-full h-auto"
+                        alt="Link 4"
+                      />
+                    </div>
+                    <div
+                      className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                        feature5AutoHover
+                          ? "-translate-y-4 sm:-translate-y-10"
+                          : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
+                      }`}
+                    >
+                      <img
+                        src="/Link5.png"
+                        className="w-full h-auto"
+                        alt="Link 5"
+                      />
+                      <img
+                        src="/Link6.png"
+                        className="w-full h-auto"
+                        alt="Link 6"
+                      />
+                    </div>
+                    <div
+                      className={`w-10 sm:w-15 h-10 sm:h-15 transition-transform duration-300 ease-in-out ${
+                        feature5AutoHover
+                          ? "translate-y-4 sm:translate-y-10"
+                          : "group-hover:translate-y-4 sm:group-hover:translate-y-10"
+                      }`}
+                    >
+                      <img
+                        src="/Link7.png"
+                        className="w-full h-auto"
+                        alt="Link 7"
+                      />
+                      <img
+                        src="/Link8.png"
+                        className="w-full h-auto"
+                        alt="Link 8"
+                      />
+                    </div>
+                    <div
+                      className={`w-10 sm:w-15 h-10 sm:h-15 mt-4 sm:mt-10 transition-transform duration-300 ease-in-out ${
+                        feature5AutoHover
+                          ? "-translate-y-4 sm:-translate-y-10"
+                          : "group-hover:-translate-y-4 sm:group-hover:-translate-y-10"
+                      }`}
+                    >
+                      <img
+                        src="/Link9.png"
+                        className="w-full h-auto"
+                        alt="Link 9"
+                      />
+                      <img
+                        src="/Link10.png"
+                        className="w-full h-auto"
+                        alt="Link 10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Success Stats Section */}
+        <section className="py-10 sm:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-2 items-center gap-8">
+              {/* Heading - order 1 on mobile, positioned in desktop grid */}
+              <div className="order-1 lg:order-none lg:col-start-2 lg:row-start-1 lg:self-start">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4 sm:mb-8 leading-tight">
+                  Join thousands of curious minds from top schools and
+                  institutions using Edumaniax to -
+                  <span className="text-green-600">
+                    {" "}
+                    make learning fun, engaging, and effective
+                  </span>
+                </h2>
+              </div>
+
+              {/* Image - order 2 on mobile, spans both rows on desktop */}
+              <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2">
+                <div className="bg-green-500 rounded-2xl lg:rounded-tl-4xl lg:rounded-bl-4xl text-center h-[300px] sm:h-[430px] w-full lg:w-[550px] relative overflow-hidden">
+                  {/* Character illustration */}
+                  <div className="relative w-full pt-5 -mb-10 h-full z-10">
+                    <img
+                      src="/5.gif"
+                      alt="Full"
+                      className="absolute inset-0 w-full   object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats - order 3 on mobile, positioned in desktop grid */}
+              <div className="order-3 lg:order-none lg:col-start-2 lg:row-start-2 lg:self-end">
+                <div className="bg-gray-200 rounded-2xl p-4">
+                  <div className="grid grid-cols-3  divide-x sm:grid-cols-3 gap-4 sm:gap-0 sm:divide-x divide-gray-400">
+                    <div className="text-center sm:pr-6">
+                      <div className="text-4xl sm:text-4xl font-bold text-green-600 mb-2">
+                        50+
+                      </div>
+                      <div className="text-xs sm:text-sm pr-2 sm:pr-0 text-gray-600">
+                        Partners School overall India
+                      </div>
+                    </div>
+                    <div className="text-center  sm:px-6">
+                      <div className="text-3xl pr-4 mt-1 sm:mt-0 sm:pr-0 sm:text-4xl font-bold text-green-600 mb-2">
+                        12K+
+                      </div>
+                      <div className="text-xs pr-2 sm:pr-0 sm:text-sm text-gray-600">
+                        Students across the globe
+                      </div>
+                    </div>
+                    <div className="text-center  sm:pl-6">
+                      <div className="text-4xl sm:text-4xl font-bold text-green-600 mb-2">
+                        20+
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-600">
+                        Trending topics from different categories
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Courses Section */}
+        <section className="py-10 sm:py-20 ">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-4">
+              Courses, curated with love
+            </h2>
+
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-3 sm:px-4 py-2 text-xs whitespace-nowrap rounded-full font-medium transition duration-300 ${
+                    category === activeCategory
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {/* Course Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-6 px-2 sm:px-0">
+              {filteredCourses.map((course, index) => (
+                <motion.div
+                  key={`${course.title}-${index}`}
+                  className="bg-white rounded-2xl w-full overflow-hidden shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                >
+                  {/* Image Section */}
+                  <div className="relative h-32 sm:h-40 bg-gray-900 flex-shrink-0">
+                    <div className="absolute inset-0">
+                      <img
+                        src={course.image}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black opacity-40"></div>
                     </div>
 
-                    {/* Duration Badge */}
-                    <div className="flex items-center bg-[#A063F3]/10 rounded-lg py-1 px-1.5 gap-1">
-                      <img src="/time.png" alt="" className="w-3 h-3" />
-                      <span className="text-xs pb-0.5 text-[#A063F3] font-medium">
-                        {course.duration}
-                      </span>
-                    </div>
-
-                    {/* Students Badge */}
-                    <div className="flex items-center bg-[#008FA6]/10 rounded-lg py-1 px-2.5 gap-1">
-                      <img src="/people.png" alt="" className="w-3 h-3" />
-                      <span className="text-xs pb-0.5 text-[#008FA6] font-medium">
-                        {course.students}
+                    {/* Category tag */}
+                    <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                      <span className="bg-white px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
+                        {course.category}
                       </span>
                     </div>
                   </div>
 
-                  {/* Buttons Row - Improved Spacing */}
-                  <div className="flex gap-2 mt-auto">
-                    <Link to={course.gamesLink} className="flex-1">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
-                      >
-                        <img src="/game.png" alt="Game" className="w-5 h-5" />
-                        Let's Play &gt;
-                      </motion.button>
-                    </Link>
+                  {/* Content Section - Fixed Padding */}
+                  <div className="p-4 sm:p-5 flex flex-col flex-grow">
+                    {/* Title and Rating Row */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1 pr-3">
+                        <h4 className="text-sm sm:text-base font-bold text-black line-clamp-2 leading-tight">
+                          {course.title}
+                        </h4>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Star className="w-3 sm:w-4 h-3 sm:h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs sm:text-sm font-medium">
+                          {course.rating}
+                        </span>
+                      </div>
+                    </div>
 
-                    <Link to={course.notesLink}>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="bg-[#D9A30B] flex items-center text-white font-medium py-2.5 px-3 rounded-lg hover:bg-orange-500 transition duration-300 text-sm"
+                    {/* Description */}
+                    <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-2 leading-relaxed">
+                      {course.description}
+                    </p>
+
+                    {/* Metadata Badges - Fixed Layout */}
+                    <div className="flex flex-nowrap gap-1.5 mb-4">
+                      {/* Level Badge */}
+                      <div
+                        className={`px-1.5 py-1 rounded-lg flex items-center gap-1 text-xs font-medium ${
+                          course.level === "Beginner"
+                            ? "bg-green-100 text-green-600"
+                            : course.level === "Intermediate"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-red-100 text-red-600"
+                        }`}
                       >
                         <img
-                          src="/notes.png"
-                          alt="Notes"
-                          className="w-5 h-5 mr-1"
+                          src={getLevelIcon(course.level)}
+                          alt={course.level}
+                          className="w-3 h-3"
                         />
-                        Notes
-                      </motion.button>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <div className="w-full h-full flex justify-center items-center">
-            <a
-              href="/courses"
-              className="border-2 sm:border-3 border-green-600 text-green-600 mt-6 sm:mt-8 mb-6 sm:mb-10 lg:mb-10 font-medium px-4 sm:px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300 text-sm sm:text-base"
-            >
-              View More..
-            </a>
-          </div>
-        </div>
-      </section>
+                        <span className="pb-0.5">{course.level}</span>
+                      </div>
 
-      {/* Student Feedback Section - CAROUSEL */}
-      <section className="py-10 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
-            Hear it from the desks
-          </h2>
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-8 sm:mb-16">
-            that matter most
-          </h2>
+                      {/* Duration Badge */}
+                      <div className="flex items-center bg-[#A063F3]/10 rounded-lg py-1 px-1.5 gap-1">
+                        <img src="/time.png" alt="" className="w-3 h-3" />
+                        <span className="text-xs pb-0.5 text-[#A063F3] font-medium">
+                          {course.duration}
+                        </span>
+                      </div>
 
-          <StudentFeedbackCarousel />
-        </div>
-      </section>
+                      {/* Students Badge */}
+                      <div className="flex items-center bg-[#008FA6]/10 rounded-lg py-1 px-2.5 gap-1">
+                        <img src="/people.png" alt="" className="w-3 h-3" />
+                        <span className="text-xs pb-0.5 text-[#008FA6] font-medium">
+                          {course.students}
+                        </span>
+                      </div>
+                    </div>
 
-      {/* Pricing Section */}
-      <section className="py-10 sm:py-20 mb-20" style={{background: "linear-gradient(180deg, #FFF 0%, #FFFEF7 29.73%, #FFFBDE 57.47%, #FFF49A 100%)"}} >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="relative flex justify-center items-center mb-8 sm:mb-16">
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
-              <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
-            </div>
+                    {/* Buttons Row - Improved Spacing */}
+                    <div className="flex gap-2 mt-auto">
+                      <Link to={course.gamesLink} className="flex-1">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+                        >
+                          <img src="/game.png" alt="Game" className="w-5 h-5" />
+                          Let's Play &gt;
+                        </motion.button>
+                      </Link>
 
-            <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10 text-center">
-              {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight text-[#111827]">
-                <div>Pick the plan that powers</div>
-                <div className="inline-flex items-center justify-center">
-                  your progress
-                </div>
-              </h1>
-
-              {/* Subtext */}
-              <p className="text-sm sm:text-lg -mt-2 text-[#111827] inter-font">
-                Affordable and scalable plans packed with features,
-                <br className="block sm:hidden" />
-                notes, and learning tools.
-              </p>
-            </div>
-          </div>
-
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 inter-font" >
-            {plans.map((plan, idx) => (
-              <div
-                key={idx}
-                className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`} style={{ filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))" }}
-              >
-                <div className="relative mb-4">
-                  {plan.title === "PRO PLAN" && (
-                    <img
-                      src="/pricingDesign/save20.svg"
-                      alt="Save 20%"
-                      className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
-                    />
-                  )}
-                  {plan.tag && (
-                    <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
-                      {plan.tag}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex justify-start -mx-[1px]">
-                  <h3
-                    className="text-xs font-extrabold uppercase text-[#007127] px-3 py-1 rounded"
-                    style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
-                  >
-                    {plan.title}
-                  </h3>
-                </div>
-                <p className="text-[12.5px] text-black font-light mt-2">{plan.description}</p>
-                <hr className="my-3 border-gray-300" />
-                <p className="text-4xl font-extrabold text-[#000B33] mt-1">
-                  {plan.price}
-                </p>
-                <p className="text-xs text-black font-semibold mt-1">
-                  {plan.frequency}
-                </p>
-                <hr className="my-3 border-gray-300 mt-5" />
-
-                <ul className="text-xs space-y-2 flex-1 mt-2">
-                  {plan.features.map((feat, i) => {
-                    const text = typeof feat === "string" ? feat : feat.text;
-                    const excluded =
-                      typeof feat === "object" && feat.excluded === true;
-
-                    return (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="w-4 h-4 flex-shrink-0 mt-1">
+                      <Link to={course.notesLink}>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="bg-[#D9A30B] flex items-center text-white font-medium py-2.5 px-3 rounded-lg hover:bg-orange-500 transition duration-300 text-sm"
+                        >
                           <img
-                            src={
-                              excluded
-                                ? "/pricingDesign/cross.svg"
-                                : "/pricingDesign/tick.svg"
-                            }
-                            alt={excluded ? "Not included" : "Included"}
-                            className={`w-full h-full object-contain ${
-                              excluded ? "" : "p-[1px]"
-                            }`}
+                            src="/notes.png"
+                            alt="Notes"
+                            className="w-5 h-5 mr-1"
                           />
-                        </span>
-                        <span className="text-black font-normal text-xs">
-                          {text}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                          Notes
+                        </motion.button>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            <div className="w-full h-full flex justify-center items-center">
+              <a
+                href="/courses"
+                className="border-2 sm:border-3 border-green-600 text-green-600 mt-6 sm:mt-8 mb-6 sm:mb-10 lg:mb-10 font-medium px-4 sm:px-6 py-2 rounded-lg hover:bg-green-50 transition duration-300 text-sm sm:text-base"
+              >
+                View More..
+              </a>
+            </div>
+          </div>
+        </section>
 
-                <Link
-                  to="/payment-required"
-                  className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
-                  onClick={(e) => {
-                    if (plan.title === "INSTITUTIONAL PLAN") {
-                      e.preventDefault();
-                      setIsInstitutionalModalOpen(true);
-                    }
+        {/* Student Feedback Section - CAROUSEL */}
+        <section className="py-10 sm:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
+              Hear it from the desks
+            </h2>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-8 sm:mb-16">
+              that matter most
+            </h2>
+
+            <StudentFeedbackCarousel />
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section
+          className="py-10 sm:py-20 mb-20"
+          style={{
+            background:
+              "linear-gradient(180deg, #FFF 0%, #FFFEF7 29.73%, #FFFBDE 57.47%, #FFF49A 100%)",
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="relative flex justify-center items-center mb-8 sm:mb-16">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
+                <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
+              </div>
+
+              <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center space-y-4 relative z-10 text-center">
+                {/* Heading: 2-line layout, Sigmar font, emoji after "progress" */}
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold inter-font leading-tight text-[#111827]">
+                  <div>Pick the plan that powers</div>
+                  <div className="inline-flex items-center justify-center">
+                    your progress
+                  </div>
+                </h1>
+
+                {/* Subtext */}
+                <p className="text-sm sm:text-lg -mt-2 text-[#111827] inter-font">
+                  Affordable and scalable plans packed with features,
+                  <br className="block sm:hidden" />
+                  notes, and learning tools.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 inter-font">
+              {plans.map((plan, idx) => (
+                <div
+                  key={idx}
+                  className={`bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between relative border-[#D9D9D9] border-2 filter hover:border-[#068F36]`}
+                  style={{
+                    filter: "drop-shadow(1px -1px 5px rgba(0, 0, 0, 0.25))",
                   }}
                 >
-                  {plan.button}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-1 sm:py-2 mb-10 sm:mb-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
-            Frequently Asked
-          </h2>
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
-            Questions
-          </h2>
-          <p className="text-black text-sm sm:text-lg mb-8 sm:mb-16">
-            Everything you need to know before getting started
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pricingFaqData.map((faq, index) => (
-              <motion.div
-
-                key={index}
-                onClick={() => toggleFAQ(index)}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl 
-                ${index === 4 ? "md:col-span-2 md:mx-auto md:w-1/2" : ""}`}
-              >
-                <div className="rounded-2xl overflow-hidden">
-                  <div
-                    className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
-                  >
-                    <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
-                      {faq.question}
-                    </h3>
-                    <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                      <ChevronDown
-                        className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
-                          openFAQ === index ? "rotate-180" : ""
-                        }`}
+                  <div className="relative mb-4">
+                    {plan.title === "PRO PLAN" && (
+                      <img
+                        src="/pricingDesign/save20.svg"
+                        alt="Save 20%"
+                        className="absolute -mt-9 -mr-6 -top-0 right-0 w-[113px] h-[49px] z-10"
                       />
-                    </div>
+                    )}
+                    {plan.tag && (
+                      <span className="bg-[#EFB100] text-black text-xs font-medium px-2 py-1 rounded w-fit shadow">
+                        {plan.tag}
+                      </span>
+                    )}
                   </div>
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={
-                      openFAQ === index
-                        ? { height: "auto", opacity: 1 }
-                        : { height: 0, opacity: 0 }
-                    }
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className={`overflow-hidden ${faq.AbgColor}`}
-                  >
-                    <div className="p-4 pt-6 text-sm text-black text-left">
-                      {faq.answer}
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {showScroll && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-10 right-8 bg-gray-700 text-white p-4 rounded-lg shadow-md hover:bg-gray-800 transition-all cursor-pointer duration-300 z-100"
-        >
-          <FaArrowUp className="text-lg" />
-        </button>
-      )}
-    </div>
-    <Footer />
+                  <div className="flex justify-start -mx-[1px]">
+                    <h3
+                      className="text-xs font-extrabold uppercase text-[#007127] px-3 py-1 rounded"
+                      style={{ backgroundColor: "rgba(165, 237, 110, 0.31)" }}
+                    >
+                      {plan.title}
+                    </h3>
+                  </div>
+                  <p className="text-[12.5px] text-black font-light mt-2">
+                    {plan.description}
+                  </p>
+                  <hr className="my-3 border-gray-300" />
+                  <p className="text-4xl font-extrabold text-[#000B33] mt-1">
+                    {plan.price}
+                  </p>
+                  <p className="text-xs text-black font-semibold mt-1">
+                    {plan.frequency}
+                  </p>
+                  <hr className="my-3 border-gray-300 mt-5" />
+
+                  <ul className="text-xs space-y-2 flex-1 mt-2">
+                    {plan.features.map((feat, i) => {
+                      const text = typeof feat === "string" ? feat : feat.text;
+                      const excluded =
+                        typeof feat === "object" && feat.excluded === true;
+
+                      return (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="w-4 h-4 flex-shrink-0 mt-1">
+                            <img
+                              src={
+                                excluded
+                                  ? "/pricingDesign/cross.svg"
+                                  : "/pricingDesign/tick.svg"
+                              }
+                              alt={excluded ? "Not included" : "Included"}
+                              className={`w-full h-full object-contain ${
+                                excluded ? "" : "p-[1px]"
+                              }`}
+                            />
+                          </span>
+                          <span className="text-black font-normal text-xs">
+                            {text}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <Link
+                    to="/payment-required"
+                    className="bg-[#068F36] text-white font-semibold py-2 px-4 rounded-md hover:brightness-110 transition mt-4 inline-block text-center"
+                    onClick={(e) => {
+                      if (plan.title === "INSTITUTIONAL PLAN") {
+                        e.preventDefault();
+                        setIsInstitutionalModalOpen(true);
+                      }
+                    }}
+                  >
+                    {plan.button}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-1 sm:py-2 mb-10 sm:mb-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
+              Frequently Asked
+            </h2>
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
+              Questions
+            </h2>
+            <p className="text-black text-sm sm:text-lg mb-8 sm:mb-16">
+              Everything you need to know before getting started
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {pricingFaqData.map((faq, index) => (
+                <motion.div
+                  key={index}
+                  onClick={() => toggleFAQ(index)}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className={`cursor-pointer transition-all duration-300 overflow-hidden rounded-2xl 
+                ${index === 4 ? "md:col-span-2 md:mx-auto md:w-1/2" : ""}`}
+                >
+                  <div className="rounded-2xl overflow-hidden">
+                    <div
+                      className={`flex ${faq.QbgColor} p-6 justify-between items-center`}
+                    >
+                      <h3 className="text-sm sm:text-lg font-semibold text-black text-left flex-1 pr-2">
+                        {faq.question}
+                      </h3>
+                      <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                        <ChevronDown
+                          className={`w-3 sm:w-4 h-3 sm:h-4 text-green-600 transition-transform duration-300 ${
+                            openFAQ === index ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={
+                        openFAQ === index
+                          ? { height: "auto", opacity: 1 }
+                          : { height: 0, opacity: 0 }
+                      }
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className={`overflow-hidden ${faq.AbgColor}`}
+                    >
+                      <div className="p-4 pt-6 text-sm text-black text-left">
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {showScroll && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-10 right-8 bg-gray-700 text-white p-4 rounded-lg shadow-md hover:bg-gray-800 transition-all cursor-pointer duration-300 z-100"
+          >
+            <FaArrowUp className="text-lg" />
+          </button>
+        )}
+      </div>
+      <Footer />
     </div>
   );
 };
