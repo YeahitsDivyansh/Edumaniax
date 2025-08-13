@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useFinance } from "../../../../contexts/FinanceContext";
 import { usePerformance } from "@/contexts/PerformanceContext"; // for performance
+import confetti from "canvas-confetti";
 
 function parsePossiblyStringifiedJSON(text) {
   if (typeof text !== "string") return null;
@@ -39,6 +40,7 @@ export default function OverspendTrap() {
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const feedbackRef = useRef(null);
+  const [parsedWinner, setParsedWinner] = useState(null); // <--- add this here
 
   //for Performance
   const { updatePerformance } = usePerformance();
@@ -61,16 +63,21 @@ The student had the following options:
 ${options.map((opt, i) => `${i + 1}. ${opt}`).join("\n")}
 The student chose: "${selectedOption}"
 
-Please give feedback focusing on the consequences of impulsive spending, and how the chosen response helps or doesn't help address that. Keep it friendly and educational. Analyze the chosen option. Also keep a stress on impulsive buying. Do address the user in your conversation, so that it feels personalized. Maximum length 80 words.
-The text can have bold words. Do not use asterisk to wrap a word.
+Please:
+1. Give short feedback (max 80 words) focusing on impulsive spending, and how the choice helps or doesn't help.
+2. Decide if this choice shows responsible financial behavior (win condition).
+   - If yes, set "isWinner": true.
+   - If no, set "isWinner": false.
+3. Address the student directly in the feedback.
+4. The text can have bold words but do not use asterisk symbols for bold.
 
 ### FINAL INSTRUCTION ###
 Return ONLY raw JSON (no backticks, no markdown, no explanations).
 Example format:
 {
-  feedback : "Your feedback"
+  "feedback": "Your feedback here",
+  "isWinner": true
 }
-
 `;
 
   const handleSubmit = async (e) => {
@@ -91,27 +98,54 @@ Example format:
       );
 
       const aiReply = response.data.candidates[0].content.parts[0].text;
-      console.log(aiReply);
+      console.log("Raw AI reply:", aiReply);
+
       const parsed = parsePossiblyStringifiedJSON(aiReply);
-      console.log(parsed);
+      if (!parsed || typeof parsed.isWinner === "undefined") {
+        setError("AI response could not be understood.");
+        return;
+      }
+
+      console.log("Parsed AI JSON:", parsed);
       setFeedback(parsed.feedback);
+      setParsedWinner(parsed.isWinner);
 
-      //for performance
-      const totalTime = (Date.now() - startTime) / 1000; // in seconds
+      const totalTime = (Date.now() - startTime) / 1000;
       const studyTimeMinutes = Math.ceil(totalTime / 60);
-      updatePerformance({
-        moduleName: "Finance",
-        topicName: "budgetExpert",
-        score: 10,
-        accuracy: 100,
-        avgResponseTimeSec: totalTime,
-        studyTimeMinutes,
-        completed: true,
 
-      });
+      if (parsed.isWinner) {
+        // ✅ Player Wins
+        updatePerformance({
+          moduleName: "Finance",
+          topicName: "budgetExpert",
+          score: 10,
+          accuracy: 100,
+          avgResponseTimeSec: totalTime,
+          studyTimeMinutes,
+          completed: true,
+        });
+
+        // 🎉 Trigger Confetti
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+      } else {
+        // ❌ Player Loses
+        updatePerformance({
+          moduleName: "Finance",
+          topicName: "budgetExpert",
+          score: 0,
+          accuracy: 0,
+          avgResponseTimeSec: totalTime,
+          studyTimeMinutes,
+          completed: false,
+        });
+      }
 
       setStartTime(Date.now());
-      completeFinanceChallenge(0, 2); //MARK CHALLENGE COMPLETED
+      completeFinanceChallenge(0, 2);
     } catch (e) {
       console.error("Error generating feedback", e);
       setError("Error generating feedback. Try again later.");
@@ -147,10 +181,11 @@ Example format:
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               key={index}
-              className={`block p-4 rounded-2xl border-2 text-lg font-semibold transition-all duration-200 shadow-md ${selectedOption === option
-                ? "bg-green-200 border-green-500 text-green-900"
-                : "bg-white border-gray-300 text-gray-700"
-                }`}
+              className={`block p-4 rounded-2xl border-2 text-lg font-semibold transition-all duration-200 shadow-md ${
+                selectedOption === option
+                  ? "bg-green-200 border-green-500 text-green-900"
+                  : "bg-white border-gray-300 text-gray-700"
+              }`}
             >
               <input
                 type="radio"
@@ -180,10 +215,11 @@ Example format:
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSubmit}
                 disabled={!selectedOption}
-                className={`text-xl font-bold rounded-full px-6 py-3 transition-all duration-200 ${selectedOption
-                  ? "bg-purple-500 hover:bg-purple-600 text-white shadow-lg"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+                className={`text-xl font-bold rounded-full px-6 py-3 transition-all duration-200 ${
+                  selectedOption
+                    ? "bg-purple-500 hover:bg-purple-600 text-white shadow-lg"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
               >
                 Show Me the Feedback!
               </motion.button>
@@ -198,9 +234,15 @@ Example format:
             animate={{ opacity: 1 }}
             transition={{ duration: 1.5 }}
             ref={feedbackRef}
-            className="mt-8 p-5 bg-blue-100 border-l-4 border-blue-500 text-blue-900 rounded-xl shadow-inner"
+            className={`mt-8 p-5 border-l-4 rounded-xl shadow-inner ${
+              parsedWinner
+                ? "bg-green-100 border-green-500 text-green-900"
+                : "bg-red-100 border-red-500 text-red-900"
+            }`}
           >
-            <strong className="text-lg">💡 Feedback:</strong>
+            <strong className="text-lg">
+              {parsedWinner ? "🎉 You Win!" : "😕 Try Again"}
+            </strong>
             <p className="mt-2 text-base whitespace-pre-line">{feedback}</p>
           </motion.div>
         )}
