@@ -1549,12 +1549,12 @@ useEffect(() => {
       />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
+      <section className="relative h-[100vh] sm:h-[100vh] lg:h-[100vh] w-full p-0 ">
         <div className="w-full relative h-full bg-[url('/heroBG.jpg')] bg-cover  bg-center bg-no-repeat">
           <Navbar/>
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-6  flex-col items-center text-center px-4 sm:px-6">
+          <div className="relative z-10 max-w-7xl mx-auto flex flex-wrap  sm:mt-6 xl:mt-16  flex-col items-center text-center px-4 sm:px-6">
             {/* Trust Badge */}
-            <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-4 sm:mt-0 md:mt- md:mb-2">
+            <div className="mb-3 sm:mb-5 pt-3 sm:pt-0 mt-3 sm:mt-0 md:mt- md:mb-2">
               <div className="bg-black backdrop-blur-sm rounded-full px-2 sm:px-3 py-1  sm:mt- border border-white/20">
                 <span className="text-white text-xs sm:text-sm flex items-center gap-2">
                   ⭐ Loved by 1K+ users worldwide
@@ -1586,7 +1586,7 @@ useEffect(() => {
             </div>
 
             {/* Subtitle */}
-            <p className="text-white/90 text-md sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt- xl:mt-3 xl:mb-3 lg:mx-60 mb-4 sm:mb- leading-tight">
+            <p className="text-white/90 text-sm sm:text-base md:text-base max-w-4xl mx-4 sm:mx-20 lg:mt- xl:mt-3 xl:mb-3 lg:mx-60 mb-4 sm:mb- leading-tight">
               Explore Artificial Intelligence, Machine Learning, Communication,
               Coding, and more through interactive games, real-world challenges,
               and bite-sized notes
@@ -1596,7 +1596,7 @@ useEffect(() => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 xl:mt-3 w-full sm:w-auto px-4 sm:px-0">
               <button
                 onClick={() => navigate(user ? "/pricing" : "/courses")}
-                className="bg-white text-black font-semibold px-4 sm:px-5 py-3 sm:py- lg:px-5 lg:py-3 xl:px-8 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
+                className="bg-white text-black font-semibold px-4 sm:px-5 py-2 sm:py- lg:px-5 lg:py-3 xl:px-8 rounded-md transition duration-300 cursor-pointer text-sm sm:text-sm hover:bg-gray-100"
               >
                 {user ? (
                   hasActiveSubscription && (userPlan === 'STARTER' || userPlan === 'SOLO') 
@@ -1609,7 +1609,7 @@ useEffect(() => {
               {user && hasActiveSubscription ? (
                 <button
                   onClick={() => navigate("/dashboard?section=modules")}
-                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
+                  className="border-2 border-white text-white font-semibold px-4 sm:px-8 py- sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
                 >
                   Continue Reading
                 </button>
