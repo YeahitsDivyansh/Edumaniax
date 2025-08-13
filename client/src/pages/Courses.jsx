@@ -230,6 +230,17 @@ const CourseCard = ({
   const remainingDays = cardGetRemainingTrialDays();
   const isPurchased = isModulePurchased(moduleKey);
 
+  // Debug logging for trial access
+  console.log('CourseCard:', course.title, {
+    moduleKey,
+    hasAccess,
+    hasGamesAccess,
+    cardCurrentPlan,
+    remainingDays,
+    isPurchased,
+    userSubscriptions: userSubscriptions?.length || 0
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -368,13 +379,13 @@ const CourseCard = ({
                   if (isPurchased) {
                     return "Play >";
                   }
-                  // Show "Play (X days left)" for STARTER users with trial access
+                  // Show "Play Now (X days left)" for STARTER users with trial access
                   if (
                     cardCurrentPlan === "STARTER" &&
                     remainingDays !== null &&
                     remainingDays > 0
                   ) {
-                    return `Play Now `;
+                    return `Play Now`;
                   }
                   // Default text for PRO/INSTITUTIONAL with access
                   return "Play Now >";
@@ -394,7 +405,7 @@ const CourseCard = ({
                   alt="Game"
                   className="w-5 h-5 opacity-70"
                 />
-                {cardCurrentPlan === "STARTER" ? "Trial Expired" : "Upgrade >"}
+                {cardCurrentPlan === "STARTER" ? "Upgrade for Full Access" : "Upgrade >"}
               </motion.button>
             </Link>
           )}
@@ -505,15 +516,13 @@ const Courses = () => {
   const [forceRefresh, setForceRefresh] = useState(0);
   const [_accessControl, setAccessControl] = useState(null);
 
-  // Access control hook for trial banner
-  const { currentPlan, getRemainingTrialDays, isTrialValid } = useAccessControl(
-    subscriptions,
-    selectedModule
-  );
+
 
   // Initialize accessControl class instance for more complex operations when needed
   useEffect(() => {
-    if (user?.id && subscriptions.length > 0) {
+    // Initialize access control for all users, including those without subscriptions
+    // This ensures trial access works for new users
+    if (user?.id) {
       const newAccessControl = new AccessController(
         subscriptions,
         user?.registrationDate
@@ -882,38 +891,7 @@ const Courses = () => {
         ref={coursesRef}
         className="max-w-7xl mx-auto px-6 py-12 pb-28 sm:mb-8 mb-80"
       >
-        {/* Trial Banner for STARTER Plan Users */}
-        {subscriptions.length > 0 && currentPlan === "STARTER" && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 p-4 rounded-xl text-white text-center ${
-              isTrialValid()
-                ? "bg-gradient-to-r from-green-500 to-blue-500"
-                : "bg-gradient-to-r from-red-500 to-orange-500"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-lg">🎯</span>
-              <h3 className="text-lg font-semibold">
-                {isTrialValid() ? "Free Trial Active" : "Trial Expired"}
-              </h3>
-            </div>
-            <p className="text-sm opacity-90">
-              {isTrialValid()
-                ? `You have ${getRemainingTrialDays()} days left to explore ALL modules and level 1 games!`
-                : "Your 7-day trial has ended. Upgrade to continue learning!"}
-            </p>
-            {!isTrialValid() && (
-              <Link
-                to="/pricing"
-                className="inline-block mt-3 bg-white text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Upgrade Now
-              </Link>
-            )}
-          </motion.div>
-        )}
+
 
         {filteredCourses.length === 0 ? (
           <motion.div
