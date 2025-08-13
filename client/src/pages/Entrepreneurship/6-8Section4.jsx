@@ -1,143 +1,116 @@
 import React, { useState, useEffect } from 'react';
+import { Bot, Brain, TrendingUp, MessageSquare, Palette, BarChart3, Shield, Globe, Zap, Lightbulb, Rocket, Users, Eye, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Module4 = ({ topicRefs }) => {
   const [visibleCards, setVisibleCards] = useState([]);
-  const [currentTransformation, setCurrentTransformation] = useState(0);
-  const [hoveredTool, setHoveredTool] = useState(null);
+  const [currentExample, setCurrentExample] = useState(0);
+  const [activeChallenge, setActiveChallenge] = useState(null);
 
-  const aiTransformations = [
-    { 
-      area: "Idea Generation", 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisibleCards([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentExample((prev) => (prev + 1) % 3);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const aiApplications = [
+    {
+      icon: <Lightbulb className="w-8 h-8" />,
+      title: "Idea Generation",
       description: "AI tools can suggest new business ideas by analyzing trends and data",
-      icon: "💡",
-      color: "from-yellow-400 to-orange-400",
-      bgColor: "bg-yellow-100 text-yellow-700"
+      example: "AI analyzes market gaps and suggests profitable business opportunities",
+      color: "from-green-500 to-emerald-600"
     },
-    { 
-      area: "Market Research", 
+    {
+      icon: <BarChart3 className="w-8 h-8" />,
+      title: "Market Research",
       description: "AI can quickly analyze large amounts of data to identify market opportunities",
-      icon: "📊",
-      color: "from-blue-400 to-indigo-400",
-      bgColor: "bg-blue-100 text-blue-700"
+      example: "Processing thousands of customer reviews to find product improvement areas",
+      color: "from-emerald-500 to-teal-600"
     },
-    { 
-      area: "Customer Service", 
+    {
+      icon: <MessageSquare className="w-8 h-8" />,
+      title: "Customer Service",
       description: "Chatbots and virtual assistants provide 24/7 support",
-      icon: "🤖",
-      color: "from-green-400 to-emerald-400",
-      bgColor: "bg-green-100 text-green-700"
+      example: "AI chatbots handle 80% of customer queries automatically",
+      color: "from-green-600 to-emerald-700"
     },
-    { 
-      area: "Product Development", 
+    {
+      icon: <Rocket className="w-8 h-8" />,
+      title: "Product Development",
       description: "AI helps design and test products faster and more efficiently",
-      icon: "🛠️",
-      color: "from-purple-400 to-violet-400",
-      bgColor: "bg-purple-100 text-purple-700"
+      example: "AI simulations reduce product testing time from months to days",
+      color: "from-teal-500 to-green-600"
     },
-    { 
-      area: "Marketing", 
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Marketing",
       description: "AI personalizes marketing messages and targets the right audience",
-      icon: "🎯",
-      color: "from-pink-400 to-red-400",
-      bgColor: "bg-pink-100 text-pink-700"
+      example: "AI increases marketing ROI by 30% through better targeting",
+      color: "from-emerald-600 to-green-700"
     }
   ];
 
   const realLifeExamples = [
     {
-      title: "AI-powered logo makers",
+      icon: <Palette className="w-12 h-12" />,
+      title: "AI-powered Logo Makers",
       description: "Create professional logos in seconds",
-      icon: "🖼️",
-      gradient: "from-indigo-500 to-purple-600",
-      features: ["Instant design", "Multiple variations", "Professional quality"]
+      detail: "Tools like Looka and Brandmark use AI to generate thousands of logo options based on your preferences",
+      emoji: "🖼️"
     },
     {
-      title: "Chatbots for customer support",
+      icon: <MessageSquare className="w-12 h-12" />,
+      title: "Customer Support Chatbots",
       description: "Answer customer queries instantly",
-      icon: "💬",
-      gradient: "from-blue-500 to-cyan-600",
-      features: ["24/7 availability", "Instant responses", "Multiple languages"]
+      detail: "Companies save 30% on customer service costs while providing 24/7 support",
+      emoji: "💬"
     },
     {
-      title: "Recommendation engines",
+      icon: <Eye className="w-12 h-12" />,
+      title: "Recommendation Engines",
       description: "Suggest products based on preferences",
-      icon: "🛒",
-      gradient: "from-green-500 to-emerald-600",
-      features: ["Personalized suggestions", "Increased sales", "Better user experience"]
+      detail: "Netflix and Amazon use AI to recommend content, increasing engagement by 40%",
+      emoji: "🛒"
     }
   ];
 
   const aiTools = [
-    {
-      category: "No-code app builders",
-      icon: "🛠️",
-      description: "Build apps without coding knowledge",
-      examples: ["Bubble", "Glide", "Adalo"],
-      color: "from-blue-400 to-indigo-500"
-    },
-    {
-      category: "AI writing assistants",
-      icon: "✍️",
-      description: "Generate content and copy automatically",
-      examples: ["Content creation", "Email writing", "Social media posts"],
-      color: "from-green-400 to-emerald-500"
-    },
-    {
-      category: "Data analysis platforms",
-      icon: "📊",
-      description: "Analyze business data and trends",
-      examples: ["Trend analysis", "Customer insights", "Performance metrics"],
-      color: "from-purple-400 to-violet-500"
-    }
+    { name: "No-code App Builders", icon: "🛠️", description: "Build apps without coding knowledge" },
+    { name: "AI Writing Assistants", icon: "✍️", description: "Create content and copy automatically" },
+    { name: "Data Analysis Platforms", icon: "📊", description: "Understand your business metrics easily" }
   ];
 
   const challenges = [
     {
-      title: "Ethical concerns",
-      icon: "⚖️",
+      icon: <Shield className="w-8 h-8" />,
+      title: "Ethical Concerns",
       description: "Ensuring AI is fair and unbiased",
-      details: "AI systems must be designed to treat all users fairly and avoid discrimination"
+      detail: "AI systems must be designed to avoid discrimination and promote fairness",
+      emoji: "⚖️"
     },
     {
-      title: "Data privacy",
-      icon: "🔒",
+      icon: <Shield className="w-8 h-8" />,
+      title: "Data Privacy",
       description: "Protecting user information",
-      details: "Companies must secure personal data and use it responsibly"
+      detail: "Entrepreneurs must ensure customer data is secure and used responsibly",
+      emoji: "🔒"
     },
     {
+      icon: <Globe className="w-8 h-8" />,
       title: "Accessibility",
-      icon: "🌐",
       description: "Making AI tools available to all",
-      details: "Ensuring AI benefits reach everyone, not just those with resources"
+      detail: "Ensuring AI benefits reach entrepreneurs regardless of their background or resources",
+      emoji: "🌐"
     }
   ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTransformation((prev) => (prev + 1) % aiTransformations.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-card');
-            setVisibleCards(prev => [...new Set([...prev, id])]);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    document.querySelectorAll('[data-card]').forEach(card => {
-      observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div
@@ -150,290 +123,315 @@ const Module4 = ({ topicRefs }) => {
       className="mb-10"
     >
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white">
+        <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 animate-pulse">
-              <span className="text-4xl">🤖</span>
+            <div className="flex justify-center mb-6">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 animate-pulse">
+                <Bot className="w-16 h-16 text-white" />
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
               The Role of AI in Entrepreneurship
             </h1>
-            <p className="text-xl md:text-2xl opacity-90 max-w-4xl mx-auto leading-relaxed">
-              Discover how Artificial Intelligence is revolutionizing the way we start and run businesses! 🚀✨
+            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto leading-relaxed">
+              Discover how Artificial Intelligence is revolutionizing the way entrepreneurs build and grow their businesses
             </p>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-50 to-transparent"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* What is AI */}
-        <div 
-          data-card="definition"
-          className={`mb-16 transform transition-all duration-1000 ${visibleCards.includes('definition') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-cyan-100">
-            <div className="text-center mb-10">
-              <span className="text-6xl mb-6 block animate-bounce">🧠</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-                What is Artificial Intelligence (AI)?
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-20">
+        
+        {/* What is AI Section */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-3">
+                <Brain className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
+                What is Artificial Intelligence?
               </h2>
-              <div className="bg-gradient-to-r from-cyan-100 to-blue-100 rounded-2xl p-8 max-w-4xl mx-auto">
-                <p className="text-xl text-gray-800 leading-relaxed">
-                  AI refers to <span className="text-cyan-600 font-bold">computer systems</span> that can perform tasks that usually require 
-                  <span className="text-blue-600 font-bold"> human intelligence</span>, such as learning, reasoning, and problem-solving.
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border-l-4 border-green-400">
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                <strong className="text-green-600">AI</strong> refers to computer systems that can perform tasks that usually require human intelligence, such as learning, reasoning, and problem-solving.
+              </p>
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <div className="flex items-center space-x-3 mb-3">
+                  <Zap className="w-6 h-6 text-green-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Think of AI as:</h3>
+                </div>
+                <p className="text-gray-600">
+                  A <strong className="text-green-600">super-smart assistant</strong> that can analyze data, make predictions, and automate tasks faster than humans ever could.
                 </p>
               </div>
             </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
-                <span className="text-4xl mb-4 block">🤖</span>
-                <h3 className="font-bold text-purple-800 mb-2">Learning</h3>
-                <p className="text-sm text-gray-700">AI can learn from data and improve over time</p>
-              </div>
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
-                <span className="text-4xl mb-4 block">🧩</span>
-                <h3 className="font-bold text-green-800 mb-2">Reasoning</h3>
-                <p className="text-sm text-gray-700">AI can analyze information and make logical decisions</p>
-              </div>
-              <div className="bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
-                <span className="text-4xl mb-4 block">🔧</span>
-                <h3 className="font-bold text-orange-800 mb-2">Problem-Solving</h3>
-                <p className="text-sm text-gray-700">AI can find solutions to complex challenges</p>
-              </div>
-            </div>
           </div>
-        </div>
 
-        {/* How AI is Transforming */}
-        <div 
-          data-card="transforming"
-          className={`mb-16 transform transition-all duration-1000 delay-200 ${visibleCards.includes('transforming') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 md:p-12 border border-indigo-200">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🚀</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                How AI is Transforming Entrepreneurship
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                AI is revolutionizing every aspect of starting and running a business. Here's how:
-              </p>
-            </div>
-
-            {/* Interactive Transformation Steps */}
-            <div className="relative max-w-5xl mx-auto">
-              <div className="grid gap-6">
-                {aiTransformations.map((transformation, index) => (
-                  <div 
-                    key={index}
-                    className={`relative transition-all duration-700 ${
-                      currentTransformation === index ? 'scale-105 z-10' : 'scale-100'
-                    }`}
-                  >
-                    <div className={`${transformation.bgColor} rounded-2xl p-6 border-2 ${
-                      currentTransformation === index ? 'border-indigo-400 shadow-xl' : 'border-transparent shadow-md'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <span className="text-4xl mr-6">{transformation.icon}</span>
-                          <div>
-                            <h3 className="text-xl font-bold mb-1">{transformation.area}</h3>
-                            <p className="text-sm opacity-80">{transformation.description}</p>
-                          </div>
-                        </div>
-                        <div className="text-3xl font-bold opacity-60">
-                          {index + 1}
-                        </div>
-                      </div>
+          <div className="relative">
+            <div className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-100">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🤖</div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-6">AI Capabilities</h3>
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-l-4 border-green-400">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <p className="text-gray-700 font-medium">Learning from data</p>
                     </div>
-                    {index < aiTransformations.length - 1 && (
-                      <div className="flex justify-center my-4">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                          <span className="text-2xl text-gray-400">⬇️</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Real-Life Examples */}
-        <div 
-          data-card="examples"
-          className={`mb-16 transform transition-all duration-1000 delay-400 ${visibleCards.includes('examples') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-green-100">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">💼</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Real-Life Examples
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                See how AI is already helping entrepreneurs succeed in the real world:
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {realLifeExamples.map((example, index) => (
-                <div 
-                  key={index} 
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-                >
-                  <div className={`h-24 bg-gradient-to-r ${example.gradient} flex items-center justify-center`}>
-                    <span className="text-5xl">{example.icon}</span>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-l-4 border-emerald-400">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <p className="text-gray-700 font-medium">Making smart decisions</p>
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">{example.title}</h3>
-                    <p className="text-gray-600 mb-4">{example.description}</p>
-                    <div className="space-y-2">
-                      {example.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center text-sm text-gray-700">
-                          <span className="text-green-500 mr-2">✓</span>
-                          {feature}
-                        </div>
-                      ))}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-l-4 border-teal-400">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                      <p className="text-gray-700 font-medium">Solving complex problems</p>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* How AI is Transforming Entrepreneurship */}
+        <div className="space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              How AI is Transforming Entrepreneurship
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              AI is revolutionizing every aspect of business, from idea generation to customer service
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {aiApplications.map((app, index) => (
+              <div
+                key={index}
+                className={`bg-white rounded-2xl p-6 shadow-lg border border-gray-100 transform hover:scale-105 transition-all duration-300 ${
+                  visibleCards.includes(index) ? 'animate-fade-in' : 'opacity-0'
+                }`}
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className={`bg-gradient-to-r ${app.color} rounded-full p-3 w-fit mb-4`}>
+                  <div className="text-white">
+                    {app.icon}
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">{app.title}</h3>
+                <p className="text-gray-600 mb-4">{app.description}</p>
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-l-3 border-green-400">
+                  <p className="text-sm text-gray-700 font-medium">{app.example}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Real-Life Examples - Auto-rotating */}
+        <div className="space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Real-Life Examples
+            </h2>
+            <p className="text-lg text-gray-600">
+              See how AI is being used by entrepreneurs today
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
+            <div className="text-center mb-8">
+              <div className="text-lg text-gray-600 mb-4">Featured Example</div>
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-8 max-w-3xl mx-auto transform hover:scale-105 transition-all duration-500">
+                <div className="flex items-center justify-center space-x-6 mb-4">
+                  <div className="text-4xl">{realLifeExamples[currentExample].emoji}</div>
+                  <div className="text-left">
+                    <h3 className="text-2xl font-bold mb-2">{realLifeExamples[currentExample].title}</h3>
+                    <p className="text-lg opacity-90">{realLifeExamples[currentExample].description}</p>
+                  </div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4">
+                  <p className="text-sm font-medium">{realLifeExamples[currentExample].detail}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center space-x-2">
+              {realLifeExamples.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentExample(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    currentExample === index ? 'bg-green-500 scale-125' : 'bg-gray-300'
+                  }`}
+                />
               ))}
             </div>
           </div>
         </div>
 
         {/* AI Tools for Young Entrepreneurs */}
-        <div 
-          data-card="tools"
-          className={`mb-16 transform transition-all duration-1000 delay-600 ${visibleCards.includes('tools') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl p-8 md:p-12 border border-purple-200">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">🛠️</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                AI Tools for Young Entrepreneurs
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                These AI-powered tools can help you start your entrepreneurial journey:
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {aiTools.map((tool, index) => (
-                <div 
-                  key={index}
-                  className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                  onMouseEnter={() => setHoveredTool(index)}
-                  onMouseLeave={() => setHoveredTool(null)}
-                >
-                  <div className={`w-16 h-16 bg-gradient-to-r ${tool.color} rounded-2xl flex items-center justify-center mb-4 ${hoveredTool === index ? 'scale-110' : 'scale-100'} transition-transform duration-300`}>
-                    <span className="text-2xl text-white">{tool.icon}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">{tool.category}</h3>
-                  <p className="text-gray-600 mb-4">{tool.description}</p>
-                  <div className="space-y-2">
-                    {tool.examples.map((example, idx) => (
-                      <div key={idx} className="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-1">
-                        {example}
-                      </div>
-                    ))}
-                  </div>
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 border-l-4 border-green-400">
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-4">🛠️</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+              AI Tools for Young Entrepreneurs
+            </h2>
+            <p className="text-lg text-gray-600 mt-4">
+              Powerful tools that don't require technical expertise
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {aiTools.map((tool, index) => (
+              <div 
+                key={index}
+                className="bg-white rounded-xl p-6 shadow-sm transform hover:scale-105 transition-all duration-300"
+              >
+                <div className="text-center">
+                  <div className="text-3xl mb-3">{tool.icon}</div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{tool.name}</h3>
+                  <p className="text-gray-600 text-sm">{tool.description}</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Challenges and Considerations */}
-        <div 
-          data-card="challenges"
-          className={`mb-16 transform transition-all duration-1000 delay-800 ${visibleCards.includes('challenges') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-red-100">
-            <div className="text-center mb-12">
-              <span className="text-6xl mb-4 block">⚠️</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Challenges and Considerations
-              </h2>
-              <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                While AI offers amazing opportunities, we must also be aware of important challenges:
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {challenges.map((challenge, index) => (
-                <div 
-                  key={index}
-                  className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 border border-red-200 hover:border-red-300 transition-all duration-300"
-                >
-                  <div className="text-center mb-4">
-                    <span className="text-4xl mb-3 block">{challenge.icon}</span>
-                    <h3 className="text-xl font-bold text-red-800 mb-2">{challenge.title}</h3>
-                    <p className="text-red-700 font-medium mb-3">{challenge.description}</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-4">
-                    <p className="text-sm text-gray-700">{challenge.details}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Future Possibilities */}
-        <div 
-          data-card="future"
-          className={`mb-16 transform transition-all duration-1000 delay-1000 ${visibleCards.includes('future') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-8 md:p-12">
-            <div className="text-center">
-              <span className="text-6xl mb-6 block">🌟</span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                The Future of AI and Entrepreneurship
-              </h2>
-              <p className="text-xl opacity-90 max-w-3xl mx-auto leading-relaxed mb-8">
-                As AI continues to evolve, it will create even more opportunities for young entrepreneurs. 
-                The key is to stay curious, keep learning, and always consider how technology can help solve real problems!
-              </p>
-              
-              <div className="grid md:grid-cols-2 gap-8 mt-8">
-                <div className="bg-white bg-opacity-20 rounded-2xl p-6">
-                  <span className="text-3xl mb-3 block">🎓</span>
-                  <h3 className="text-xl text-black font-bold mb-2">Keep Learning</h3>
-                  <p className="text-sm text-black opacity-90">Stay updated with AI trends and new tools</p>
-                </div>
-                <div className="bg-white bg-opacity-20 rounded-2xl p-6">
-                  <span className="text-3xl mb-3 block">🤝</span>
-                  <h3 className="text-xl text-black font-bold mb-2">Use AI Responsibly</h3>
-                  <p className="text-sm text-black opacity-90">Always consider ethics and fairness in AI applications</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Call to Action */}
-        <div 
-          data-card="cta"
-          className={`transform transition-all duration-1000 delay-1200 ${visibleCards.includes('cta') ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-        >
-          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-3xl p-8 md:p-12 text-center">
-            <span className="text-6xl mb-6 block">🚀</span>
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Explore AI-Powered Entrepreneurship?
+        <div className="space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Challenges and Considerations
             </h2>
-            <p className="text-xl opacity-90 max-w-2xl mx-auto">
-              The future belongs to entrepreneurs who can harness the power of AI to solve problems and create value. 
-              Start exploring AI tools today and see what amazing solutions you can create! 🌟
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              While AI offers incredible opportunities, entrepreneurs must also consider these important factors
             </p>
           </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {challenges.map((challenge, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 transform hover:scale-105 transition-all duration-300"
+              >
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-3">{challenge.emoji}</div>
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-3 w-fit mx-auto mb-4">
+                    <div className="text-white">
+                      {challenge.icon}
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">{challenge.title}</h3>
+                <p className="text-gray-600 mb-4 text-center">{challenge.description}</p>
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-l-3 border-green-400">
+                  <p className="text-sm text-gray-700">{challenge.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Interactive Challenge */}
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-4">🧠</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Think About It!
+            </h2>
+            <p className="text-lg text-gray-600 mt-4">
+              Which AI application interests you the most for your future business?
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {[
+              "AI-powered market research to understand customers",
+              "Chatbots for 24/7 customer support",
+              "AI tools for creating marketing content",
+              "AI analytics to track business performance"
+            ].map((option, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveChallenge(index)}
+                className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                  activeChallenge === index 
+                    ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50' 
+                    : 'border-gray-200 hover:border-green-300'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  {activeChallenge === index ? (
+                    <CheckCircle className="w-6 h-6 text-green-500" />
+                  ) : (
+                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full"></div>
+                  )}
+                  <span className="font-medium text-gray-700">{option}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+          
+          {activeChallenge !== null && (
+            <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-l-4 border-green-400 max-w-2xl mx-auto animate-fade-in">
+              <div className="flex items-center space-x-3 mb-3">
+                <Lightbulb className="w-6 h-6 text-green-600" />
+                <h3 className="text-lg font-bold text-green-800">Great Choice!</h3>
+              </div>
+              <p className="text-gray-700">
+                That's an excellent area to explore! AI in that field can help you save time, reduce costs, and provide better service to your customers.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Key Takeaway */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 border-l-4 border-green-400">
+          <div className="text-center">
+            <div className="text-4xl mb-4">🚀</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+              The Future is AI-Powered
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium mb-6">
+              AI is not just a tool—it's becoming an essential partner for entrepreneurs who want to build successful, scalable businesses.
+            </p>
+            <div className="bg-white rounded-xl p-6 shadow-sm max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600">
+                <strong className="text-green-600">Start learning</strong> about AI tools now, so you can <strong className="text-emerald-600">lead tomorrow's</strong> business revolution! 🌟
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };

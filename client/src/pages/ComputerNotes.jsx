@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, ChevronDown, BookOpen, TrendingUp, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 import Section1dm from "../pages/CompNotes/WhatIsAi";
 import Section2dm from "../pages/CompNotes/WorkOfAi";
@@ -9,8 +10,8 @@ import Section3dm from "../pages/CompNotes/TypesAndUseOfAi";
 import Section4dm from "../pages/CompNotes/WhatCantAiDo";
 import Section5dm from "../pages/CompNotes/ImpAIWords";
 import Section6dm from "../pages/CompNotes/BuildAi";
-import Section7dm from "../pages/CompNotes/TestUrSkills";
-import Section8dm from "../pages/CompNotes/ImportanceOfAi";
+
+import Section7dm from "../pages/CompNotes/ImportanceOfAi";
 
 import Module1 from "./CompNotes/9-10Section1";
 import Module2 from "./CompNotes/9-10Section2";
@@ -45,8 +46,7 @@ const notesSidebar6to8 = [
   { id: "4", title: "Section 4: AI Can and Can't Do" },
   { id: "5", title: "Section 5: AI Words " },
   { id: "6", title: "Section 6: Build an AI" },
-  { id: "7", title: "Section 7: Quiz" },
-  { id: "8", title: "Section 8: Importance of AI " },
+  { id: "7", title: "Section 7: Importance of AI " },
 ];
 
 const notesSidebar9to10 = [
@@ -68,7 +68,7 @@ const notesSidebar11to12 = [
   { id: "s-5", title: "Unit 5: Professional " },
   { id: "s-6", title: "Unit 6: Digital & Social Media" },
   { id: "s-7", title: "Unit 7: Leadership & Collaboration" },
-  
+
 
 ];
 
@@ -123,7 +123,10 @@ const DigitalMarketingFullNotes = () => {
           setActiveId(sorted[0]);
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0,
+        rootMargin: "-30% 0px -70% 0px",
+      }
     );
 
     setTimeout(() => {
@@ -159,12 +162,12 @@ const DigitalMarketingFullNotes = () => {
     }, 100);
   };
 
- const getCurrentSidebar = () => {
-  if (selectedGrade === "6-8") return notesSidebar6to8;
-  if (selectedGrade === "9-10") return notesSidebar9to10;
-  if (selectedGrade === "11-12") return notesSidebar11to12;
-  return [];
-};
+  const getCurrentSidebar = () => {
+    if (selectedGrade === "6-8") return notesSidebar6to8;
+    if (selectedGrade === "9-10") return notesSidebar9to10;
+    if (selectedGrade === "11-12") return notesSidebar11to12;
+    return [];
+  };
 
 
   const renderGradeNotes = () => {
@@ -194,10 +197,8 @@ const DigitalMarketingFullNotes = () => {
             <div className="overflow-x-auto">
               <Section7dm topicRefs={topicRefs} />
             </div>
-            <div className="overflow-x-auto">
-              <Section8dm topicRefs={topicRefs} />
-            </div>
-           
+
+
           </div>
         </>
       );
@@ -221,7 +222,7 @@ const DigitalMarketingFullNotes = () => {
             <div className="overflow-x-auto">
               <Module5 topicRefs={topicRefs} />
             </div>
-             <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <Module6 topicRefs={topicRefs} />
             </div>
             <div className="overflow-x-auto">
@@ -234,27 +235,29 @@ const DigitalMarketingFullNotes = () => {
         </>
       );
     } else if (selectedGrade === "11-12") {
-  return (
-    <div className="space-y-10">
-      <div className="overflow-x-auto"><Senior1 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior2 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior3 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior4 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior5 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior6 topicRefs={topicRefs} /></div>
-      <div className="overflow-x-auto"><Senior7 topicRefs={topicRefs} /></div>
-    </div>
-  );
-}
+      return (
+        <div className="space-y-10">
+          <div className="overflow-x-auto"><Senior1 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior2 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior3 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior4 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior5 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior6 topicRefs={topicRefs} /></div>
+          <div className="overflow-x-auto"><Senior7 topicRefs={topicRefs} /></div>
+        </div>
+      );
+    }
 
     return null;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* HERO SECTION (only show when no grade is selected) */}
       {!selectedGrade && (
-        <div className="h-[100vh] relative overflow-hidden bg-gradient-to-r from-[#1e2b16] via-[#2f4f2f] to-[#1a2e1a]">
+        <div className="h-[100vh] relative overflow-hidden bg-[#006724]">
+          <Navbar />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,...')] opacity-10"></div>
           <div className="relative max-w-7xl mx-auto px-6 py-10">
             <motion.div
@@ -264,19 +267,19 @@ const DigitalMarketingFullNotes = () => {
               className="text-center"
             >
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 mt-30 leading-tight">
-                  Welcome to the World of <br />Artificial Intelligence!
-                 <br />
-                
-               </h1>
-               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
-                 <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                   Unlock the future by teaching machines to think, learn, and adapt.
-                 </span>
-               </h2>
-              
-               <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8 leading-relaxed">
-                 Artificial Intelligence isn't the future. It's the present reshaping our tomorrow.
-               </p>
+                Welcome to the World of <br />Artificial Intelligence!
+                <br />
+
+              </h1>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                  Unlock the future by teaching machines to think, learn, and adapt.
+                </span>
+              </h2>
+
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+                Artificial Intelligence isn't the future. It's the present reshaping our tomorrow.
+              </p>
               <div className="relative inline-block">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -285,7 +288,7 @@ const DigitalMarketingFullNotes = () => {
                   <span>
                     {selectedGrade
                       ? gradeOptions.find((g) => g.value === selectedGrade)
-                          ?.label
+                        ?.label
                       : "Select Grade Level"}
                   </span>
                   <ChevronDown
@@ -313,162 +316,168 @@ const DigitalMarketingFullNotes = () => {
 
       {/* NOTES SECTION */}
       {selectedGrade === "6-8" && (
-         <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
-          {/* Toggle for mobile */}
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
-          >
-            <Menu />
-          </button>
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
 
-          {/* SIDEBAR: 6–8 */}
+            {/* Toggle for mobile */}
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
+            >
+              <Menu />
+            </button>
 
-          <aside
-            className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
-              shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${
-              showSidebar
-                ? "translate-x-0"
-                : "-translate-x-full md:translate-x-0"
-            }`}
-          >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
-              Computers
-              
-            </h2>
-            <ul className="space-y-3">
-              {notesSidebar6to8.map((section) => (
-                <li
-                  key={section.id}
-                  data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${
-                    activeId === section.id
-                      ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
-                      : "hover:bg-green-50 text-gray-800"
-                  }`}
-                  onClick={() => scrollTo(section.id)}
-                >
-                  <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
-                    {section.title}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </aside>
+            {/* SIDEBAR: 6–8 */}
 
-          {/* MAIN CONTENT: 6–8 */}
-          <main
-            id="main-content"
-            className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
-          >
-            {renderGradeNotes()}
-          </main>
+            <aside
+              className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
+              shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${showSidebar
+                  ? "translate-x-0"
+                  : "-translate-x-full md:translate-x-0"
+                }`}
+            >
+              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+                Computers
+
+              </h2>
+              <ul className="space-y-3">
+                {notesSidebar6to8.map((section) => (
+                  <li
+                    key={section.id}
+                    data-scroll-id={section.id}
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm shadow-green-700/20 ${activeId === section.id
+                        ? "bg-green-100 text-[#09be43] font-semibold border-l-4 border-[#09be43]"
+                        : "hover:bg-green-50 text-gray-800"
+                      }`}
+                    onClick={() => scrollTo(section.id)}
+                  >
+                    <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
+                      {section.title}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+
+            {/* MAIN CONTENT: 6–8 */}
+            <main
+              id="main-content"
+              className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
+            >
+              {renderGradeNotes()}
+            </main>
+          </div>
         </div>
+
       )}
 
       {selectedGrade === "9-10" && (
-         <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
-          {/* Toggle for mobile */}
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
-          >
-            <Menu />
-          </button>
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+            {/* Toggle for mobile */}
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
+            >
+              <Menu />
+            </button>
 
-          {/* SIDEBAR: 6–8 */}
+            {/* SIDEBAR: 6–8 */}
 
-          <aside
-            className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
-              shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${
-              showSidebar
-                ? "translate-x-0"
-                : "-translate-x-full md:translate-x-0"
-            }`}
-          >
-            <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
-              Computers
-              
-            </h2>
-            <ul className="space-y-3">
-              {notesSidebar9to10.map((section) => (
-                <li
-                  key={section.id}
-                  data-scroll-id={section.id}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
-                    activeId === section.id
-                      ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                      : "hover:bg-blue-50 text-gray-800"
-                  }`}
-                  onClick={() => scrollTo(section.id)}
-                >
-                  <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
-                    {section.title}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </aside>
+            <aside
+              className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
+              shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${showSidebar
+                  ? "translate-x-0"
+                  : "-translate-x-full md:translate-x-0"
+                }`}
+            >
+              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+                Computers
 
-          {/* MAIN CONTENT: 6–8 */}
-          <main
-            id="main-content"
-            className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
-          >
-            {renderGradeNotes()}
-          </main>
+              </h2>
+              <ul className="space-y-3">
+                {notesSidebar9to10.map((section) => (
+                  <li
+                    key={section.id}
+                    data-scroll-id={section.id}
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${activeId === section.id
+                        ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
+                        : "hover:bg-blue-50 text-gray-800"
+                      }`}
+                    onClick={() => scrollTo(section.id)}
+                  >
+                    <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
+                      {section.title}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+
+            {/* MAIN CONTENT: 6–8 */}
+            <main
+              id="main-content"
+              className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
+            >
+              {renderGradeNotes()}
+            </main>
+          </div>
         </div>
       )}
 
       {selectedGrade === "11-12" && (
-  <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
-    {/* Toggle for mobile */}
-    <button
-      onClick={() => setShowSidebar(!showSidebar)}
-      className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
-    >
-      <Menu />
-    </button>
+        <div>
+          <Navbar />
+          <div className="flex h-screen overflow-hidden relative pt-[4.5rem] md:pt-0">
+            {/* Toggle for mobile */}
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="md:hidden fixed top-[4.5rem] left-4 z-40 p-2 bg-blue-600 text-white rounded shadow-lg"
+            >
+              <Menu />
+            </button>
 
-    {/* SIDEBAR: 11–12 */}
-    <aside
-      className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
-        shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${
-        showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      }`}
-    >
-      <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
-        Computers
-      </h2>
-      <ul className="space-y-3">
-        {notesSidebar11to12.map((section) => (
-          <li
-            key={section.id}
-            data-scroll-id={section.id}
-            className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${
-              activeId === section.id
-                ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
-                : "hover:bg-blue-50 text-gray-800"
-            }`}
-            onClick={() => scrollTo(section.id)}
-          >
-            <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
-              {section.title}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </aside>
+            {/* SIDEBAR: 11–12 */}
+            <aside
+              className={`fixed md:static z-30  top-[4.5rem] left-0 md:top-0 h-full md:h-500px min-w-[260px] max-w-[280px] bg-white p-4 border-r 
+        shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+                }`}
+            >
+              <h2 className="text-xl font-bold text-blue-800 mb-6 px-2">
+                Computers
+              </h2>
+              <ul className="space-y-3">
+                {notesSidebar11to12.map((section) => (
+                  <li
+                    key={section.id}
+                    data-scroll-id={section.id}
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 text-sm shadow-sm ${activeId === section.id
+                        ? "bg-blue-100 text-blue-800 font-semibold border-l-4 border-blue-500"
+                        : "hover:bg-blue-50 text-gray-800"
+                      }`}
+                    onClick={() => scrollTo(section.id)}
+                  >
+                    <div className="text-[14px] font-medium leading-5 break-words whitespace-normal">
+                      {section.title}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </aside>
 
-    {/* MAIN CONTENT: 11–12 */}
-    <main
-      id="main-content"
-      className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
-    >
-      {renderGradeNotes()}
-    </main>
-  </div>
-)}
+            {/* MAIN CONTENT: 11–12 */}
+            <main
+              id="main-content"
+              className="flex-1 overflow-y-auto p-4 md:p-6 space-y-10 scroll-smooth"
+            >
+              {renderGradeNotes()}
+            </main>
+          </div>
+        </div>
+
+      )}
 
     </div>
   );
