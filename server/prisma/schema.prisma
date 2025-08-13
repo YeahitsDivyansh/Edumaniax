@@ -268,13 +268,29 @@ model InstitutionalInquiry {
   updatedAt        DateTime      @updatedAt
 }
 
+model FreeTrialRequest {
+  id          String        @id @default(cuid())
+  fullName    String
+  email       String
+  phoneNumber String
+  class       String
+  state       String
+  city        String
+  status      InquiryStatus @default(NEW)
+  notes       String?
+  followUpDate DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
 model SalesNotification {
   id        String             @id @default(cuid())
-  type      String
+  type      NotificationType   @default(INSTITUTIONAL_INQUIRY)
   message   String
   data      String
   status    NotificationStatus @default(UNREAD)
   inquiryId String?
+  trialId   String?
   paymentId String?
   createdAt DateTime           @default(now())
   readAt    DateTime?
@@ -310,4 +326,11 @@ enum UserRole {
   USER
   ADMIN
   SALES
+}
+
+enum NotificationType {
+  FREE_TRIAL
+  INSTITUTIONAL_INQUIRY
+  PAYMENT
+  GENERAL
 }

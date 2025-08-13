@@ -18,6 +18,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import accessRoutes from './routes/accessRoutes.js';
 import specialRoutes from './routes/specialRoutes.js';
+import salesRoutes from './routes/salesRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import { initializeSubscriptionMonitoring } from './utils/subscriptionManager.js';
 
@@ -48,6 +49,7 @@ app.use("/blogs", blogRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/access", accessRoutes);
 app.use("/special", specialRoutes); // Changed from /sales to /special
+app.use("/sales", salesRoutes); // Added back /sales route
 app.use("/subscriptions", subscriptionRoutes);
 
 // Health check endpoint
