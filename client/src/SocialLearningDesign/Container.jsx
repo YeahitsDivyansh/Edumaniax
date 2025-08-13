@@ -183,9 +183,9 @@ const modulesfor9to10 = [
         path: "/body-signal-matchup",
       },
       {
-        title: "Control Sorter",
+        title: "Control Sorter – What’s Within Your Power?",
         description:
-          "Objective: Learn to distinguish what you can control vs what you can only influence or let go.",
+          "Objective: Click-and-Sort thoughts into Influence vs Concern. Win by getting 8/10 correct.",
         duration: "45 min",
         path: "/control-sorter",
       },
