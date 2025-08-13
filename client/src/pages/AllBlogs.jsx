@@ -4,6 +4,7 @@ import BlogCard from "@/components/BlogCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Hero from "@/BlogDesign/Hero";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const AllBlogs = () => {
   const { blogs, getAllBlogs, loading } = useBlog();
@@ -47,9 +48,11 @@ const AllBlogs = () => {
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
   const paginatedBlogs = Array.isArray(filteredBlogs)
-  ? filteredBlogs.slice((currentPage - 1) * blogsPerPage, currentPage * blogsPerPage)
-  : [];
-
+    ? filteredBlogs.slice(
+        (currentPage - 1) * blogsPerPage,
+        currentPage * blogsPerPage
+      )
+    : [];
 
   const handleToggleFilters = () => {
     setShowFilters((prev) => {
@@ -71,6 +74,8 @@ const AllBlogs = () => {
   return (
     <>
       <Hero />
+
+      <ScrollToTopButton />
 
       <div className="max-w-7xl mx-auto px-4 mt-8">
         {/* Filters Header */}

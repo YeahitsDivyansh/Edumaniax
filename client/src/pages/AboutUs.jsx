@@ -4,6 +4,7 @@ import { BookOpen, Linkedin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import AboutUsSkeleton from "@/AboutUsDesign/AboutUsSkeleton";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const AnimatedCard = ({ children, delay = 0, className = "" }) => (
   <motion.div
@@ -112,7 +113,7 @@ const AboutUs = () => {
 
   const teamMembers = [
     {
-      name: "Sharadd Raaj Ustav",
+      name: "Sharad Raj Utsav",
       image: "sharad.svg",
       bgColor: "bg-[#66C537]/20",
       linkedin: "https://www.linkedin.com/in/sharadrajutsav/",
@@ -120,7 +121,7 @@ const AboutUs = () => {
       iconbg: "bg-[#236900]",
     },
     {
-      name: "Shreya Sienha",
+      name: "Shreya Sinha",
       image: "shreya.svg",
       bgColor: "bg-[#5CE1E6]/20",
       linkedin: "https://www.linkedin.com/in/shreya-sinha2802/",
@@ -240,6 +241,8 @@ const AboutUs = () => {
             </div>
           </div>
         </div>
+
+        <ScrollToTopButton />
 
         {/* Stats Section */}
         <div

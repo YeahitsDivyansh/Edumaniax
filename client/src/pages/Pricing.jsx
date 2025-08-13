@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import Hero from "@/PricingDesign/Hero";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccessControl } from "../utils/accessControl";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const plans = [
   {
@@ -151,17 +152,17 @@ const Pricing = () => {
   const [selectedModule, setSelectedModule] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   // Use access control with full subscription data
   const accessControl = useAccessControl(subscriptions, selectedModule);
 
   // Debug log to see the access control state changes
   useEffect(() => {
-    console.log('Pricing: Access control updated:', {
+    console.log("Pricing: Access control updated:", {
       currentPlan: accessControl.currentPlan,
       subscriptionsLength: subscriptions.length,
       subscriptions: subscriptions,
-      selectedModule: selectedModule
+      selectedModule: selectedModule,
     });
   }, [accessControl.currentPlan, subscriptions, selectedModule]);
 
@@ -172,40 +173,53 @@ const Pricing = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/payment/subscriptions/${user.id}`
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/payment/subscriptions/${user.id}`
         );
-        
+
         if (response.ok) {
           const subscriptionData = await response.json();
-          console.log('Pricing: Raw subscription data received:', subscriptionData);
-          
+          console.log(
+            "Pricing: Raw subscription data received:",
+            subscriptionData
+          );
+
           // Extract subscriptions from the response object
-          const subscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+          const subscriptions = subscriptionData.success
+            ? subscriptionData.subscriptions
+            : [];
           setSubscriptions(Array.isArray(subscriptions) ? subscriptions : []);
-          
+
           // Find the highest active and valid subscription
-          const activeSubscriptions = Array.isArray(subscriptions) 
-            ? subscriptions.filter(sub => 
-                sub.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+          const activeSubscriptions = Array.isArray(subscriptions)
+            ? subscriptions.filter(
+                (sub) =>
+                  sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
               )
             : [];
-          
-          console.log('Pricing: Active subscriptions found:', activeSubscriptions);
-          
+
+          console.log(
+            "Pricing: Active subscriptions found:",
+            activeSubscriptions
+          );
+
           // Define plan hierarchy to find the highest plan
-          const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
-          
+          const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
+
           let highestActiveSubscription = null;
-          
+
           // Find the highest tier among active and valid subscriptions
           for (const plan of planHierarchy.reverse()) {
-            const subscription = activeSubscriptions.find(sub => sub.planType === plan);
+            const subscription = activeSubscriptions.find(
+              (sub) => sub.planType === plan
+            );
             if (subscription) {
               highestActiveSubscription = subscription;
               break;
             }
           }
-          
+
           // If we found a highest active subscription, handle module selection for SOLO plans
           if (highestActiveSubscription && highestActiveSubscription.notes) {
             // Parse notes to get selectedModule if it exists
@@ -213,43 +227,46 @@ const Pricing = () => {
             try {
               const parsedNotes = JSON.parse(highestActiveSubscription.notes);
               const rawModule = parsedNotes.selectedModule;
-              
+
               // Map the display name to the correct module key
               const moduleMapping = {
-                   'Fundamentals of Finance': 'finance',
-                   'Computer Science': 'computers', 
-                    'Fundamentals of Law': 'law',
-                    'Communication Mastery': 'communication',
-                    'Entrepreneurship Bootcamp': 'entrepreneurship',
-                    'Digital Marketing Pro': 'digital-marketing',
-                    'Leadership & Adaptability': 'leadership', 
-                    'Environmental Sustainability': 'environment',
-                    'Wellness & Mental Health': 'sel',
-                };
-              
-              selectedModuleFromSub = moduleMapping[rawModule] || rawModule?.toLowerCase();
+                "Fundamentals of Finance": "finance",
+                "Computer Science": "computers",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
+                "Wellness & Mental Health": "sel",
+              };
+
+              selectedModuleFromSub =
+                moduleMapping[rawModule] || rawModule?.toLowerCase();
             } catch {
               // If notes is not JSON, treat as plain text and map it
               const moduleMapping = {
-                   'Fundamentals of Finance': 'finance',
-                   'Computer Science': 'computers', 
-                    'Fundamentals of Law': 'law',
-                    'Communication Mastery': 'communication',
-                    'Entrepreneurship Bootcamp': 'entrepreneurship',
-                    'Digital Marketing Pro': 'digital-marketing',
-                    'Leadership & Adaptability': 'leadership', 
-                    'Environmental Sustainability': 'environment',
-                    'Wellness & Mental Health': 'sel',
-                };
-              
-              selectedModuleFromSub = moduleMapping[highestActiveSubscription.notes] || highestActiveSubscription.notes?.toLowerCase();
+                "Fundamentals of Finance": "finance",
+                "Computer Science": "computers",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
+                "Wellness & Mental Health": "sel",
+              };
+
+              selectedModuleFromSub =
+                moduleMapping[highestActiveSubscription.notes] ||
+                highestActiveSubscription.notes?.toLowerCase();
             }
-            
+
             setSelectedModule(selectedModuleFromSub);
           }
         }
       } catch (error) {
-        console.error('Error fetching subscriptions in pricing:', error);
+        console.error("Error fetching subscriptions in pricing:", error);
         setSubscriptions([]);
       }
     };
@@ -258,18 +275,24 @@ const Pricing = () => {
 
     // Listen for subscription updates from payment completion
     const handleSubscriptionUpdate = (event) => {
-      console.log('Pricing: Subscription updated event received:', event.detail);
+      console.log(
+        "Pricing: Subscription updated event received:",
+        event.detail
+      );
       fetchUserSubscriptions(); // Re-fetch subscription data
     };
 
-    window.addEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+    window.addEventListener("subscriptionUpdated", handleSubscriptionUpdate);
 
     // Cleanup event listener
     return () => {
-      window.removeEventListener('subscriptionUpdated', handleSubscriptionUpdate);
+      window.removeEventListener(
+        "subscriptionUpdated",
+        handleSubscriptionUpdate
+      );
     };
   }, [user?.id]);
-  
+
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -277,55 +300,58 @@ const Pricing = () => {
   // Function to check if a plan is the user's current plan
   const isCurrentPlan = (planTitle) => {
     if (!user || !accessControl.currentPlan) {
-      console.log('isCurrentPlan: No user or currentPlan', { user: !!user, currentPlan: accessControl.currentPlan });
+      console.log("isCurrentPlan: No user or currentPlan", {
+        user: !!user,
+        currentPlan: accessControl.currentPlan,
+      });
       return false;
     }
-    
-    const planType = planTitle.replace(' PLAN', '');
+
+    const planType = planTitle.replace(" PLAN", "");
     const isCurrentPlanResult = accessControl.currentPlan === planType;
-    
-    console.log('isCurrentPlan check:', { 
-      planTitle, 
-      planType, 
+
+    console.log("isCurrentPlan check:", {
+      planTitle,
+      planType,
       currentPlan: accessControl.currentPlan,
       isCurrentPlan: isCurrentPlanResult,
       subscriptions: subscriptions.length,
-      allPlans: ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL']
+      allPlans: ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"],
     });
-    
+
     return isCurrentPlanResult;
   };
 
   // Function to check if a plan should be grayed out (already purchased or lower tier)
   const shouldGrayOut = (planTitle) => {
     if (!user || !accessControl.currentPlan) return false;
-    
-    const targetPlanType = planTitle.replace(' PLAN', '');
-    
+
+    const targetPlanType = planTitle.replace(" PLAN", "");
+
     // Define plan hierarchy
-    const planHierarchy = ['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'];
+    const planHierarchy = ["STARTER", "SOLO", "PRO", "INSTITUTIONAL"];
     const currentIndex = planHierarchy.indexOf(accessControl.currentPlan);
     const targetIndex = planHierarchy.indexOf(targetPlanType);
-    
+
     // Gray out current plan and all lower tier plans, but with special case for SOLO
-    if (targetPlanType === 'SOLO' && accessControl.currentPlan === 'SOLO') {
+    if (targetPlanType === "SOLO" && accessControl.currentPlan === "SOLO") {
       // For SOLO plans, only gray out if all modules are purchased
       const availableModules = accessControl.getAvailableForPurchase();
       return availableModules.length === 0;
     }
-    
+
     return targetIndex <= currentIndex;
   };
 
   // Function to get button text based on plan status
   const getButtonText = (plan) => {
-    const planType = plan.title.replace(' PLAN', '');
-    
+    const planType = plan.title.replace(" PLAN", "");
+
     if (plan.title === "STARTER PLAN") return "Free Forever";
-    
+
     // Special handling for SOLO plan
-    if (planType === 'SOLO') {
-      if (accessControl.currentPlan === 'SOLO') {
+    if (planType === "SOLO") {
+      if (accessControl.currentPlan === "SOLO") {
         const availableModules = accessControl.getAvailableForPurchase();
         if (availableModules.length > 0) {
           return "Purchase Another Module";
@@ -336,7 +362,7 @@ const Pricing = () => {
       // For non-SOLO users
       return "Start Now";
     }
-    
+
     if (isCurrentPlan(plan.title)) return "Current Plan";
     if (shouldGrayOut(plan.title)) return "Already Owned";
     return plan.button;
@@ -344,66 +370,71 @@ const Pricing = () => {
 
   // Function to check if button should be disabled
   const isButtonDisabled = (plan) => {
-    const planType = plan.title.replace(' PLAN', '');
-    
+    const planType = plan.title.replace(" PLAN", "");
+
     if (plan.title === "STARTER PLAN") return true;
-    
+
     // Special handling for SOLO plan
-    if (planType === 'SOLO' && accessControl.currentPlan === 'SOLO') {
+    if (planType === "SOLO" && accessControl.currentPlan === "SOLO") {
       const availableModules = accessControl.getAvailableForPurchase();
       return availableModules.length === 0; // Disable only if no modules left to purchase
     }
-    
+
     return shouldGrayOut(plan.title);
   };
 
   // Function to get upgrade suggestion for current plan users
   const getUpgradeSuggestion = (plan) => {
-    const planType = plan.title.replace(' PLAN', '');
-    
+    const planType = plan.title.replace(" PLAN", "");
+
     if (!user) return null;
-    
-    if (plan.title === "STARTER PLAN" && accessControl.currentPlan === 'STARTER') {
+
+    if (
+      plan.title === "STARTER PLAN" &&
+      accessControl.currentPlan === "STARTER"
+    ) {
       return "Upgrade to SOLO for premium access";
     }
-    
+
     if (planType === "SOLO") {
-      if (accessControl.currentPlan === 'SOLO') {
+      if (accessControl.currentPlan === "SOLO") {
         const availableModules = accessControl.getAvailableForPurchase();
         const purchasedModules = accessControl.getPurchasedModules();
-        
+
         if (availableModules.length > 0) {
-          return `${purchasedModules.length} module${purchasedModules.length > 1 ? 's' : ''} purchased. ${availableModules.length} more available`;
+          return `${purchasedModules.length} module${
+            purchasedModules.length > 1 ? "s" : ""
+          } purchased. ${availableModules.length} more available`;
         } else {
           return "All modules purchased! Consider PRO for AI features";
         }
       }
     }
-    
-    if (plan.title === "PRO PLAN" && accessControl.currentPlan === 'PRO') {
+
+    if (plan.title === "PRO PLAN" && accessControl.currentPlan === "PRO") {
       return "Upgrade to INSTITUTIONAL for live sessions";
     }
-    
+
     return null;
   };
 
   // Function to handle plan selection click
   const handlePlanClick = (plan) => {
     if (isButtonDisabled(plan)) return;
-    
-    const planType = plan.title.replace(' PLAN', '');
-    
+
+    const planType = plan.title.replace(" PLAN", "");
+
     // Special handling for SOLO plan when user already has SOLO
-    if (planType === 'SOLO' && accessControl.currentPlan === 'SOLO') {
+    if (planType === "SOLO" && accessControl.currentPlan === "SOLO") {
       const availableModules = accessControl.getAvailableForPurchase();
-      
+
       if (availableModules.length > 0) {
         // Navigate to payment with indication that this is an additional module purchase
         navigate(`/payment?plan=SOLO&additional=true`);
         return;
       }
     }
-    
+
     // Regular navigation for other cases
     navigate(`/payment?plan=${planType}`);
   };
@@ -414,6 +445,8 @@ const Pricing = () => {
       <div className="relative z-0">
         <Hero />
       </div>
+
+      <ScrollToTopButton />
 
       {/* Pricing Cards */}
       <section className="relative z-10 bg-transparent -mt-40 px-4 pt-16 pb-20">
@@ -443,18 +476,22 @@ const Pricing = () => {
                     ✓ Owned
                   </div>
                 )}
-                {plan.title === "PRO PLAN" && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
-                  <img
-                    src="/pricingDesign/save20.svg"
-                    alt="Save 20%"
-                    className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
-                  />
-                )}
-                {plan.tag && !isCurrentPlan(plan.title) && !shouldGrayOut(plan.title) && (
-                  <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
-                    {plan.tag}
-                  </span>
-                )}
+                {plan.title === "PRO PLAN" &&
+                  !isCurrentPlan(plan.title) &&
+                  !shouldGrayOut(plan.title) && (
+                    <img
+                      src="/pricingDesign/save20.svg"
+                      alt="Save 20%"
+                      className="absolute -mt-9 -mr-7 -top-0 left-32 w-[113px] h-[49px] z-10"
+                    />
+                  )}
+                {plan.tag &&
+                  !isCurrentPlan(plan.title) &&
+                  !shouldGrayOut(plan.title) && (
+                    <span className="bg-[#EFB100] text-black text-xs font-bold px-2 py-1 rounded w-fit shadow">
+                      {plan.tag}
+                    </span>
+                  )}
               </div>
 
               {/* Title & Price */}
@@ -469,21 +506,31 @@ const Pricing = () => {
               <p className="text-sm text-black mt-2">{plan.description}</p>
               <hr className="my-3 border-gray-300" />
               <p className="text-4xl font-extrabold text-[#042038] mt-1">
-                {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 ? (
+                {plan.title === "PRO PLAN" &&
+                accessControl.currentPlan === "SOLO" &&
+                accessControl.soloModules.length > 0 ? (
                   <span>
-                    <span className="text-2xl line-through text-gray-500">₹1433</span>
+                    <span className="text-2xl line-through text-gray-500">
+                      ₹1433
+                    </span>
                     <br />
-                    <span className="text-green-600">₹{accessControl.calculateUpgradePrice('PRO').totalPrice}</span>
+                    <span className="text-green-600">
+                      ₹{accessControl.calculateUpgradePrice("PRO").totalPrice}
+                    </span>
                   </span>
                 ) : (
                   plan.price
                 )}
               </p>
-              {plan.title === "PRO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.soloModules.length > 0 && (
-                <p className="text-xs text-green-600 font-semibold mt-1">
-                  Save ₹{accessControl.calculateUpgradePrice('PRO').soloDiscount} from your SOLO plans!
-                </p>
-              )}
+              {plan.title === "PRO PLAN" &&
+                accessControl.currentPlan === "SOLO" &&
+                accessControl.soloModules.length > 0 && (
+                  <p className="text-xs text-green-600 font-semibold mt-1">
+                    Save ₹
+                    {accessControl.calculateUpgradePrice("PRO").soloDiscount}{" "}
+                    from your SOLO plans!
+                  </p>
+                )}
               <p className="text-xs text-black font-semibold mt-1">
                 {plan.frequency}
               </p>
@@ -537,30 +584,45 @@ const Pricing = () => {
               </button>
 
               {/* Upgrade suggestion for current plan users or special SOLO case */}
-              {(isCurrentPlan(plan.title) || (plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO')) && getUpgradeSuggestion(plan) && (
-                <div className="mt-3 text-center">
-                  <p className="text-xs text-gray-600 mb-2">{getUpgradeSuggestion(plan)}</p>
-                  {plan.title === "SOLO PLAN" && accessControl.currentPlan === 'SOLO' && accessControl.getAvailableForPurchase().length === 0 ? (
-                    <button
-                      onClick={() => navigate(`/payment?plan=PRO`)}
-                      className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
-                    >
-                      Upgrade to PRO
-                    </button>
-                  ) : isCurrentPlan(plan.title) ? (
-                    <button
-                      onClick={() => navigate(`/payment?plan=${
-                        plan.title === "STARTER PLAN" ? "SOLO" :
-                        plan.title === "SOLO PLAN" ? "PRO" :
-                        plan.title === "PRO PLAN" ? "INSTITUTIONAL" : ""
-                      }`)}
-                      className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
-                    >
-                     Upgrade Now
-                    </button>
-                  ) : null}
-                </div>
-              )}
+              {(isCurrentPlan(plan.title) ||
+                (plan.title === "SOLO PLAN" &&
+                  accessControl.currentPlan === "SOLO")) &&
+                getUpgradeSuggestion(plan) && (
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-gray-600 mb-2">
+                      {getUpgradeSuggestion(plan)}
+                    </p>
+                    {plan.title === "SOLO PLAN" &&
+                    accessControl.currentPlan === "SOLO" &&
+                    accessControl.getAvailableForPurchase().length === 0 ? (
+                      <button
+                        onClick={() => navigate(`/payment?plan=PRO`)}
+                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                      >
+                        Upgrade to PRO
+                      </button>
+                    ) : isCurrentPlan(plan.title) ? (
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/payment?plan=${
+                              plan.title === "STARTER PLAN"
+                                ? "SOLO"
+                                : plan.title === "SOLO PLAN"
+                                ? "PRO"
+                                : plan.title === "PRO PLAN"
+                                ? "INSTITUTIONAL"
+                                : ""
+                            }`
+                          )
+                        }
+                        className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition duration-300"
+                      >
+                        Upgrade Now
+                      </button>
+                    ) : null}
+                  </div>
+                )}
             </div>
           ))}
         </div>
