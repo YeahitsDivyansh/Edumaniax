@@ -112,7 +112,7 @@ const AboutUs = () => {
 
   const teamMembers = [
     {
-      name: "Sharadd Raaj Ustav",
+      name: "Sharad Raj Utsav",
       image: "sharad.svg",
       bgColor: "bg-[#66C537]/20",
       linkedin: "https://www.linkedin.com/in/sharadrajutsav/",
@@ -120,7 +120,7 @@ const AboutUs = () => {
       iconbg: "bg-[#236900]",
     },
     {
-      name: "Shreya Sienha",
+      name: "Shreya Sinha",
       image: "shreya.svg",
       bgColor: "bg-[#5CE1E6]/20",
       linkedin: "https://www.linkedin.com/in/shreya-sinha2802/",
