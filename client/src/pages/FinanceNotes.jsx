@@ -260,7 +260,7 @@ const DigitalMarketingFullNotes = () => {
               transition={{ duration: 0.8 }}
               className="text-center"
             >
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 mt-30 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 xl:mt-30 leading-tight">
                 Welcome to the World of <br />Artificial Intelligence!
                 <br />
 
