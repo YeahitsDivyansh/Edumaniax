@@ -18,6 +18,7 @@ import clickSoundFileOops from "../../Sound/clickSoundFileOops.mp3";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useEnvirnoment } from "@/contexts/EnvirnomentContext";
+import { usePerformance } from "@/contexts/PerformanceContext";
 
 
 const CauseEffectGame = () => {

@@ -131,7 +131,7 @@ const Navbar = () => {
                       : "h-10 w-9 object-cover rounded-full border-2 border-green-500"
                   }`}
                 />
-                <span className="text-green-700 font-medium">{user.name}</span>
+                <span className="text-black font-medium">{user.name}</span>
                 <ChevronDown
                   size={20}
                   className={`text-gray-500 transition-transform duration-300 ${
