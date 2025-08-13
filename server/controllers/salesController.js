@@ -1,64 +1,76 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma.js';
 import { createNotification } from './notificationController.js';
-
-const prisma = new PrismaClient();
 
 /**
  * Creates a new institutional inquiry and sends notification
  */
 export const createInstitutionalInquiry = async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      organizationalEmail, 
-      organization, 
-      phone, 
-      employees, 
-      message 
+    const {
+      contactName,
+      contactEmail,
+      contactPhone,
+      organizationName,
+      organizationType,
+      studentCount,
+      message
     } = req.body;
 
     // Validate required fields
-    if (!name || !email || !organizationalEmail || !organization) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Name, email, organizational email, and organization are required fields' 
+    if (!contactName || !contactEmail || !contactPhone || !organizationName || !organizationType || !studentCount || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
       });
     }
 
-    // Create inquiry in database
+    // Create institutional inquiry
     const inquiry = await prisma.institutionalInquiry.create({
       data: {
-        contactName: name,
-        contactEmail: email,
-        contactPhone: phone || '',
-        organizationName: organization,
-        organizationType: 'BUSINESS', // Default value, could be made dynamic
-        studentCount: employees || 'Not specified',
-        message: message || '',
-        status: 'NEW'
+        contactName,
+        contactEmail,
+        contactPhone,
+        organizationName,
+        organizationType,
+        studentCount,
+        message
       }
     });
 
-    // Create notification
-    await createNotification(
-      'NEW_INQUIRY',
-      `New inquiry from ${name} at ${organization}`,
-      inquiry,
-      inquiry.id
-    );
+    // Create sales notification for institutional inquiry
+    const notification = await prisma.salesNotification.create({
+      data: {
+        type: 'INSTITUTIONAL_INQUIRY',
+        message: `New institutional inquiry from ${contactName} at ${organizationName}`,
+        data: JSON.stringify({
+          inquiryId: inquiry.id,
+          contactName,
+          contactEmail,
+          contactPhone,
+          organizationName,
+          organizationType,
+          studentCount,
+          message
+        }),
+        inquiryId: inquiry.id
+      }
+    });
 
     res.status(201).json({
       success: true,
-      message: 'Inquiry created successfully',
-      data: inquiry
+      message: 'Inquiry submitted successfully',
+      data: {
+        inquiry,
+        notification
+      }
     });
+
   } catch (error) {
-    console.error('Error creating inquiry:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to create inquiry', 
-      error: error.message 
+    console.error('Error creating institutional inquiry:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit inquiry',
+      error: error.message
     });
   }
 };
@@ -68,24 +80,24 @@ export const createInstitutionalInquiry = async (req, res) => {
  */
 export const getInquiries = async (req, res) => {
   try {
-    const { 
-      status, 
-      startDate, 
-      endDate, 
-      sort = 'createdAt', 
+    const {
+      status,
+      startDate,
+      endDate,
+      sort = 'createdAt',
       order = 'desc',
       page = 1,
       limit = 10,
       search
     } = req.query;
-    
+
     // Build filter conditions
     let where = {};
-    
-    if (status) {
+
+    if (status && status !== 'ALL') {
       where.status = status;
     }
-    
+
     if (search) {
       where.OR = [
         { contactName: { contains: search, mode: 'insensitive' } },
@@ -93,7 +105,7 @@ export const getInquiries = async (req, res) => {
         { contactEmail: { contains: search, mode: 'insensitive' } }
       ];
     }
-    
+
     if (startDate && endDate) {
       where.createdAt = {
         gte: new Date(startDate),
@@ -118,6 +130,9 @@ export const getInquiries = async (req, res) => {
       take
     });
 
+    // Log for debugging
+    console.log(`Found ${inquiries.length} inquiries out of ${totalCount} total`);
+
     res.status(200).json({
       success: true,
       count: totalCount,
@@ -131,10 +146,10 @@ export const getInquiries = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting inquiries:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to retrieve inquiries', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve inquiries',
+      error: error.message
     });
   }
 };
@@ -145,11 +160,11 @@ export const getInquiries = async (req, res) => {
 export const updateInquiry = async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
-      status, 
-      assignedTo, 
-      followUpDate, 
-      notes 
+    const {
+      status,
+      assignedTo,
+      followUpDate,
+      notes
     } = req.body;
 
     // Get the existing inquiry to track changes
@@ -192,10 +207,10 @@ export const updateInquiry = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating inquiry:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to update inquiry', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update inquiry',
+      error: error.message
     });
   }
 };
@@ -267,10 +282,10 @@ export const getSalesAnalytics = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting sales analytics:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to retrieve sales analytics', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve sales analytics',
+      error: error.message
     });
   }
 };
@@ -281,11 +296,11 @@ export const getSalesAnalytics = async (req, res) => {
 export const handlePaymentWebhook = async (req, res) => {
   try {
     const { event, payload } = req.body;
-    
+
     if (event === 'payment.success') {
       // Process successful payment
       const paymentId = payload.payment.entity.id;
-      
+
       // Update payment status in database
       const payment = await prisma.payment.update({
         where: { razorpayPaymentId: paymentId },
@@ -308,10 +323,346 @@ export const handlePaymentWebhook = async (req, res) => {
         payment.id
       );
     }
-    
+
     res.status(200).json({ received: true });
   } catch (error) {
     console.error('Error processing payment webhook:', error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const createFreeTrialRequest = async (req, res) => {
+  try {
+    const { fullName, email, phoneNumber, class: classGrade, state, city } = req.body;
+
+    // Validate required fields
+    if (!fullName || !email || !phoneNumber || !classGrade || !state || !city) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Create free trial request
+    const trialRequest = await prisma.freeTrialRequest.create({
+      data: {
+        fullName,
+        email,
+        phoneNumber,
+        class: classGrade,
+        state,
+        city
+      }
+    });
+
+    // Create sales notification
+    const notification = await prisma.salesNotification.create({
+      data: {
+        type: 'FREE_TRIAL',
+        message: `New free trial request from ${fullName}`,
+        data: JSON.stringify({
+          trialId: trialRequest.id,
+          fullName,
+          email,
+          phoneNumber,
+          class: classGrade,
+          state,
+          city
+        }),
+        trialId: trialRequest.id
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Free trial request submitted successfully',
+      data: {
+        trialRequest,
+        notification
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating free trial request:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit free trial request',
+      error: error.message
+    });
+  }
+};
+
+export const getFreeTrialRequests = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, search } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Build where clause
+    const where = {};
+    if (status && status !== 'ALL') {
+      where.status = status;
+    }
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phoneNumber: { contains: search, mode: 'insensitive' } },
+        { state: { contains: search, mode: 'insensitive' } },
+        { city: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    // Get free trial requests with pagination
+    const [trialRequests, total] = await Promise.all([
+      prisma.freeTrialRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: parseInt(limit)
+      }),
+      prisma.freeTrialRequest.count({ where })
+    ]);
+
+    res.json({
+      success: true,
+      data: trialRequests,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching free trial requests:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch free trial requests',
+      error: error.message
+    });
+  }
+};
+
+export const updateFreeTrialStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, notes, followUpDate } = req.body;
+
+    const updatedTrial = await prisma.freeTrialRequest.update({
+      where: { id },
+      data: {
+        status,
+        notes,
+        followUpDate: followUpDate ? new Date(followUpDate) : null,
+        updatedAt: new Date()
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Free trial request updated successfully',
+      data: updatedTrial
+    });
+
+  } catch (error) {
+    console.error('Error updating free trial request:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update free trial request',
+      error: error.message
+    });
+  }
+};
+
+export const getNotificationsByType = async (req, res) => {
+  try {
+    const { type, status = 'UNREAD', limit = 50 } = req.query;
+
+    const where = {};
+    if (type && type !== 'ALL') {
+      where.type = type;
+    }
+    if (status && status !== 'ALL') {
+      where.status = status;
+    }
+
+    const notifications = await prisma.salesNotification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: parseInt(limit),
+      include: {
+        inquiry: type === 'INSTITUTIONAL_INQUIRY' ? true : false,
+        // Note: We can't include freeTrialRequest directly due to Prisma limitations
+        // We'll need to handle this in the frontend by parsing the data field
+      }
+    });
+
+    // Parse the data field for free trial notifications
+    const processedNotifications = notifications.map(notification => {
+      if (notification.type === 'FREE_TRIAL' && notification.data) {
+        try {
+          const parsedData = JSON.parse(notification.data);
+          return {
+            ...notification,
+            parsedData
+          };
+        } catch (error) {
+          console.error('Error parsing notification data:', error);
+          return notification;
+        }
+      }
+      return notification;
+    });
+
+    res.json({
+      success: true,
+      data: processedNotifications,
+      count: processedNotifications.length
+    });
+
+  } catch (error) {
+    console.error('Error fetching notifications by type:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notifications',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Delete an institutional inquiry
+ */
+export const deleteInquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if inquiry exists
+    const inquiry = await prisma.institutionalInquiry.findUnique({
+      where: { id }
+    });
+    
+    if (!inquiry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inquiry not found'
+      });
+    }
+    
+    // Delete associated notifications first
+    await prisma.salesNotification.deleteMany({
+      where: { inquiryId: id }
+    });
+    
+    // Delete the inquiry
+    await prisma.institutionalInquiry.delete({
+      where: { id }
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Inquiry deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting inquiry:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete inquiry',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Delete a free trial request
+ */
+export const deleteFreeTrialRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if free trial request exists
+    const freeTrial = await prisma.freeTrialRequest.findUnique({
+      where: { id }
+    });
+    
+    if (!freeTrial) {
+      return res.status(404).json({
+        success: false,
+        message: 'Free trial request not found'
+      });
+    }
+    
+    // Delete associated notifications first
+    await prisma.salesNotification.deleteMany({
+      where: { trialId: id }
+    });
+    
+    // Delete the free trial request
+    await prisma.freeTrialRequest.delete({
+      where: { id }
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Free trial request deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting free trial request:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete free trial request',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Verify data integrity and show current state
+ */
+export const verifyDataIntegrity = async (req, res) => {
+  try {
+    // Get counts of different entities
+    const inquiryCount = await prisma.institutionalInquiry.count();
+    const notificationCount = await prisma.salesNotification.count();
+    const institutionalNotificationCount = await prisma.salesNotification.count({
+      where: { type: 'INSTITUTIONAL_INQUIRY' }
+    });
+    const freeTrialNotificationCount = await prisma.salesNotification.count({
+      where: { type: 'FREE_TRIAL' }
+    });
+
+    // Get sample inquiries
+    const sampleInquiries = await prisma.institutionalInquiry.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Get sample notifications
+    const sampleNotifications = await prisma.salesNotification.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        counts: {
+          institutionalInquiries: inquiryCount,
+          totalNotifications: notificationCount,
+          institutionalNotifications: institutionalNotificationCount,
+          freeTrialNotifications: freeTrialNotificationCount
+        },
+        sampleInquiries,
+        sampleNotifications
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying data integrity:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify data integrity',
+      error: error.message
+    });
   }
 };

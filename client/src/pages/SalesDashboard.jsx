@@ -22,30 +22,29 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Bell
+  Bell,
+  X
 } from 'lucide-react';
 
 const SalesDashboard = () => {
   const navigate = useNavigate();
   const { user, logout, role } = useAuth();
-  const [activeTab, setActiveTab] = useState('inquiries');
   const [inquiries, setInquiries] = useState([]);
+  const [freeTrialRequests, setFreeTrialRequests] = useState([]);
   const [analytics, setAnalytics] = useState({
     inquiryStatusCounts: [],
     revenueByPlan: [],
     unreadNotificationsCount: 0
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [activeTab, setActiveTab] = useState('inquiries'); // 'inquiries' or 'freeTrials'
   const [isEditingInquiry, setIsEditingInquiry] = useState(false);
   const [editFormData, setEditFormData] = useState({});
-  const [notifications, setNotifications] = useState([]);
-  const [pollingInterval, setPollingInterval] = useState(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [selectedInquiry, setSelectedInquiry] = useState(null);
   
   // Define fetch functions with useCallback first
   // Helper function to handle 401 errors
@@ -60,51 +59,72 @@ const SalesDashboard = () => {
     }
   };
 
-  // Fetch inquiries from API
   const fetchInquiries = useCallback(async () => {
     try {
       setLoading(true);
-      
-      let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries?page=${currentPage}`;
-      
-      if (filterStatus) {
-        url += `&status=${filterStatus}`;
-      }
-      
-      if (searchQuery) {
-        url += `&search=${encodeURIComponent(searchQuery)}`;
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/inquiries?page=${currentPage}&limit=10&status=${statusFilter}&search=${searchTerm}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        handleAuthError('Unauthorized', response);
+        return;
       }
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      const data = await response.json();
-      
       if (!response.ok) {
-        if (response.status === 401) {
-          handleAuthError(new Error(data.message), response);
-          return;
-        }
-        throw new Error(data.message || 'Failed to fetch inquiries');
+        throw new Error('Failed to fetch inquiries');
       }
-      
+
+      const data = await response.json();
       setInquiries(data.data || []);
-      setTotalPages(data.pagination?.totalPages || Math.ceil((data.count || 0) / 10));
+      setTotalPages(data.pagination?.pages || 1);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
-      handleAuthError(error);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filterStatus, searchQuery, logout, navigate]);
+  }, [currentPage, statusFilter, searchTerm]);
+
+  const fetchFreeTrialRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/free-trial?page=${currentPage}&limit=10&status=${statusFilter}&search=${searchTerm}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        handleAuthError('Unauthorized', response);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch free trial requests');
+      }
+
+      const data = await response.json();
+      setFreeTrialRequests(data.data || []);
+      setTotalPages(data.pagination?.pages || 1);
+    } catch (error) {
+      console.error('Error fetching free trial requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, statusFilter, searchTerm]);
   
   // Fetch analytics data
   const fetchAnalytics = useCallback(async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/analytics`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/analytics`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -143,7 +163,7 @@ const SalesDashboard = () => {
     // Poll for notifications
     const pollNotifications = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/notifications?page=1&limit=10`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/notifications?page=1&limit=10`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -189,7 +209,7 @@ const SalesDashboard = () => {
         });
         
         // Update notifications list
-        setNotifications(newNotifications);
+        // setNotifications(newNotifications); // This state was removed
       } catch (error) {
         console.error('Error polling notifications:', error);
       }
@@ -202,21 +222,25 @@ const SalesDashboard = () => {
       
       // Set up polling interval (every 30 seconds)
       const interval = setInterval(pollNotifications, 30000);
-      setPollingInterval(interval);
+      // setPollingInterval(interval); // This state was removed
       
       // Clean up interval on unmount
       return () => clearInterval(interval);
     }
   }, [user, role, fetchInquiries, selectedInquiry]);
   
-  // Update online status
+  // Set up online/offline detection
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
+    const handleOnline = () => {
+      // Handle online status
+    };
+    const handleOffline = () => {
+      // Handle offline status
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -227,56 +251,168 @@ const SalesDashboard = () => {
   useEffect(() => {
     if (user && ['ADMIN', 'SALES'].includes(role)) {
       fetchInquiries();
+      fetchFreeTrialRequests();
       fetchAnalytics();
     }
-  }, [user, role, fetchInquiries, fetchAnalytics]);
+  }, [user, role, fetchInquiries, fetchFreeTrialRequests, fetchAnalytics]);
   
   // Refetch when page or filters change
   useEffect(() => {
     if (user && ['ADMIN', 'SALES'].includes(role)) {
       fetchInquiries();
     }
-  }, [currentPage, filterStatus, searchQuery, fetchInquiries, user, role]);
+  }, [currentPage, statusFilter, searchTerm, fetchInquiries, user, role]);
   
   // Handle inquiry selection
   const handleInquiryClick = (inquiry) => {
     setSelectedInquiry(inquiry);
   };
   
-  // Handle inquiry status update
+  // Update inquiry status
   const updateInquiryStatus = async (id, status) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update inquiry');
-      }
-      
-      // Update local state
-      setInquiries(prev => 
-        prev.map(inquiry => 
-          inquiry.id === id ? { ...inquiry, status } : inquiry
-        )
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/inquiries/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ status })
+        }
       );
-      
-      if (selectedInquiry && selectedInquiry.id === id) {
-        setSelectedInquiry(prev => ({ ...prev, status }));
+
+      if (!response.ok) {
+        throw new Error('Failed to update inquiry status');
       }
-      
-      // Refresh analytics
-      fetchAnalytics();
+
+      // Refresh the data
+      if (activeTab === 'inquiries') {
+        fetchInquiries();
+      } else {
+        fetchFreeTrialRequests();
+      }
     } catch (error) {
       console.error('Error updating inquiry status:', error);
     }
+  };
+
+  // Update free trial status
+  const updateFreeTrialStatus = async (id, status) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/free-trial/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ status })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to update free trial status');
+      }
+
+      // Refresh the data
+      fetchFreeTrialRequests();
+    } catch (error) {
+      console.error('Error updating free trial status:', error);
+    }
+  };
+
+  // Delete inquiry
+  const deleteInquiry = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this inquiry? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/inquiries/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete inquiry');
+      }
+
+      // Clear selected inquiry if it was the deleted one
+      if (selectedInquiry?.id === id) {
+        setSelectedInquiry(null);
+      }
+
+      // Refresh the data
+      fetchInquiries();
+    } catch (error) {
+      console.error('Error deleting inquiry:', error);
+      alert('Failed to delete inquiry. Please try again.');
+    }
+  };
+
+  // Delete free trial request
+  const deleteFreeTrialRequest = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this free trial request? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/free-trial/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete free trial request');
+      }
+
+      // Clear selected inquiry if it was the deleted one
+      if (selectedInquiry?.id === id) {
+        setSelectedInquiry(null);
+      }
+
+      // Refresh the data
+      fetchFreeTrialRequests();
+    } catch (error) {
+      console.error('Error deleting free trial request:', error);
+      alert('Failed to delete free trial request. Please try again.');
+    }
+  };
+
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    if (tab === 'inquiries') {
+      fetchInquiries();
+    } else {
+      fetchFreeTrialRequests();
+    }
+  };
+
+  // Handle search
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  // Handle status filter
+  const handleStatusFilter = (status) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
   };
   
   // Handle pagination
@@ -351,8 +487,8 @@ const SalesDashboard = () => {
   // Render connection status indicator
   const renderConnectionStatus = () => (
     <div className="flex items-center space-x-2">
-      <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
-      <span className="text-sm text-gray-600">{isOnline ? 'Connected' : 'Offline'}</span>
+      <div className={`w-3 h-3 rounded-full bg-green-500`}></div>
+      <span className="text-sm text-gray-600">Connected</span>
     </div>
   );
   
@@ -396,30 +532,188 @@ const SalesDashboard = () => {
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('inquiries')}
-              className={`${
-                activeTab === 'inquiries'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Inquiries
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`${
-                activeTab === 'analytics'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Analytics
-            </button>
-          </nav>
+        {/* Compact Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg">
+          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-white">Sales Dashboard</h1>
+                <p className="mt-1 text-blue-100 text-sm">
+                  Welcome back, {user?.name || 'User'}! Manage inquiries, free trial requests, and track sales performance
+                </p>
+              </div>
+              <div className="hidden md:flex items-center space-x-3">
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 text-center">
+                  <div className="text-white text-xs font-medium">Total Inquiries</div>
+                  <div className="text-white text-lg font-bold">
+                    {Array.isArray(analytics.inquiryStatusCounts) 
+                      ? analytics.inquiryStatusCounts.reduce((sum, item) => sum + Number(item.count || 0), 0) 
+                      : 0}
+                  </div>
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 text-center">
+                  <div className="text-white text-xs font-medium">Free Trials</div>
+                  <div className="text-white text-lg font-bold">{freeTrialRequests.length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Welcome Description */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">Dashboard Purpose:</span>
+                <span className="ml-2">Manage institutional inquiries and free trial requests efficiently. Track conversion rates and sales performance.</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Role: {role || 'User'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compact Tab Navigation */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="-mb-px flex space-x-1">
+              <button
+                onClick={() => handleTabChange('inquiries')}
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-all duration-200 ${
+                  activeTab === 'inquiries'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span>Institutional Inquiries</span>
+                </div>
+              </button>
+              <button
+                onClick={() => handleTabChange('freeTrials')}
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-all duration-200 ${
+                  activeTab === 'freeTrials'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span>Free Trial Requests</span>
+                </div>
+              </button>
+              <button
+                onClick={() => handleTabChange('analytics')}
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-all duration-200 ${
+                  activeTab === 'analytics'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <BarChart4 className="h-4 w-4" />
+                  <span>Analytics Dashboard</span>
+                </div>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Compact Search and Filter Section */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder={`Search ${activeTab === 'inquiries' ? 'inquiries' : 'free trial requests'}...`}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200"
+                />
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => handleStatusFilter(e.target.value)}
+                  className="block w-full pl-9 pr-8 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg transition-all duration-200"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="NEW">New</option>
+                  <option value="CONTACTED">Contacted</option>
+                  <option value="FOLLOW_UP">Follow Up</option>
+                  <option value="CONVERTED">Converted</option>
+                  <option value="NOT_INTERESTED">Not Interested</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compact Dashboard Overview - Moved to right side */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">Quick Stats:</span>
+                <span className="ml-2 text-blue-600 font-medium">{freeTrialRequests.filter(t => t.status === 'NEW').length} new trials</span>
+                <span className="mx-2">•</span>
+                <span className="text-green-600 font-medium">{inquiries.filter(i => i.status === 'NEW').length} new inquiries</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Last updated: {new Date().toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compact Stats Cards */}
+        <div className="bg-white shadow-sm border-b border-gray-200 mb-4">
+          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Array.isArray(analytics.inquiryStatusCounts) 
+                    ? analytics.inquiryStatusCounts.reduce((sum, item) => sum + Number(item.count || 0), 0) 
+                    : 0}
+                </div>
+                <div className="text-xs text-gray-600">Total Inquiries</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{freeTrialRequests.length}</div>
+                <div className="text-xs text-gray-600">Free Trials</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {Array.isArray(analytics.inquiryStatusCounts) 
+                    ? analytics.inquiryStatusCounts.find(i => i.status === 'FOLLOW_UP')?.count || 0
+                    : 0}
+                </div>
+                <div className="text-xs text-gray-600">Active Leads</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {(() => {
+                    const totalInquiries = Array.isArray(analytics.inquiryStatusCounts) 
+                      ? analytics.inquiryStatusCounts.reduce((sum, item) => sum + Number(item.count || 0), 0) 
+                      : 0;
+                    const converted = analytics.inquiryStatusCounts?.find(i => i.status === 'CONVERTED')?.count || 0;
+                    return totalInquiries > 0 ? Math.round((converted / totalInquiries) * 100) : 0;
+                  })()}%
+                </div>
+                <div className="text-xs text-gray-600">Conversion Rate</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Inquiries Tab */}
@@ -427,37 +721,6 @@ const SalesDashboard = () => {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Inquiries List */}
             <div className="lg:col-span-1 bg-white shadow rounded-lg">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Institutional Inquiries</h2>
-                <div className="mt-2 flex items-center space-x-2">
-                  <div className="relative flex-grow">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search inquiries..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                    <Search className="absolute right-3 top-2 h-5 w-5 text-gray-400" />
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="">All Status</option>
-                      <option value="NEW">New</option>
-                      <option value="CONTACTED">Contacted</option>
-                      <option value="FOLLOW_UP">Follow Up</option>
-                      <option value="CONVERTED">Converted</option>
-                      <option value="NOT_INTERESTED">Not Interested</option>
-                    </select>
-                    <Filter className="absolute right-3 top-2 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-              
               {loading ? (
                 <div className="p-6 text-center text-gray-500">Loading inquiries...</div>
               ) : inquiries.length === 0 ? (
@@ -469,20 +732,34 @@ const SalesDashboard = () => {
                       <li
                         key={inquiry.id}
                         onClick={() => handleInquiryClick(inquiry)}
-                        className={`p-4 hover:bg-gray-50 cursor-pointer ${
-                          selectedInquiry?.id === inquiry.id ? 'bg-blue-50' : ''
+                        className={`p-4 hover:bg-blue-50 cursor-pointer transition-all duration-200 rounded-lg border ${
+                          selectedInquiry?.id === inquiry.id 
+                            ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                            : 'bg-white border-gray-100 hover:border-blue-200'
                         }`}
                       >
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">{inquiry.organizationName}</h3>
-                            <p className="text-sm text-gray-500 mt-1">{inquiry.contactName}</p>
+                          <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900">{inquiry.organizationName}</h3>
+                            <p className="text-sm text-gray-600 mt-1 flex items-center">
+                              <Users className="h-4 w-4 mr-1 text-gray-400" />
+                              {inquiry.contactName}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">{inquiry.organizationType} • {inquiry.studentCount} students</p>
                           </div>
-                          {renderStatusBadge(inquiry.status)}
+                          <div className="ml-4">
+                            {renderStatusBadge(inquiry.status)}
+                          </div>
                         </div>
-                        <div className="mt-2 flex items-center text-xs text-gray-500">
-                          <Clock className="mr-1 h-4 w-4" />
-                          {formatDate(inquiry.createdAt)}
+                        <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <Clock className="mr-1 h-4 w-4" />
+                            {formatDate(inquiry.createdAt)}
+                          </div>
+                          <div className="flex items-center">
+                            <Phone className="mr-1 h-4 w-4" />
+                            {inquiry.contactPhone}
+                          </div>
                         </div>
                       </li>
                     ))}
@@ -596,6 +873,12 @@ const SalesDashboard = () => {
                       >
                         Edit
                       </button>
+                      <button
+                        onClick={() => deleteInquiry(selectedInquiry.id)}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                   
@@ -653,7 +936,7 @@ const SalesDashboard = () => {
                             type="button"
                             onClick={async () => {
                               try {
-                                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/special/inquiries/${selectedInquiry.id}`, {
+                                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/special/inquiries/${selectedInquiry.id}`, {
                                   method: 'PUT',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -808,10 +1091,225 @@ const SalesDashboard = () => {
                   )}
                 </>
               ) : (
-                <div className="p-6 text-center text-gray-500">
-                  <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No Inquiry Selected</h3>
-                  <p className="mt-1 text-sm text-gray-500">Select an inquiry from the list to view details.</p>
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-lg font-medium text-gray-900">Welcome to Sales Dashboard</h3>
+                    <p className="mt-1 text-sm text-gray-500">Select an inquiry from the list to view details and manage your sales pipeline.</p>
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Quick Actions</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-blue-600">{inquiries.length}</div>
+                          <div className="text-xs text-gray-600">Total Inquiries</div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-green-600">{freeTrialRequests.length}</div>
+                          <div className="text-xs text-gray-600">Free Trials</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Recent Activity */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Recent Activity</h4>
+                    <div className="space-y-2">
+                      <div className="text-xs text-gray-600">
+                        {inquiries.length > 0 ? `Last inquiry: ${formatDate(inquiries[0]?.createdAt)}` : 'No inquiries yet'}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {freeTrialRequests.length > 0 ? `Last free trial: ${formatDate(freeTrialRequests[0]?.createdAt)}` : 'No free trials yet'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Free Trial Requests Tab */}
+        {activeTab === 'freeTrials' && (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Free Trial Requests List */}
+            <div className="lg:col-span-1 bg-white shadow rounded-lg">
+              {loading ? (
+                <div className="p-6 text-center text-gray-500">Loading free trial requests...</div>
+              ) : (
+                <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                  {freeTrialRequests.length === 0 ? (
+                    <div className="p-6 text-center text-gray-500">No free trial requests found</div>
+                  ) : (
+                    freeTrialRequests.map((trial) => (
+                      <div
+                        key={trial.id}
+                        className={`p-4 hover:bg-blue-50 cursor-pointer transition-all duration-200 rounded-lg border ${
+                          selectedInquiry?.id === trial.id 
+                            ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                            : 'bg-white border-gray-100 hover:border-blue-200'
+                        }`}
+                        onClick={() => setSelectedInquiry(trial)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900">{trial.fullName}</h3>
+                            <p className="text-sm text-gray-600 mt-1 flex items-center">
+                              <Mail className="h-4 w-4 mr-1 text-gray-400" />
+                              {trial.email}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1 flex items-center">
+                              <Phone className="h-4 w-4 mr-1 text-gray-400" />
+                              {trial.phoneNumber}
+                            </p>
+                            <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                Class {trial.class}
+                              </span>
+                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                                {trial.state}, {trial.city}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            {renderStatusBadge(trial.status)}
+                          </div>
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500 flex items-center">
+                          <Clock className="mr-1 h-4 w-4" />
+                          {formatDate(trial.createdAt)}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Free Trial Request Details */}
+            <div className="lg:col-span-2 bg-white shadow rounded-lg">
+              {selectedInquiry ? (
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-lg font-medium text-gray-900">Free Trial Request Details</h2>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => deleteFreeTrialRequest(selectedInquiry.id)}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setSelectedInquiry(null)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.fullName}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.email}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.phoneNumber}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Class</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.class}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">State</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.state}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">City</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedInquiry.city}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Status</label>
+                      <div className="mt-1">
+                        {renderStatusBadge(selectedInquiry.status)}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Submitted</label>
+                      <p className="mt-1 text-sm text-gray-900">{formatDate(selectedInquiry.createdAt)}</p>
+                    </div>
+                  </div>
+
+                  {/* Status Update */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">Update Status</h3>
+                    <div className="flex gap-2">
+                      {['NEW', 'CONTACTED', 'FOLLOW_UP', 'CONVERTED', 'NOT_INTERESTED'].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => updateFreeTrialStatus(selectedInquiry.id, status)}
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            selectedInquiry.status === status
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {getStatusLabel(status)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <Users className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-lg font-medium text-gray-900">Free Trial Requests</h3>
+                    <p className="mt-1 text-sm text-gray-500">Select a free trial request to view details and manage student trial applications.</p>
+                  </div>
+                  
+                  {/* Quick Stats */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Quick Stats</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-blue-600">{freeTrialRequests.filter(t => t.status === 'NEW').length}</div>
+                          <div className="text-xs text-gray-600">New Requests</div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-green-600">{freeTrialRequests.filter(t => t.status === 'CONVERTED').length}</div>
+                          <div className="text-xs text-gray-600">Converted</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Recent Activity */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Recent Activity</h4>
+                    <div className="space-y-2">
+                      <div className="text-xs text-gray-600">
+                        {freeTrialRequests.length > 0 ? `Last request: ${formatDate(freeTrialRequests[0]?.createdAt)}` : 'No free trial requests yet'}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Total requests: {freeTrialRequests.length}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -821,20 +1319,20 @@ const SalesDashboard = () => {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* KPI Cards */}
+            {/* Enhanced KPI Cards */}
             <div className="lg:col-span-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {/* Total Inquiries */}
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 overflow-hidden shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="p-6">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                      <Briefcase className="h-6 w-6 text-white" />
+                    <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 shadow-lg">
+                      <Briefcase className="h-7 w-7 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Inquiries</dt>
+                        <dt className="text-sm font-semibold text-blue-800 truncate">Total Inquiries</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">
+                          <div className="text-2xl font-bold text-blue-900">
                             {Array.isArray(analytics.inquiryStatusCounts) 
                               ? analytics.inquiryStatusCounts.reduce((sum, item) => sum + Number(item.count || 0), 0) 
                               : 0}
@@ -847,17 +1345,17 @@ const SalesDashboard = () => {
               </div>
 
               {/* Total Revenue */}
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 overflow-hidden shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="p-6">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                      <DollarSign className="h-6 w-6 text-white" />
+                    <div className="flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 shadow-lg">
+                      <DollarSign className="h-7 w-7 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                        <dt className="text-sm font-semibold text-green-800 truncate">Total Revenue</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">
+                          <div className="text-2xl font-bold text-green-900">
                             ₹{Array.isArray(analytics.revenueByPlan) 
                               ? analytics.revenueByPlan.reduce((sum, item) => sum + Number(item.total || 0), 0) 
                               : 0}
@@ -870,17 +1368,17 @@ const SalesDashboard = () => {
               </div>
 
               {/* Active Leads */}
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 overflow-hidden shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="p-6">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                      <Users className="h-6 w-6 text-white" />
+                    <div className="flex-shrink-0 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 shadow-lg">
+                      <Users className="h-7 w-7 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Active Leads</dt>
+                        <dt className="text-sm font-semibold text-yellow-800 truncate">Active Leads</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">
+                          <div className="text-2xl font-bold text-yellow-900">
                             {Array.isArray(analytics.inquiryStatusCounts) 
                               ? analytics.inquiryStatusCounts.find(i => i.status === 'FOLLOW_UP')?.count || 0
                               : 0}
@@ -893,17 +1391,17 @@ const SalesDashboard = () => {
               </div>
 
               {/* Conversion Rate */}
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 overflow-hidden shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="p-6">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                      <TrendingUp className="h-6 w-6 text-white" />
+                    <div className="flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 shadow-lg">
+                      <TrendingUp className="h-7 w-7 text-white" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Conversion Rate</dt>
+                        <dt className="text-sm font-semibold text-purple-800 truncate">Conversion Rate</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">
+                          <div className="text-2xl font-bold text-purple-900">
                             {(() => {
                               const totalInquiries = Array.isArray(analytics.inquiryStatusCounts) 
                                 ? analytics.inquiryStatusCounts.reduce((sum, item) => sum + Number(item.count || 0), 0) 
@@ -920,13 +1418,16 @@ const SalesDashboard = () => {
               </div>
             </div>
 
-            {/* Inquiry Status Distribution */}
-            <div className="lg:col-span-2 bg-white shadow rounded-lg">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Inquiry Status Distribution</h2>
+            {/* Enhanced Inquiry Status Distribution */}
+            <div className="lg:col-span-2 bg-white shadow-lg rounded-xl border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <BarChart4 className="h-5 w-5 mr-2 text-blue-600" />
+                  Inquiry Status Distribution
+                </h2>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-5">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-5">
                   {['NEW', 'CONTACTED', 'FOLLOW_UP', 'CONVERTED', 'NOT_INTERESTED'].map((status) => {
                     const count = Array.isArray(analytics.inquiryStatusCounts) 
                       ? analytics.inquiryStatusCounts.find(i => i.status === status)?.count || 0 
@@ -937,21 +1438,21 @@ const SalesDashboard = () => {
                     const percentage = calculatePercentage(count, totalInquiries);
                     
                     return (
-                      <div key={status} className="bg-white overflow-hidden">
-                        <div className="px-4 py-2">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)} text-white`}>
+                      <div key={status} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                        <div className="text-center">
+                          <div className="flex justify-center items-center mb-3">
+                            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusColor(status)} text-white shadow-sm`}>
                               {getStatusLabel(status)}
                             </span>
-                            <span className="text-sm font-medium">{count}</span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="text-2xl font-bold text-gray-900 mb-2">{count}</div>
+                          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                             <div
-                              className={`h-2.5 rounded-full ${getStatusColor(status)}`}
+                              className={`h-3 rounded-full ${getStatusColor(status)} shadow-sm`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <div className="text-xs text-gray-500 mt-1 text-right">{percentage}%</div>
+                          <div className="text-sm font-medium text-gray-600">{percentage}%</div>
                         </div>
                       </div>
                     );
@@ -960,13 +1461,16 @@ const SalesDashboard = () => {
               </div>
             </div>
 
-            {/* Revenue by Plan */}
-            <div className="lg:col-span-1 bg-white shadow rounded-lg">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Revenue by Plan</h2>
+            {/* Enhanced Revenue by Plan */}
+            <div className="lg:col-span-1 bg-white shadow-lg rounded-xl border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <PieChart className="h-5 w-5 mr-2 text-green-600" />
+                  Revenue by Plan
+                </h2>
               </div>
               <div className="p-6">
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {['STARTER', 'SOLO', 'PRO', 'INSTITUTIONAL'].map((planType) => {
                     // Map plan types to display names
                     const planDisplayNames = {
@@ -985,19 +1489,17 @@ const SalesDashboard = () => {
                     const percentage = calculatePercentage(revenue, totalRevenue);
                     
                     return (
-                      <div key={planType} className="bg-white overflow-hidden">
-                        <div className="px-4 py-2">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium">{planDisplayNames[planType] || planType}</span>
-                            <span className="text-sm font-medium">₹{revenue}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div key={planType} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                        <div className="text-center">
+                          <div className="text-sm font-semibold text-gray-800 mb-2">{planDisplayNames[planType] || planType}</div>
+                          <div className="text-xl font-bold text-green-600 mb-3">₹{revenue}</div>
+                          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                             <div
-                              className="h-2.5 rounded-full bg-green-500"
+                              className="h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-sm"
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <div className="text-xs text-gray-500 mt-1 text-right">{percentage}%</div>
+                          <div className="text-sm font-medium text-gray-600">{percentage}%</div>
                         </div>
                       </div>
                     );
