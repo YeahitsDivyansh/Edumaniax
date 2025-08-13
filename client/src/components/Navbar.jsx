@@ -298,7 +298,7 @@ const Navbar = () => {
                         : "h-6 w-6"
                     }`}
                   />
-                  <span className="ml-2">{user.name}</span>
+                  <span className="ml-2 text-black">{user.name}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
