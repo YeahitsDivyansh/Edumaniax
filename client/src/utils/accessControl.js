@@ -160,6 +160,9 @@ class AccessController {
     
     console.log('AccessController: Initialized with currentPlan:', this.currentPlan);
     console.log('AccessController: Initialized with soloModules:', this.soloModules);
+    console.log('AccessController: Trial start date:', this.trialStartDate);
+    console.log('AccessController: Trial valid:', this.isTrialValid());
+    console.log('AccessController: Remaining trial days:', this.getRemainingTrialDays());
   }
 
   /**
@@ -167,7 +170,7 @@ class AccessController {
    */
   getCurrentPlan() {
     if (!this.userSubscription || !Array.isArray(this.userSubscription)) {
-      console.log('AccessController: No subscriptions, defaulting to STARTER');
+      console.log('AccessController: No subscriptions, defaulting to STARTER (trial access)');
       return 'STARTER';
     }
 
@@ -184,7 +187,7 @@ class AccessController {
     console.log('AccessController: Found', activeSubscriptions.length, 'active subscriptions');
 
     if (activeSubscriptions.length === 0) {
-      console.log('AccessController: No active subscriptions, defaulting to STARTER');
+      console.log('AccessController: No active subscriptions, defaulting to STARTER (trial access)');
       return 'STARTER';
     }
 
@@ -196,7 +199,7 @@ class AccessController {
       }
     }
 
-    console.log('AccessController: No matching plan found, defaulting to STARTER');
+    console.log('AccessController: No matching plan found, defaulting to STARTER (trial access)');
     return 'STARTER';
   }
 
@@ -309,7 +312,9 @@ class AccessController {
       }
     }
     
-    // Default to current date if no subscription found (new user)
+    // For users without subscriptions (new users), start trial from current date
+    // This ensures they get full trial access
+    console.log('AccessController: No STARTER subscription found, starting trial from current date');
     return new Date();
   }
 
@@ -319,12 +324,18 @@ class AccessController {
   isTrialValid() {
     if (this.currentPlan !== 'STARTER') return true; // Non-starter plans don't have trial limits
     
-    if (!this.trialStartDate) return true; // If no start date, allow trial
+    // If no trial start date, allow trial (new users)
+    if (!this.trialStartDate) {
+      console.log('AccessController: No trial start date, allowing trial access');
+      return true;
+    }
     
     const currentDate = new Date();
     const daysDifference = Math.floor((currentDate - this.trialStartDate) / (1000 * 60 * 60 * 24));
+    const isValid = daysDifference <= 7;
     
-    return daysDifference <= 7;
+    console.log('AccessController: Trial validation - days difference:', daysDifference, 'isValid:', isValid);
+    return isValid;
   }
 
   /**
@@ -333,12 +344,18 @@ class AccessController {
   getRemainingTrialDays() {
     if (this.currentPlan !== 'STARTER') return null;
     
-    if (!this.trialStartDate) return 7;
+    // If no trial start date, give full 7 days (new users)
+    if (!this.trialStartDate) {
+      console.log('AccessController: No trial start date, returning 7 days');
+      return 7;
+    }
     
     const currentDate = new Date();
     const daysDifference = Math.floor((currentDate - this.trialStartDate) / (1000 * 60 * 60 * 24));
+    const remainingDays = Math.max(0, 7 - daysDifference);
     
-    return Math.max(0, 7 - daysDifference);
+    console.log('AccessController: Remaining trial days:', remainingDays);
+    return remainingDays;
   }
 
   /**
@@ -353,7 +370,9 @@ class AccessController {
 
     // STARTER plan users can see all modules during trial period
     if (this.currentPlan === 'STARTER') {
-      return this.isTrialValid();
+      const hasAccess = this.isTrialValid();
+      console.log('AccessController: STARTER plan access to', moduleKey, ':', hasAccess);
+      return hasAccess;
     }
 
     // For SOLO plans, check if user has purchased this specific module
@@ -404,11 +423,10 @@ class AccessController {
     // For other plans, the level must exist in MODULE_CONFIGS
     if (!level) return false;
 
-    // STARTER plan users can only access level 1 during trial period
+    // STARTER plan users can see ALL levels during trial period
+    // but only level 1 games will be unlocked (handled by hasGameLevelAccess)
     if (this.currentPlan === 'STARTER') {
-      // Note: Individual challenges will be handled by useGameAccess hook
-      // This allows the level to appear unlocked in UI but restricts actual game access
-      return levelNumber === 1 && this.isTrialValid();
+      return this.isTrialValid(); // Show all levels during trial
     }
 
     // For any other plans, check individual level requirements
@@ -423,7 +441,9 @@ class AccessController {
   hasGameAccess(moduleKey) {
     // STARTER plan users can access games for all modules (level 1 only) during trial
     if (this.currentPlan === 'STARTER') {
-      return this.hasModuleAccess(moduleKey) && this.isTrialValid();
+      const hasAccess = this.hasModuleAccess(moduleKey) && this.isTrialValid();
+      console.log('AccessController: STARTER plan game access to', moduleKey, ':', hasAccess);
+      return hasAccess;
     }
 
     // SOLO plan users have full game access to their selected module
@@ -442,8 +462,12 @@ class AccessController {
   hasGameLevelAccess(moduleKey, levelNumber) {
     if (!this.hasGameAccess(moduleKey)) return false;
     
-    // Note: For STARTER plan, we're allowing level 1 access here
-    // but the individual challenge access is restricted in useGameAccess hook
+    // STARTER plan users can only access level 1 games during trial
+    if (this.currentPlan === 'STARTER') {
+      return levelNumber === 1 && this.isTrialValid();
+    }
+    
+    // For other plans, check level access
     return this.hasLevelAccess(moduleKey, levelNumber);
   }
 
@@ -945,40 +969,47 @@ class AccessController {
  * Hook for React components to use access control
  */
 export const useAccessControl = (userSubscription = null, selectedModule = null) => {
+  console.log('useAccessControl: Called with userSubscription:', userSubscription);
+  console.log('useAccessControl: Called with selectedModule:', selectedModule);
+  
   // Use React.useMemo to recreate the AccessController only when dependencies change
   const accessController = React.useMemo(() => {
+    console.log('useAccessControl: Creating new AccessController');
     return new AccessController(userSubscription, selectedModule);
   }, [userSubscription, selectedModule]);
 
   // Use React.useMemo for the return object to avoid recreating it on every render
-  return React.useMemo(() => ({
-    currentPlan: accessController.currentPlan,
-    soloModules: accessController.soloModules,
-    isTrialValid: () => accessController.isTrialValid(),
-    getRemainingTrialDays: () => accessController.getRemainingTrialDays(),
-    hasModuleAccess: (moduleKey) => accessController.hasModuleAccess(moduleKey),
-    hasLevelAccess: (moduleKey, levelNumber) => accessController.hasLevelAccess(moduleKey, levelNumber),
-    hasGameAccess: (moduleKey) => accessController.hasGameAccess(moduleKey),
-    hasGameLevelAccess: (moduleKey, levelNumber) => accessController.hasGameLevelAccess(moduleKey, levelNumber),
-    hasFeatureAccess: (feature) => accessController.hasFeatureAccess(feature),
-    isModulePurchased: (moduleKey) => accessController.isModulePurchased(moduleKey),
-    canPurchaseModule: (moduleKey) => accessController.canPurchaseModule(moduleKey),
-    getModuleAccessType: (moduleKey) => accessController.getModuleAccessType(moduleKey),
-    getModulePurchaseStatus: (moduleKey) => accessController.getModulePurchaseStatus(moduleKey),
-    getPurchasedModules: () => accessController.getPurchasedModules(),
-    getAvailableForPurchase: () => accessController.getAvailableForPurchase(),
-    getAllModulesWithStatus: () => accessController.getAllModulesWithStatus(),
-    getAccessibleModules: () => accessController.getAccessibleModules(),
-    getLockedModules: () => accessController.getLockedModules(),
-    getAccessibleLevels: (moduleKey) => accessController.getAccessibleLevels(moduleKey),
-    getLockedLevels: (moduleKey) => accessController.getLockedLevels(moduleKey),
-    getUpgradeSuggestions: (moduleKey, levelNumber) => accessController.getUpgradeSuggestions(moduleKey, levelNumber),
-    shouldShowUpgradePrompt: (moduleKey, levelNumber) => accessController.shouldShowUpgradePrompt(moduleKey, levelNumber),
-    getAccessStatus: (moduleKey, levelNumber) => accessController.getAccessStatus(moduleKey, levelNumber),
-    getPlanBenefits: (planType) => accessController.getPlanBenefits(planType),
-    calculateUpgradePrice: (targetPlan) => accessController.calculateUpgradePrice(targetPlan),
-    qualifiesForUpgradePrice: (targetPlan) => accessController.qualifiesForUpgradePrice(targetPlan)
-  }), [accessController]);
+  return React.useMemo(() => {
+    console.log('useAccessControl: Returning access control methods');
+    return {
+      currentPlan: accessController.currentPlan,
+      soloModules: accessController.soloModules,
+      isTrialValid: () => accessController.isTrialValid(),
+      getRemainingTrialDays: () => accessController.getRemainingTrialDays(),
+      hasModuleAccess: (moduleKey) => accessController.hasModuleAccess(moduleKey),
+      hasLevelAccess: (moduleKey, levelNumber) => accessController.hasLevelAccess(moduleKey, levelNumber),
+      hasGameAccess: (moduleKey) => accessController.hasGameAccess(moduleKey),
+      hasGameLevelAccess: (moduleKey, levelNumber) => accessController.hasGameLevelAccess(moduleKey, levelNumber),
+      hasFeatureAccess: (feature) => accessController.hasFeatureAccess(feature),
+      isModulePurchased: (moduleKey) => accessController.isModulePurchased(moduleKey),
+      canPurchaseModule: (moduleKey) => accessController.canPurchaseModule(moduleKey),
+      getModuleAccessType: (moduleKey) => accessController.getModuleAccessType(moduleKey),
+      getModulePurchaseStatus: (moduleKey) => accessController.getModulePurchaseStatus(moduleKey),
+      getPurchasedModules: () => accessController.getPurchasedModules(),
+      getAvailableForPurchase: () => accessController.getAvailableForPurchase(),
+      getAllModulesWithStatus: () => accessController.getAllModulesWithStatus(),
+      getAccessibleModules: () => accessController.getAccessibleModules(),
+      getLockedModules: () => accessController.getLockedModules(),
+      getAccessibleLevels: (moduleKey) => accessController.getAccessibleLevels(moduleKey),
+      getLockedLevels: (moduleKey) => accessController.getLockedLevels(moduleKey),
+      getUpgradeSuggestions: (moduleKey, levelNumber) => accessController.getUpgradeSuggestions(moduleKey, levelNumber),
+      shouldShowUpgradePrompt: (moduleKey, levelKey) => accessController.shouldShowUpgradePrompt(moduleKey, levelKey),
+      getAccessStatus: (moduleKey, levelNumber) => accessController.getAccessStatus(moduleKey, levelNumber),
+      getPlanBenefits: (planType) => accessController.getPlanBenefits(planType),
+      calculateUpgradePrice: (targetPlan) => accessController.calculateUpgradePrice(targetPlan),
+      qualifiesForUpgradePrice: (targetPlan) => accessController.qualifiesForUpgradePrice(targetPlan)
+    };
+  }, [accessController]);
 };
 
 // Export configurations and utilities
