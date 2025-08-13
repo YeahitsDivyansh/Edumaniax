@@ -17,19 +17,17 @@ const InstructionsScreen = ({ onStartGame }) => {
           <div className="flex"><ScenarioContent/></div>
           <div className="flex flex-row">
             <span className="flex w-[50vw] justify-start items-center lilita text-[15px] font-normal leading-[28px] text-[#fff] tracking-[-0.1px] absolute top-5 left-36 text-left overflow-hidden z-[63]">
-              You have ₹500 and 3 minutes for each scenario!
+              For each dilemma, players pick one response. They’re 
               <br />
-              Select 3 items that best support sustainability in school.
+              then shown the real-world consequence of their action.
               <br />
               Scoring:
               <br />
-              +5 = All 3 eco-wise
+              +3 → for sustainable, thoughtful action
               <br />
-              +2 = 2 sustainable
+              +1 → for partial awareness but not proactive
               <br />
-              0 = Mostly unsustainable
-              <br />
-              Time Limit: 3 minutes per scenario
+              0 → for harmful or passive decision
             </span>
             <div className="flex flex-col justify-start items-start w-[20vw] h-[11vh] text-white bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/KoaHzD7HnK.png)] bg-cover bg-no-repeat absolute top-[31vh] left-[9.5vw] z-[65] pt-[0.5vw] px-[1vw]">
               <span className="flex lilita text-[1.2vw] font-normal text-[#fff] tracking-[0.04vw] whitespace-nowrap">
