@@ -1343,7 +1343,7 @@ useEffect(() => {
 
   const pricingFaqData = [
     {
-      question: "What if I’m not satisfied with EduManiax after joining?",
+      question: "What if I'm not satisfied with EduManiax after joining?",
       answer:
         "No worries! EduManiax offers a 90% refund policy for your peace of mind. Before enrolling, you also get a full demo of the platform, personalized one-on-one interaction, and access to our 24/7 support team to help you at every step.",
       QbgColor: "bg-[#6DEE0E]", // Vivid green
@@ -1606,7 +1606,7 @@ useEffect(() => {
               </button>
               
               {/* Conditional second button */}
-              {user && hasActiveSubscription ? (
+              {user ? (
                 <button
                   onClick={() => navigate("/dashboard?section=modules")}
                   className="border-2 border-white text-white font-semibold px-4 sm:px-8 py- sm:py-3 rounded-md hover:bg-white hover:text-green-600 cursor-pointer transition duration-300 text-sm sm:text-sm flex items-center justify-center gap-2"
