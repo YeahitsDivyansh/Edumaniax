@@ -42,8 +42,7 @@ export default function BodyLanguageGame() {
   const [showGame, setShowGame] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
-  const [startTime,setStartTime] = useState(Date.now());
-
+  const [startTime, setStartTime] = useState(Date.now());
 
   const handleDrop = (candidateId, label) => {
     if (submitted) return;
@@ -106,15 +105,12 @@ export default function BodyLanguageGame() {
     }
   };
 
-
   const resetGame = () => {
     setSelections({});
     setResult({});
     setSubmitted(false);
     setStartTime(Date.now());
-
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-6">
@@ -159,8 +155,12 @@ export default function BodyLanguageGame() {
 
           <p className="text-xl text-purple-800 font-medium mb-6 leading-relaxed">
             You're shadowing a mentor during a{" "}
-            <span className="text-pink-600 font-semibold">campus internship interview</span>.
-            <br />Your mission: Identify what each candidate’s{" "}
+            <span className="text-pink-600 font-semibold">
+              campus internship interview
+            </span>
+            .
+            <br />
+            Your mission: Identify what each candidate’s{" "}
             <strong>body language</strong> is really saying! 🕵️‍♀️
           </p>
 
@@ -184,19 +184,21 @@ export default function BodyLanguageGame() {
           </motion.button>
         </motion.div>
       ) : (
-
         <>
           <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-6">
             <div className="text-center max-w-3xl mx-auto mb-3">
               <motion.h1
                 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 drop-shadow   pb-4 tracking-wide"
                 animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 1.5,
+                  ease: "easeInOut",
+                }}
               >
                 🧠 Decode the Signal!
               </motion.h1>
             </div>
-
 
             <div className="grid md:grid-cols-3 gap-4">
               {candidates.map((c, index) => (
@@ -271,8 +273,6 @@ p-5 text-center flex flex-col justify-between transition-all duration-300"
                   )}
                 </motion.div>
               ))}
-
-
             </div>
 
             {/* 🧠 Section Title */}
@@ -292,7 +292,9 @@ p-5 text-center flex flex-col justify-between transition-all duration-300"
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 1 }}
             >
-              Drag and drop the best-fitting label onto each candidate’s card. Use your inner detective! 🕵️‍♀️
+              Drag and drop the best-fitting label onto each candidate’s card
+              and also there are more than one correct option in each case. Use
+              your inner detective! 🕵️‍♀️
             </motion.p>
 
             {/* 🎈 Label Options */}
@@ -322,7 +324,6 @@ p-5 text-center flex flex-col justify-between transition-all duration-300"
               ))}
             </motion.div>
 
-
             {/* Submit & Retry Buttons */}
             <div className="text-center mt-8 space-x-4">
               <motion.button
@@ -350,5 +351,5 @@ p-5 text-center flex flex-col justify-between transition-all duration-300"
         </>
       )}
     </div>
-  )
+  );
 }

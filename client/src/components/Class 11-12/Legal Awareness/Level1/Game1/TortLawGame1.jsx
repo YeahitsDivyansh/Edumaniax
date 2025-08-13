@@ -47,10 +47,12 @@ const TortLawGame1 = () => {
     if (currentPage !== "results") return;
 
     const challengeScore = challengeScores[currentChallenge];
-    const totalQuestions = Object.keys(challenges[currentChallenge].correctAnswers).length;
+    const totalQuestions = Object.keys(
+      challenges[currentChallenge].correctAnswers
+    ).length;
 
-    const normalizedScore = (challengeScore / (totalQuestions * 10)) * 10;  // out of 10
-    const accuracy = (challengeScore / (totalQuestions * 10)) * 100;        // out of 100
+    const normalizedScore = (challengeScore / (totalQuestions * 10)) * 10; // out of 10
+    const accuracy = (challengeScore / (totalQuestions * 10)) * 100; // out of 100
     const avgResponseTimeSec = (Date.now() - startTime) / 1000 / totalQuestions;
     const studyTimeMinutes = (Date.now() - startTime) / 1000 / 60;
     const completed = challengeScore >= 50;
@@ -63,12 +65,11 @@ const TortLawGame1 = () => {
       avgResponseTimeSec: Number(avgResponseTimeSec.toFixed(2)),
       studyTimeMinutes: Number(studyTimeMinutes.toFixed(2)),
       completed,
-      beginnerLegalIntellectAvgScore: scaledScore,
+      beginnerLegalIntellectAvgScore: normalizedScore,
       beginnerLegalIntellectAccuracy: accuracy,
     });
     setStartTime(Date.now());
   }, [currentPage]);
-
 
   const cases = [
     {
@@ -429,8 +430,9 @@ const TortLawGame1 = () => {
               <div
                 className="bg-gradient-to-r from-green-300 to-teal-400 h-3 rounded-full transition-all duration-500"
                 style={{
-                  width: `${((currentQuestionIndex + 1) / cases.length) * 100
-                    }%`,
+                  width: `${
+                    ((currentQuestionIndex + 1) / cases.length) * 100
+                  }%`,
                 }}
               ></div>
             </div>
@@ -474,16 +476,17 @@ const TortLawGame1 = () => {
                     playClickSound(clickSoundRefPop);
                   }}
                   disabled={showFeedback}
-                  className={`p-4 rounded-xl text-left font-semibold transition-all duration-300 transform hover:scale-105 border-2 ${showFeedback
-                    ? answer.id === correctAnswerId
-                      ? "bg-green-400 text-white border-green-600 shadow-lg"
-                      : answer.id === selectedAnswer
+                  className={`p-4 rounded-xl text-left font-semibold transition-all duration-300 transform hover:scale-105 border-2 ${
+                    showFeedback
+                      ? answer.id === correctAnswerId
+                        ? "bg-green-400 text-white border-green-600 shadow-lg"
+                        : answer.id === selectedAnswer
                         ? "bg-red-400 text-white border-red-600 shadow-lg"
                         : "bg-gray-200 text-gray-600"
-                    : selectedAnswer === answer.id
+                      : selectedAnswer === answer.id
                       ? "ring-4 ring-indigo-300 scale-105 " + answer.color
                       : answer.color + " hover:shadow-xl"
-                    }`}
+                  }`}
                 >
                   <div className="font-semibold text-gray-800 mb-2">
                     {answer.id}.
@@ -493,8 +496,8 @@ const TortLawGame1 = () => {
                       showFeedback && answer.id === correctAnswerId
                         ? "text-white"
                         : showFeedback && answer.id === selectedAnswer
-                          ? "text-white"
-                          : "text-gray-700"
+                        ? "text-white"
+                        : "text-gray-700"
                     }
                   >
                     {answer.text}
@@ -508,10 +511,11 @@ const TortLawGame1 = () => {
                 <button
                   onClick={handleAnswer}
                   disabled={!selectedAnswer}
-                  className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform ${selectedAnswer
-                    ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 hover:scale-105"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                  className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform ${
+                    selectedAnswer
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 hover:scale-105"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
                 >
                   Submit Answer
                 </button>
@@ -626,12 +630,13 @@ const TortLawGame1 = () => {
           }}
           className="text-2xl mb-8 z-20"
         >
-          <h2>{`${score === 60
-            ? "Congratulations Champ"
-            : score === 50
+          <h2>{`${
+            score === 60
+              ? "Congratulations Champ"
+              : score === 50
               ? "Well done"
               : "You can do better"
-            }`}</h2>
+          }`}</h2>
         </motion.div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 z-20">
@@ -651,13 +656,13 @@ const TortLawGame1 = () => {
               <div className="text-3xl font-bold">
                 {challenges[currentChallenge].correctAnswers
                   ? Math.round(
-                    (challengeScores[currentChallenge] /
-                      (Object.keys(
-                        challenges[currentChallenge].correctAnswers
-                      ).length *
-                        10)) *
-                    100
-                  )
+                      (challengeScores[currentChallenge] /
+                        (Object.keys(
+                          challenges[currentChallenge].correctAnswers
+                        ).length *
+                          10)) *
+                        100
+                    )
                   : 0}
                 %
               </div>
