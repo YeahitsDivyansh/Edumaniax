@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight, Star, Trophy, RotateCcw, Sparkles } from "lucide-react";
-
+import { usePerformance } from "@/contexts/PerformanceContext";
 import clickSoundFileYay from "../../Sound/clickSoundFileYay.mp3";
 import clickSoundFileOops from "../../Sound/clickSoundFileOops.mp3";
 import confetti from "canvas-confetti";

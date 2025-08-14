@@ -41,7 +41,7 @@ const LegalConceptsResult = () => {
   }
 
   const handlePlayAgain = () => {
-    navigate("/legal-concepts-game"); // or wherever your main game starts
+    navigate("/LegalConceptsGame"); // or wherever your main game starts
   };
 
   const canvasRef = useRef(null);

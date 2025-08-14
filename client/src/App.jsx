@@ -130,6 +130,7 @@ import StressBusterLab from "./components/SEL/Level-2/StressBusterLab/StressBust
 import ConflictQuest from "./components/SEL/Level-2/ConflictQuest/ConflictQuest";
 import MindBodyMatchUp from "./components/SEL/Level-2/MindBodyMatchUp/MindBodyMatchUp";
 import InfluenceExplorer from "./components/SEL/Level-2/InfluenceExplorer/InfluenceExplorer";
+import ControlSorter from "./components/Games for 9-10/SEL/Level-2/ControlSorter/ControlSorter";
 import SmartCityGame from "./components/Games for 9-10/AI/Level1/SmartCityGame/SmartCityGame";
 import SpyTheSmartTech from "./components/Games for 9-10/AI/Level1/SpyTheSmartTech/SpyTheSmartTech";
 import WhichAIDoesWhat from "./components/Games for 9-10/AI/Level1/WhichAIDoesWhat/WhichAIDoesWhat";
@@ -375,6 +376,7 @@ function AppContent() {
     "/conflict-quest",
     "/mind-body-match-up",
     "/influence-explorer",
+    "/control-sorter",
     "/help-hub",
     "/mission-goal-tracker",
     "/my-circle-mission",
@@ -784,6 +786,8 @@ function AppContent() {
           <Route path="/conflict-quest" element={<ConflictQuest />} />
           <Route path="/mind-body-match-up" element={<MindBodyMatchUp />} />
           <Route path="/influence-explorer" element={<InfluenceExplorer />} />
+          {/* Control Sorter (Class 9-10, SEL Level 2) */}
+          <Route path="/control-sorter" element={<ControlSorter />} />
           {/* Level 3 */}
           <Route path="/help-hub" element={<HelpHub />} />
           <Route
