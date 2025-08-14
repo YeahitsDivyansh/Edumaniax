@@ -138,13 +138,13 @@ const modulesfor6to8 = [
         duration: "45 min",
         path: "/integrity-quest",
       },
-      {
+      /* {
         title: "Boss-Level Task: “My Change Pitch”",
         description:
           "Objective: Present your mini project idea to solve a real-world issue.",
         duration: "55 min",
         path: "/change-pitch",
-      },
+      }, */
     ],
   },
 ];
@@ -169,6 +169,13 @@ const modulesfor9to10 = [
         duration: "50 min",
         path: "/vision-blueprint-builder",
       },
+      /*{
+        title: "Boss-Level Task: My Leadership Poster",
+        description:
+          "Objective: Design a poster that showcases your leadership identity and vision in a bold, visual format.",
+        duration: "55 min",
+        path: "/leadership-poster",
+      }, */
     ],
   },
   {
