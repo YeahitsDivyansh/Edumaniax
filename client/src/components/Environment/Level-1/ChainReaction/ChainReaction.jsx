@@ -168,10 +168,10 @@ const DraggableCard = React.memo(({ id, content }) => {
         opacity: isDragging ? 0.5 : 1,
     };
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="flex h-[8.5vh] w-[24vw] items-center self-stretch shrink-0 rounded-[0.83vw] relative cursor-grab transition-opacity">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="flex h-15 w-28 md:h-[8.5vh] md:w-[24vw] ml-1.5 md:ml-0 items-center self-stretch shrink-0 rounded-[0.83vw] relative cursor-grab transition-opacity">
             <div className="shrink-0 bg-[#131f24] rounded-[0.83vw] border-solid border-[0.1vh] border-[#37464f] absolute inset-[-0.05vh] shadow-[0_0.22vh_0_0_#37464f]" />
             <div className="flex p-[1.1vw] items-center justify-center grow relative z-[5]">
-                <span className="font-['Inter'] text-[2.2vh] font-medium text-[#f1f7fb] text-center">{content || id}</span>
+                <span className="font-['Inter'] text-sm sm:text-base md:text-2xl lg:text-xl font-medium text-[#f1f7fb] text-center">{content || id}</span>
             </div>
         </div>
     );
@@ -193,19 +193,19 @@ const DroppableSequenceSlot = React.memo(({ id, content, text }) => {
     };
 
     return (
-        <div ref={combinedRef} style={style} {...(content ? attributes : {})} {...(content ? listeners : {})} className="flex h-[8.5vh] w-[24vw]items-center self-stretch shrink-0 rounded-[0.83vw] relative">
+        <div ref={combinedRef} style={style} {...(content ? attributes : {})} {...(content ? listeners : {})} className="flex h-15 w-28 md:h-[8.5vh] md:w-[24vw] ml-1.5 md:ml-0 items-center self-stretch shrink-0 rounded-[0.83vw] relative">
             {content ? (
                 <>
                     <div className="shrink-0 bg-[#131f24] rounded-[0.83vw] border-solid border-[0.1vh] border-[#37464f] absolute inset-[-0.05vh] shadow-[0_0.22vh_0_0_#37464f] cursor-grab" />
                     <div className="flex p-[1.1vw] items-center justify-center grow relative z-[5]">
-                        <span className="font-['Inter'] text-[2.2vh] font-medium text-[#f1f7fb] text-center">{content}</span>
+                        <span className="font-['Inter'] text-sm sm:text-base md:text-2xl lg:text-xl font-medium text-[#f1f7fb] text-center">{content}</span>
                     </div>
                 </>
             ) : (
                 <>
                     <div className={`shrink-0 bg-[#131f24] rounded-[0.83vw] border-dashed border-[0.2vh] ${isOver ? 'border-yellow-400' : 'border-[#37464f]'} absolute inset-[-0.05vh] transition-colors`} />
                     <div className="flex justify-center items-center w-full h-full relative">
-                        <span className="font-['Inter'] text-[2.2vh] font-medium text-[#f1f7fb]">{text}</span>
+                        <span className="font-['Inter'] text-sm sm:text-base md:text-2xl lg:text-xl font-medium text-[#f1f7fb]">{text}</span>
                     </div>
                 </>
             )}
@@ -215,7 +215,7 @@ const DroppableSequenceSlot = React.memo(({ id, content, text }) => {
 
 const EmptyPlaceholderCardLeft = React.memo(({ id }) => {
     const { setNodeRef, isOver } = useDroppable({ id });
-    return <div ref={setNodeRef} className={`flex h-[8.5vh] w-[24vw] bg-[#131f24] rounded-[0.83vw] border-dashed border-[0.2vh] ${isOver ? 'border-yellow-400' : 'border-[#37464f]'} relative transition-colors`} />;
+    return <div ref={setNodeRef} className={`flex h-15 w-28 md:h-[8.5vh] md:w-[24vw] ml-1.5 md:ml-0 bg-[#131f24] rounded-[0.83vw] border-dashed border-[0.2vh] ${isOver ? 'border-yellow-400' : 'border-[#37464f]'} relative transition-colors`} />;
 });
 
 // =============================================================================
@@ -366,11 +366,11 @@ const ChainReaction = () => {
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <div className="flex flex-col items-center gap-[6vh]">
                     <div className="flex w-full max-w-[70.7vw] justify-between items-center gap-[2vw]">
-                        <div className="flex w-[26vw] h-[38vh] flex-col gap-[2.5vh] py-[4vh] px-[1vw] justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
+                        <div className="flex w-35 md:w-[26vw] md:h-[38vh] flex-col gap-[2.5vh] py-[4vh] px-[1vw] justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
                              {availableCards.map((item) => <DraggableCard key={item} id={item} content={item} />)}
                              {Array.from({ length: 3 - availableCards.length }).map((_, index) => <EmptyPlaceholderCardLeft key={`empty-${index}`} id={`available-cards-placeholder-${index}`} />)}
                         </div>
-                        <div className="flex w-[26vw] h-[38vh] flex-col gap-[2.5vh] py-[4vh] px-[1vw]  justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
+                        <div className="flex w-35 md:w-[26vw] md:h-[38vh] flex-col gap-[2.5vh] py-[4vh] px-[1vw]  justify-center items-center bg-[rgba(32,47,54,0.3)] rounded-[0.83vw] border border-[#37464f]">
                              {sequenceSlotsContent.map((item, index) => (
                                  <DroppableSequenceSlot key={item.slotId} id={item.slotId} content={item.id} text={['1st', '2nd', '3rd'][index]} />
                              ))}
@@ -382,7 +382,7 @@ const ChainReaction = () => {
                          <div className="relative flex items-center ml-[4vw] md:ml-[2vw] lg:ml-0 ">
                             <div className="absolute left-[-1.1vw] top-1/2 -translate-y-1/2 w-[1.25vw] h-[2.2vh] bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-09/cZcfryFaXc.png)] bg-cover bg-no-repeat" />
                             <div className="flex h-[7vh]  justify-center items-center bg-[#131f24] rounded-[0.83vw] border-solid border-[0.1vh] border-[#37464f] px-[2.2vw]">
-                                 <span className="font-['Inter'] text-[2.6vh] font-medium text-[#f1f7fb] text-center">
+                                 <span className="font-['Inter'] text-sm sm:text-base md:text-2xl lg:text-xl font-medium text-[#f1f7fb] text-center">
                                      {currentPuzzle.cause}
                                  </span>
                             </div>
