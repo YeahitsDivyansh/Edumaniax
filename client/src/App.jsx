@@ -206,8 +206,10 @@ import LeaderTypeMatch from "./components/Leadership/Level-1/LeaderType/LeaderTy
 import VisionBuilderGame from "./components/Leadership/Level-1/VisionBuilder/VisionBuilder";
 import CommunicationLab from "./components/Leadership/Level-2/CommunicationLab/CommunicationLab";
 import EmpathyRadarGame from "./components/Leadership/Level-2/EmpathyRadarGame/EmpathyRadarGame";
+import KindWordsChallenge from "./components/Leadership/Level-2/KindWordsChallenge/KindWordsChallenge";
 import DecisionRoom from "./components/Leadership/Level-3/DecisionRoom/DecisionRoom";
 import TeamArchitect from "./components/Leadership/Level-3/TeamArchitect/TeamArchitect";
+import TeamworkStory from "./components/Leadership/Level-3/TeamworkStory/TeamworkStory";
 import InnovationSprint from "./components/Leadership/Level-4/InnovationSprint/InnovationSprint";
 import Leadership from "./pages/Leadership";
 import IntegrityQuest from "./components/Leadership/Level-4/IntegrityQuest/IntegrityQuest";
@@ -222,6 +224,7 @@ import EthicalLogicMaze from "./components/Games for 9-10/Leadership/Level-3/Eth
 import TeamArchitectMission from "./components/Games for 9-10/Leadership/Level-3/TeamArchitectMission/TeamArchitectMission";
 import InnovationLaunchpad from "./components/Games for 9-10/Leadership/Level-4/InnovationLaunchpad/InnovationLaunchpad";
 import BiasDetective from "./components/Games for 9-10/Leadership/Level-4/BiasDetective/BiasDetective";
+import LeadershipPoster from "./components/Leadership/Level-1/LeadershipPoster/LeadershipPoster";
 import BiasDetectiveGame from "./components/Class 11-12/Leadership/BiasDetectiveGame/BiasDetectiveGame";
 import InnovationLaunchpadGame from "./components/Class 11-12/Leadership/InnovationLaunchpad/InnovationLaunchpad";
 import TeamLeadershipGame from "./components/Class 11-12/Leadership/TeamLeadershipGame/TeamLeadershipGame";
@@ -384,8 +387,10 @@ function AppContent() {
     "/vision-builder",
     "/communication-lab",
     "/empathy-radar",
+    "/kind-words-challenge",
     "/decision-room",
     "/team-architect",
+    "/teamwork-story",
     "/innovation-sprint",
     "/integrity-quest",
     "/innovation-explorer",
@@ -442,6 +447,7 @@ function AppContent() {
     "/wealth-quest-game",
     "/leadership-identity-mixer",
     "/vision-blueprint-builder",
+    "/leadership-poster",
     "/conflict-simulator",
     "/eq-tracker",
     "/ethical-logical-maze",
@@ -827,10 +833,12 @@ function AppContent() {
           {/* level 2*/}
           <Route path="/communication-lab" element={<CommunicationLab />} />
           <Route path="/empathy-radar" element={<EmpathyRadarGame />} />
+          <Route path="/kind-words-challenge" element={<KindWordsChallenge />} />
 
           {/* level 3*/}
           <Route path="/decision-room" element={<DecisionRoom />} />
           <Route path="/team-architect" element={<TeamArchitect />} />
+          <Route path="/teamwork-story" element={<TeamworkStory />} />
 
           {/* level 4*/}
           <Route path="/innovation-sprint" element={<InnovationSprint />} />
@@ -1001,6 +1009,7 @@ function AppContent() {
             path="/vision-blueprint-builder"
             element={<VisionBlueprintBuilder />}
           />
+          <Route path="/leadership-poster" element={<LeadershipPoster />} />
           {/* Level 2 */}
           <Route path="/conflict-simulator" element={<ConflictSimulator />} />
           <Route path="/eq-tracker" element={<EQTracker />} />
