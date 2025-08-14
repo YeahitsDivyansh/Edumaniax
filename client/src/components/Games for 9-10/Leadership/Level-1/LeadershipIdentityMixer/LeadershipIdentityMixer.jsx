@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import { useLeadership } from "@/contexts/LeadershipContext";

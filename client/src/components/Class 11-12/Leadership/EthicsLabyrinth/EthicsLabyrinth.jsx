@@ -56,6 +56,7 @@ const EthicsLabyrinth = () => {
   const [timeLeft, setTimeLeft] = useState(20);
   const [showEnd, setShowEnd] = useState(false);
   const [started, setStarted] = useState(false);
+  const [reported, setReported] = useState(false);
   //for performance
   const { updatePerformance } = usePerformance();
   const [startTime, setStartTime] = useState(Date.now());
@@ -70,7 +71,7 @@ const EthicsLabyrinth = () => {
   }, [timeLeft, chosen, started]);
 
   useEffect(() => {
-    if (showEnd && !scoreSent) {
+    if (showEnd && !reported) {
       const totalTimeMs = Date.now() - startTime;
 
       updatePerformance({
@@ -87,6 +88,7 @@ const EthicsLabyrinth = () => {
       if (score === questions.length) {
         completeLeadershipChallenge(1, 1);
       }
+      setReported(true);
     }
   }, [showEnd, score]);
 
@@ -115,6 +117,7 @@ const EthicsLabyrinth = () => {
     setTimeLeft(20);
     setShowEnd(false);
     setStarted(false);
+    setReported(false);
     setStartTime(Date.now());
 
   };
