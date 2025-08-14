@@ -63,29 +63,12 @@ export default function TeamLeadershipGame() {
   const [submitted, setSubmitted] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [draggedTeammate, setDraggedTeammate] = useState(null);
+  const [error, setError] = useState("");
   //for performance
   const { updatePerformance } = usePerformance();
   const [startTime, setStartTime] = useState(Date.now());
 
-  useEffect(() => {
-    if (submitted && percent >= 75) {
-      const totalTimeMs = Date.now() - startTime;
-      const scaledScore = Math.round((totalScore / maxScore) * 10);
-
-      updatePerformance({
-        moduleName: "Leadership",
-        topicName: "theStrategist",
-        score: scaledScore, // out of 10
-        accuracy: percent, // already out of 100
-        avgResponseTimeSec: parseFloat((totalTimeMs / (tasks.length * 1000)).toFixed(2)),
-        studyTimeMinutes: parseFloat((totalTimeMs / 60000).toFixed(2)),
-        completed: true,
-      });
-      setStartTime(Date.now());
-      completeLeadershipChallenge(1, 2);
-      setScoreSent(true);
-    }
-  }, [submitted, percent]);
+  
 
   const getResult = (task) => {
     const teammateId = assignments[task.id];
@@ -131,10 +114,14 @@ export default function TeamLeadershipGame() {
     }
 
     setAssignments({ ...assignments, [taskId]: draggedTeammate.id });
+    setError("");
   };
 
   const handleSubmit = () => {
-    if (Object.keys(assignments).length < tasks.length) return;
+    if (Object.keys(assignments).length < tasks.length) {
+      setError("Please assign all tasks before submitting.");
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "smooth" }); // scroll to top
     setSubmitted(true);
   };
@@ -190,7 +177,10 @@ export default function TeamLeadershipGame() {
             your results and earn your badge!
           </p>
           <button
-            onClick={() => setShowIntro(false)}
+            onClick={() => {
+              setShowIntro(false);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full shadow-md"
           >
             🚀 Start Game
@@ -319,6 +309,9 @@ export default function TeamLeadershipGame() {
                 >
                   ✅ Submit Delegation
                 </button>
+                {error && (
+                  <p className="mt-3 text-red-600 font-semibold">{error}</p>
+                )}
               </div>
             </>
           )}

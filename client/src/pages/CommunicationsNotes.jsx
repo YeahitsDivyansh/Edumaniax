@@ -45,7 +45,7 @@ const notesSidebar9to10 = [
   { id: "m-1", title: "Module 1: Introduction" },
   { id: "m-2", title: "Module 2: Active Listening " },
   { id: "m-3", title: "Module 3: Speaking" },
-  { id: "m-4", title: "Module 4: Tone and Body Language" },
+  { id: "m-4", title: "Module 4: Tone & Body Language" },
   { id: "m-5", title: "Module 5: Conflict Resolution " },
   { id: "m-6", title: "Module 6: Public Speaking " },
 ];

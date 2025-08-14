@@ -50,11 +50,11 @@ const GameNav = () => {
         to="/environmental/games"
         className="transition transform hover:scale-110 opacity-95 hover:opacity-100"
       >
-        <BackButton />
+        <BackButton className="w-16 md:w-40"/>
       </Link>
 
       {/* Title */}
-      <span className="lilita [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-[4vh] md:text-[5vh] text-[#ffcc00] tracking-[0.05vw]">
+      <span className="lilita ml-[7vw] md:ml-[11vw] lg:ml-[7vw] [text-shadow:0_6px_0_#000] [text-stroke:1px_black] text-base sm:text-base md:text-3xl lg:text-2xl text-[#ffcc00] tracking-[0.05vw]">
         Cause Scanner
       </span>
 
@@ -66,7 +66,7 @@ const GameNav = () => {
             isPlaying ? "opacity-100" : "opacity-90"
           }`}
         >
-          <Vol isPlaying={isPlaying} />
+          <Vol isPlaying={isPlaying} className="w-16 md:w-40"/>
         </button>
       </div>
     </div>

@@ -25,7 +25,7 @@ import ScrollToTopButton from "@/components/ScrollToTopButton";
 // Module mapping for access control - centralized to avoid duplication
 const MODULE_MAPPING = {
   "Fundamentals of Finance": "finance",
-  "Computer Science": "computers",
+  "Computers and Artificial Intelligence-Computer Science": "computers",
   "Fundamentals of Law": "law",
   "Communication Mastery": "communication",
   "Entrepreneurship Bootcamp": "entrepreneurship",
@@ -377,7 +377,7 @@ const CourseCard = ({
                   }
                   // Show "Play Now" for purchased modules (SOLO users who bought this module)
                   if (isPurchased) {
-                    return "Play >";
+                    return "Play";
                   }
                   // Show "Play Now (X days left)" for STARTER users with trial access
                   if (
@@ -388,7 +388,7 @@ const CourseCard = ({
                     return `Play Now`;
                   }
                   // Default text for PRO/INSTITUTIONAL with access
-                  return "Play Now >";
+                  return "Play Now ";
                 })()}
               </motion.button>
             </Link>
@@ -407,7 +407,7 @@ const CourseCard = ({
                 />
                 {cardCurrentPlan === "STARTER"
                   ? "Upgrade for Full Access"
-                  : "Upgrade >"}
+                  : "Upgrade"}
               </motion.button>
             </Link>
           )}
