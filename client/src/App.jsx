@@ -11,7 +11,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import PickABank from "./components/Finance Management/Activities/Level 1/Pick A Bank/PickABank";
-import OverspendTrap from "./components/Finance Management/Activities/Level 1/OverspendTrap.jsx";
+import OverspendTrap from "./components/Finance Management/Activities/Level 1/OverspendTrap/OverspendTrap.jsx";
 import BudgetActivity from "./components/Finance Management/Activities/Level 1/BudgetActivity/BudgetActivity.jsx";
 import BudgetBuilder from "./components/Finance Management/Activities/Level 1/Budeget Builder/BudgetBuilder.jsx";
 import CreditCardSimulator from "./components/Finance Management/Activities/Level 2/CreditCardSimulator.jsx";
@@ -547,15 +547,15 @@ function AppContent() {
     "/LegalQuizQuestLevel3",
   ];
 
-  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname) && 
-                                   !location.pathname.startsWith('/sales/dashboard');
+  const shouldShowNavbarAndFooter =
+    !gameRoutes.includes(location.pathname) &&
+    !location.pathname.startsWith("/sales/dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
       {shouldShowNavbarAndFooter && <Navbar />}
       <main className="flex-grow ">
         <Routes>
-         
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/sales" element={<SalesLogin />} />
@@ -566,7 +566,7 @@ function AppContent() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/finance/games" element={<Finance />} />
-          
+
           <Route path="/finance/notes/section-1" element={<Section1 />} />
           <Route path="/finance/notes/section-2" element={<Section2 />} />
           <Route path="/finance/notes/section-3" element={<Section3 />} />
@@ -657,7 +657,7 @@ function AppContent() {
           {/*End of Games of digital marketing */}
 
           {/* Notes Page of digital marketing */}
-          
+
           <Route
             path="/digitalmarketing/notes/section-1"
             element={<Section1dm />}
@@ -712,7 +712,7 @@ function AppContent() {
           {/* Legal Awareness Games Finish */}
 
           {/* Legal Awareness Notes Page */}
-          
+
           <Route path="/law/notes/module-1" element={<Module1 />} />
           <Route path="/law/notes/module-2" element={<Module2 />} />
           <Route path="/law/notes/module-3" element={<Module3 />} />
@@ -753,7 +753,7 @@ function AppContent() {
           <Route path="/cool-the-conflict" element={<CoolTheConflict />} />
 
           {/*Communication Notes Page */}
-          
+
           <Route
             path="/communications/notes/listen-to-understand"
             element={<Mod1 />}
@@ -797,7 +797,7 @@ function AppContent() {
           <Route path="/my-circle-mission" element={<MyCircleMission />} />
 
           {/* Social Learning Notes */}
-          
+
           <Route path="/social-learning/module-1" element={<KnowingMyself />} />
           <Route
             path="/social-learning/module-2"
@@ -817,7 +817,7 @@ function AppContent() {
           />
 
           {/* Leadership Notes*/}
-          
+
           {/* Leadership Games 6-8*/}
           <Route path="/leadership/games" element={<Leadership />} />
           {/* level 1*/}
@@ -839,7 +839,7 @@ function AppContent() {
           {/* Finish  Leadership Games 6-8*/}
 
           {/* Entrepreneurship Notes*/}
-          
+
           {/* Entrepreneurship Games for 6th-8th */}
           <Route
             path="/entrepreneurship/games"
@@ -859,7 +859,7 @@ function AppContent() {
           <Route path="/mvp-test" element={<MVPTest />} />
 
           {/* Environmental Notes*/}
-          
+
           {/* Environmental Games for 6th-8th */}
           <Route path="/environmental/games" element={<Environment />} />
           {/* Level 1 */}
@@ -876,7 +876,7 @@ function AppContent() {
           <Route path="/dilemma-cards" element={<DilemmaCards />} />
 
           {/* Computer Notes*/}
-          
+
           <Route path="/computer/notes/module-1" element={<WhatIsAi />} />
           <Route path="/computer/notes/module-2" element={<WorkOfAi />} />
           <Route
@@ -1374,28 +1374,31 @@ function App() {
             <Route path="*" element={<AppContent />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/" element={<Home />} />
-             <Route path="/finance/notes" element={<FinanceNotes />} />
-             <Route path="/law/notes" element={<LegalAwarenessNotes />} />
-             <Route
-            path="/entrepreneurship/notes"
-            element={<EntrepreneurshipNotes />}
-          />
-          <Route
-            path="/communications/notes"
-            element={<CommunicationsNotes />}
-          />
-          <Route
-            path="/social-learning/notes"
-            element={<SocialLearningNotes />}
-          />
-          <Route path="/computer/notes" element={<ComputerNotes />} />
-          <Route path="/leadership/notes" element={<LeadershipNotes />} />
-          <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
-          <Route
-            path="/digital-marketing/notes"
-            element={<DigitalMarketingNotes />}
-          />
+            <Route path="/" element={<Home />} />
+            <Route path="/finance/notes" element={<FinanceNotes />} />
+            <Route path="/law/notes" element={<LegalAwarenessNotes />} />
+            <Route
+              path="/entrepreneurship/notes"
+              element={<EntrepreneurshipNotes />}
+            />
+            <Route
+              path="/communications/notes"
+              element={<CommunicationsNotes />}
+            />
+            <Route
+              path="/social-learning/notes"
+              element={<SocialLearningNotes />}
+            />
+            <Route path="/computer/notes" element={<ComputerNotes />} />
+            <Route path="/leadership/notes" element={<LeadershipNotes />} />
+            <Route
+              path="/environmental/notes"
+              element={<EnvironmentalNotes />}
+            />
+            <Route
+              path="/digital-marketing/notes"
+              element={<DigitalMarketingNotes />}
+            />
           </Routes>
         </Router>
       )}
