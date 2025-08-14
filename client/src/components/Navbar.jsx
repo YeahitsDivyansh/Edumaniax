@@ -307,7 +307,7 @@ const cancelLogout = () => {
                 </Link>
                 <button
                   onClick={handleLogoutClick}
-                  className="w-full border border-green-600 text-green-600 hover:bg-green-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                  className="w-full border border-red-600 text-red-600 hover:bg-red-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
                   Logout
                 </button>

@@ -11,7 +11,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import PickABank from "./components/Finance Management/Activities/Level 1/Pick A Bank/PickABank";
-import OverspendTrap from "./components/Finance Management/Activities/Level 1/OverspendTrap.jsx";
+import OverspendTrap from "./components/Finance Management/Activities/Level 1/OverspendTrap/OverspendTrap.jsx";
 import BudgetActivity from "./components/Finance Management/Activities/Level 1/BudgetActivity/BudgetActivity.jsx";
 import BudgetBuilder from "./components/Finance Management/Activities/Level 1/Budeget Builder/BudgetBuilder.jsx";
 import CreditCardSimulator from "./components/Finance Management/Activities/Level 2/CreditCardSimulator.jsx";
@@ -130,6 +130,7 @@ import StressBusterLab from "./components/SEL/Level-2/StressBusterLab/StressBust
 import ConflictQuest from "./components/SEL/Level-2/ConflictQuest/ConflictQuest";
 import MindBodyMatchUp from "./components/SEL/Level-2/MindBodyMatchUp/MindBodyMatchUp";
 import InfluenceExplorer from "./components/SEL/Level-2/InfluenceExplorer/InfluenceExplorer";
+import ControlSorter from "./components/Games for 9-10/SEL/Level-2/ControlSorter/ControlSorter";
 import SmartCityGame from "./components/Games for 9-10/AI/Level1/SmartCityGame/SmartCityGame";
 import SpyTheSmartTech from "./components/Games for 9-10/AI/Level1/SpyTheSmartTech/SpyTheSmartTech";
 import WhichAIDoesWhat from "./components/Games for 9-10/AI/Level1/WhichAIDoesWhat/WhichAIDoesWhat";
@@ -205,8 +206,10 @@ import LeaderTypeMatch from "./components/Leadership/Level-1/LeaderType/LeaderTy
 import VisionBuilderGame from "./components/Leadership/Level-1/VisionBuilder/VisionBuilder";
 import CommunicationLab from "./components/Leadership/Level-2/CommunicationLab/CommunicationLab";
 import EmpathyRadarGame from "./components/Leadership/Level-2/EmpathyRadarGame/EmpathyRadarGame";
+import KindWordsChallenge from "./components/Leadership/Level-2/KindWordsChallenge/KindWordsChallenge";
 import DecisionRoom from "./components/Leadership/Level-3/DecisionRoom/DecisionRoom";
 import TeamArchitect from "./components/Leadership/Level-3/TeamArchitect/TeamArchitect";
+import TeamworkStory from "./components/Leadership/Level-3/TeamworkStory/TeamworkStory";
 import InnovationSprint from "./components/Leadership/Level-4/InnovationSprint/InnovationSprint";
 import Leadership from "./pages/Leadership";
 import IntegrityQuest from "./components/Leadership/Level-4/IntegrityQuest/IntegrityQuest";
@@ -221,6 +224,7 @@ import EthicalLogicMaze from "./components/Games for 9-10/Leadership/Level-3/Eth
 import TeamArchitectMission from "./components/Games for 9-10/Leadership/Level-3/TeamArchitectMission/TeamArchitectMission";
 import InnovationLaunchpad from "./components/Games for 9-10/Leadership/Level-4/InnovationLaunchpad/InnovationLaunchpad";
 import BiasDetective from "./components/Games for 9-10/Leadership/Level-4/BiasDetective/BiasDetective";
+import LeadershipPoster from "./components/Leadership/Level-1/LeadershipPoster/LeadershipPoster";
 import BiasDetectiveGame from "./components/Class 11-12/Leadership/BiasDetectiveGame/BiasDetectiveGame";
 import InnovationLaunchpadGame from "./components/Class 11-12/Leadership/InnovationLaunchpad/InnovationLaunchpad";
 import TeamLeadershipGame from "./components/Class 11-12/Leadership/TeamLeadershipGame/TeamLeadershipGame";
@@ -375,6 +379,7 @@ function AppContent() {
     "/conflict-quest",
     "/mind-body-match-up",
     "/influence-explorer",
+    "/control-sorter",
     "/help-hub",
     "/mission-goal-tracker",
     "/my-circle-mission",
@@ -382,8 +387,10 @@ function AppContent() {
     "/vision-builder",
     "/communication-lab",
     "/empathy-radar",
+    "/kind-words-challenge",
     "/decision-room",
     "/team-architect",
+    "/teamwork-story",
     "/innovation-sprint",
     "/integrity-quest",
     "/innovation-explorer",
@@ -440,6 +447,7 @@ function AppContent() {
     "/wealth-quest-game",
     "/leadership-identity-mixer",
     "/vision-blueprint-builder",
+    "/leadership-poster",
     "/conflict-simulator",
     "/eq-tracker",
     "/ethical-logical-maze",
@@ -545,15 +553,15 @@ function AppContent() {
     "/LegalQuizQuestLevel3",
   ];
 
-  const shouldShowNavbarAndFooter = !gameRoutes.includes(location.pathname) && 
-                                   !location.pathname.startsWith('/sales/dashboard');
+  const shouldShowNavbarAndFooter =
+    !gameRoutes.includes(location.pathname) &&
+    !location.pathname.startsWith("/sales/dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
       {shouldShowNavbarAndFooter && <Navbar />}
       <main className="flex-grow ">
         <Routes>
-         
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/sales" element={<SalesLogin />} />
@@ -564,7 +572,7 @@ function AppContent() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/finance/games" element={<Finance />} />
-          
+
           <Route path="/finance/notes/section-1" element={<Section1 />} />
           <Route path="/finance/notes/section-2" element={<Section2 />} />
           <Route path="/finance/notes/section-3" element={<Section3 />} />
@@ -655,7 +663,7 @@ function AppContent() {
           {/*End of Games of digital marketing */}
 
           {/* Notes Page of digital marketing */}
-          
+
           <Route
             path="/digitalmarketing/notes/section-1"
             element={<Section1dm />}
@@ -710,7 +718,7 @@ function AppContent() {
           {/* Legal Awareness Games Finish */}
 
           {/* Legal Awareness Notes Page */}
-          
+
           <Route path="/law/notes/module-1" element={<Module1 />} />
           <Route path="/law/notes/module-2" element={<Module2 />} />
           <Route path="/law/notes/module-3" element={<Module3 />} />
@@ -751,7 +759,7 @@ function AppContent() {
           <Route path="/cool-the-conflict" element={<CoolTheConflict />} />
 
           {/*Communication Notes Page */}
-          
+
           <Route
             path="/communications/notes/listen-to-understand"
             element={<Mod1 />}
@@ -784,6 +792,8 @@ function AppContent() {
           <Route path="/conflict-quest" element={<ConflictQuest />} />
           <Route path="/mind-body-match-up" element={<MindBodyMatchUp />} />
           <Route path="/influence-explorer" element={<InfluenceExplorer />} />
+          {/* Control Sorter (Class 9-10, SEL Level 2) */}
+          <Route path="/control-sorter" element={<ControlSorter />} />
           {/* Level 3 */}
           <Route path="/help-hub" element={<HelpHub />} />
           <Route
@@ -793,7 +803,7 @@ function AppContent() {
           <Route path="/my-circle-mission" element={<MyCircleMission />} />
 
           {/* Social Learning Notes */}
-          
+
           <Route path="/social-learning/module-1" element={<KnowingMyself />} />
           <Route
             path="/social-learning/module-2"
@@ -813,7 +823,7 @@ function AppContent() {
           />
 
           {/* Leadership Notes*/}
-          
+
           {/* Leadership Games 6-8*/}
           <Route path="/leadership/games" element={<Leadership />} />
           {/* level 1*/}
@@ -823,10 +833,12 @@ function AppContent() {
           {/* level 2*/}
           <Route path="/communication-lab" element={<CommunicationLab />} />
           <Route path="/empathy-radar" element={<EmpathyRadarGame />} />
+          <Route path="/kind-words-challenge" element={<KindWordsChallenge />} />
 
           {/* level 3*/}
           <Route path="/decision-room" element={<DecisionRoom />} />
           <Route path="/team-architect" element={<TeamArchitect />} />
+          <Route path="/teamwork-story" element={<TeamworkStory />} />
 
           {/* level 4*/}
           <Route path="/innovation-sprint" element={<InnovationSprint />} />
@@ -835,7 +847,7 @@ function AppContent() {
           {/* Finish  Leadership Games 6-8*/}
 
           {/* Entrepreneurship Notes*/}
-          
+
           {/* Entrepreneurship Games for 6th-8th */}
           <Route
             path="/entrepreneurship/games"
@@ -855,7 +867,7 @@ function AppContent() {
           <Route path="/mvp-test" element={<MVPTest />} />
 
           {/* Environmental Notes*/}
-          
+
           {/* Environmental Games for 6th-8th */}
           <Route path="/environmental/games" element={<Environment />} />
           {/* Level 1 */}
@@ -872,7 +884,7 @@ function AppContent() {
           <Route path="/dilemma-cards" element={<DilemmaCards />} />
 
           {/* Computer Notes*/}
-          
+
           <Route path="/computer/notes/module-1" element={<WhatIsAi />} />
           <Route path="/computer/notes/module-2" element={<WorkOfAi />} />
           <Route
@@ -997,6 +1009,7 @@ function AppContent() {
             path="/vision-blueprint-builder"
             element={<VisionBlueprintBuilder />}
           />
+          <Route path="/leadership-poster" element={<LeadershipPoster />} />
           {/* Level 2 */}
           <Route path="/conflict-simulator" element={<ConflictSimulator />} />
           <Route path="/eq-tracker" element={<EQTracker />} />
@@ -1370,28 +1383,31 @@ function App() {
             <Route path="*" element={<AppContent />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/" element={<Home />} />
-             <Route path="/finance/notes" element={<FinanceNotes />} />
-             <Route path="/law/notes" element={<LegalAwarenessNotes />} />
-             <Route
-            path="/entrepreneurship/notes"
-            element={<EntrepreneurshipNotes />}
-          />
-          <Route
-            path="/communications/notes"
-            element={<CommunicationsNotes />}
-          />
-          <Route
-            path="/social-learning/notes"
-            element={<SocialLearningNotes />}
-          />
-          <Route path="/computer/notes" element={<ComputerNotes />} />
-          <Route path="/leadership/notes" element={<LeadershipNotes />} />
-          <Route path="/environmental/notes" element={<EnvironmentalNotes />} />
-          <Route
-            path="/digital-marketing/notes"
-            element={<DigitalMarketingNotes />}
-          />
+            <Route path="/" element={<Home />} />
+            <Route path="/finance/notes" element={<FinanceNotes />} />
+            <Route path="/law/notes" element={<LegalAwarenessNotes />} />
+            <Route
+              path="/entrepreneurship/notes"
+              element={<EntrepreneurshipNotes />}
+            />
+            <Route
+              path="/communications/notes"
+              element={<CommunicationsNotes />}
+            />
+            <Route
+              path="/social-learning/notes"
+              element={<SocialLearningNotes />}
+            />
+            <Route path="/computer/notes" element={<ComputerNotes />} />
+            <Route path="/leadership/notes" element={<LeadershipNotes />} />
+            <Route
+              path="/environmental/notes"
+              element={<EnvironmentalNotes />}
+            />
+            <Route
+              path="/digital-marketing/notes"
+              element={<DigitalMarketingNotes />}
+            />
           </Routes>
         </Router>
       )}
