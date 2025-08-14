@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import useGameProgress from "../hooks/useGameProgress";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { Link } from "react-router-dom";
 import { useAccessControl, AccessController } from "../utils/accessControl";
@@ -211,6 +212,8 @@ const CourseCard = ({
   userSubscriptions,
   userSelectedModule,
   isLoading,
+  progressMap,
+  percentFromRecord,
 }) => {
   const {
     hasGameAccess,
@@ -259,6 +262,30 @@ const CourseCard = ({
       default:
         return "/beginner.png";
     }
+  };
+
+  // Helper: resolve progress percentage for this course using multiple key candidates
+  const getCourseProgress = () => {
+    if (!progressMap) return 0;
+    const normalize = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const keyCandidates = [
+      moduleKey,
+      normalize(moduleKey),
+      course.title,
+      normalize(course.title),
+      course.id && String(course.id),
+    ];
+
+    let rec = null;
+    for (const k of keyCandidates) {
+      if (!k) continue;
+      if (progressMap[k]) {
+        rec = progressMap[k];
+        break;
+      }
+    }
+
+    return percentFromRecord(rec) || course.progress || 0;
   };
 
   return (
@@ -360,7 +387,21 @@ const CourseCard = ({
           </div>
         </div>
 
-        {/* Buttons Row - Improved Spacing */}
+        {/* Progress bar (only for purchased modules) - placed above buttons */}
+        {isPurchased && (
+          <div className="w-full mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-gray-600">Progress</span>
+              <span className="text-xs font-semibold text-gray-800">{`${getCourseProgress()}%`}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 bg-green-500`}
+                style={{ width: `${getCourseProgress()}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
         <div className="flex gap-2 mt-auto">
           {hasGamesAccess ? (
             <Link to={course.gamesLink} className="flex-1">
@@ -509,6 +550,7 @@ const Courses = () => {
     return () => clearTimeout(timer);
   }, []);
   const { user } = useAuth();
+  const { progressMap, percentFromRecord } = useGameProgress(user?.id);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -924,6 +966,8 @@ const Courses = () => {
                 userSubscriptions={subscriptions}
                 userSelectedModule={selectedModule}
                 isLoading={isLoadingSubscriptions}
+                progressMap={progressMap}
+                percentFromRecord={percentFromRecord}
               />
             ))}
           </motion.div>

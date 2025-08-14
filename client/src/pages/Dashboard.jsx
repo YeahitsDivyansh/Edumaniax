@@ -6,6 +6,7 @@ import { useBlog } from "@/contexts/BlogContext";
 import { useAccessControl } from "../utils/accessControl";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import useGameProgress from "../hooks/useGameProgress";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -71,6 +72,19 @@ const Dashboard = () => {
     { key: "sel", name: "Wellness & Mental Health" },
   ];
 
+  // URL mapping that mirrors the routes used in `client/src/pages/Courses.jsx` course definitions
+  const MODULE_URLS = {
+    finance: { courses: `/courses?module=finance`, games: `/finance/games`, notes: `/finance/notes` },
+    computers: { courses: `/courses?module=computers`, games: `/computer/games`, notes: `/computer/notes` },
+    law: { courses: `/courses?module=law`, games: `/law/games`, notes: `/law/notes` },
+    communication: { courses: `/courses?module=communication`, games: `/communications/games`, notes: `/communications/notes` },
+    entrepreneurship: { courses: `/courses?module=entrepreneurship`, games: `/entrepreneurship/games`, notes: `/entrepreneurship/notes` },
+    "digital-marketing": { courses: `/courses?module=digital-marketing`, games: `/digital-marketing/games`, notes: `/digital-marketing/notes` },
+    leadership: { courses: `/courses?module=leadership`, games: `/leadership/games`, notes: `/leadership/notes` },
+    environment: { courses: `/courses?module=environment`, games: `/environmental/games`, notes: `/environmental/notes` },
+    sel: { courses: `/courses?module=sel`, games: `/social-learning/games`, notes: `/social-learning/notes` },
+  };
+
   const activeSubscription = subscriptions?.find(
     (sub) => sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
   );
@@ -94,6 +108,42 @@ const Dashboard = () => {
     if (currentPlan === "SOLO") return allModules.filter(m => soloModules.includes(m.key));
     return []; // STARTER / no plan -> no modules listed
   })();
+
+  // Load persisted game progress (server-backed with localStorage fallback)
+  const { progressMap } = useGameProgress(user?.id);
+
+  // Merge persisted progress into displayed modules before rendering
+  const modulesWithProgress = displayedModules.map((m) => {
+    const keyCandidates = [m.name, m.key, (m.name || "").toLowerCase().replace(/[^a-z0-9]/g, "")];
+    let progRecord = {};
+    for (const k of keyCandidates) {
+      if (k && progressMap && progressMap[k]) {
+        progRecord = progressMap[k];
+        break;
+      }
+    }
+    const percent = progRecord && typeof progRecord.averageScorePerGame === "number" ? Math.round(progRecord.averageScorePerGame) : (m.progress || 0);
+    return { ...m, progress: percent };
+  });
+
+  // TEMP DEBUG: print plan/module purchase/access info to help diagnose locked-but-purchased cases
+  try {
+    console.debug("Dashboard Access Debug:", {
+      currentPlan,
+      soloModules,
+      isCommunicationPurchased: isModulePurchased && isModulePurchased("communication"),
+      modules: modulesWithProgress.map((m) => ({
+        key: m.key,
+        name: m.name,
+        isPurchased: isModulePurchased && isModulePurchased(m.key),
+        hasAccess: computeHasAccess(m.key),
+        progress: m.progress,
+      })),
+    });
+  } catch (err) {
+    // ignore debug failures
+    void err;
+  }
 
   // Hoist subscription/payment fetch so multiple effects can call it without temporal-deadzone
   const userId = user && user.id;
@@ -1011,7 +1061,14 @@ const cancelLogout = () => {
                                 Overall Progress
                               </p>
                               <p className="text-2xl font-bold text-blue-600">
-                                65%
+                                {(() => {
+                                  try {
+                                    if (!modulesWithProgress || modulesWithProgress.length === 0) return '0%';
+                                    const vals = modulesWithProgress.map(m => Number(m.progress || 0));
+                                    const avg = Math.round(vals.reduce((a,b) => a + b, 0) / vals.length);
+                                    return `${avg}%`;
+                                  } catch (err) { void err; return '0%'; }
+                                })()}
                               </p>
                             </div>
                             <div className="text-3xl">🎯</div>
@@ -1036,8 +1093,9 @@ const cancelLogout = () => {
                       </div>
 
                       {/* Module Cards with Progress */}
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {displayedModules.map((module) => {
+                        {modulesWithProgress.map((module) => {
                           const hasAccess = computeHasAccess(module.key);
                           const colorClasses = {
                             green:
@@ -1111,13 +1169,7 @@ const cancelLogout = () => {
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
                                       <div
-                                        className={`h-2 rounded-full transition-all duration-500 ${
-                                          module.progress >= 80
-                                            ? "bg-green-500"
-                                            : module.progress >= 50
-                                            ? "bg-yellow-500"
-                                            : "bg-blue-500"
-                                        }`}
+                                        className={`h-2 rounded-full transition-all duration-500 bg-green-500`}
                                         style={{ width: `${module.progress}%` }}
                                       ></div>
                                     </div>
@@ -1148,14 +1200,31 @@ const cancelLogout = () => {
                               ) : (
                                 <div className="text-center py-4">
                                   <p className="text-gray-500 text-sm mb-3">
-                                    Premium Required
+                                    Premium Required — try Level 1 for free
                                   </p>
-                                  <Link
-                                    to="/pricing"
-                                    className="text-[#068F36] hover:text-green-700 text-sm font-medium"
-                                  >
-                                    Upgrade to Access
-                                  </Link>
+                                  <div className="space-y-2">
+                                    <Link
+                                      to={`${(MODULE_URLS[module.key] && MODULE_URLS[module.key].courses) || `/courses?module=${module.key}`}&trial=level1`}
+                                      className="w-full bg-[#068F36] hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                      Try Level 1
+                                      <ChevronRight size={16} />
+                                    </Link>
+
+                                    <Link
+                                      to={`${(MODULE_URLS[module.key] && MODULE_URLS[module.key].games) || `/${module.key}/games`}?trial=level1`}
+                                      className="w-full border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                      Play Level 1 (Trial) 🎮
+                                    </Link>
+
+                                    <Link
+                                      to="/pricing"
+                                      className="text-[#068F36] hover:text-green-700 text-sm font-medium inline-block mt-2"
+                                    >
+                                      Upgrade to Access
+                                    </Link>
+                                  </div>
                                 </div>
                               )}
                             </div>
