@@ -1018,6 +1018,7 @@ const cancelLogout = () => {
                           </div>
                         </div>
 
+                        {/* Certificates Earned card removed per user request
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
                           <div className="flex items-center justify-between">
                             <div>
@@ -1031,6 +1032,7 @@ const cancelLogout = () => {
                             <div className="text-3xl">🏆</div>
                           </div>
                         </div>
+                        */}
                       </div>
 
                       {/* Module Cards with Progress */}
