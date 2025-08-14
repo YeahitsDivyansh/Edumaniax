@@ -14,66 +14,61 @@ const PAUSE_BETWEEN_CYCLES_MS = 1500; // 1.5 seconds
 const ANIMATED_CARD_INDEX = 0;
 
 const ScenarioContent = () => {
-  // State to track the INDEX of the selected card.
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  // useEffect hook to run the animation logic.
+  // The animation logic does not need to change, as it's not tied to layout geometry.
   useEffect(() => {
     let timer;
 
-    // This function now animates only one card repeatedly.
     const animateOneCard = () => {
-      // Step A: Select the specified card
       setSelectedIndex(ANIMATED_CARD_INDEX);
 
-      // Step B: Set a timer to deselect the card after a duration
       timer = setTimeout(() => {
-        setSelectedIndex(null); // Deselect the card
-
-        // Step C: Set another timer to pause, then repeat the whole animation
-        timer = setTimeout(() => {
-          animateOneCard();
-        }, PAUSE_BETWEEN_CYCLES_MS);
-
+        setSelectedIndex(null);
+        timer = setTimeout(animateOneCard, PAUSE_BETWEEN_CYCLES_MS);
       }, SELECTED_DURATION_MS);
     };
 
-    // Start the animation cycle
     animateOneCard();
 
-    // Cleanup function to stop the timer if the component is unmounted
     return () => {
       clearTimeout(timer);
     };
-  }, []); // The empty array `[]` ensures this effect runs only once.
+  }, []);
 
   return (
+    // Responsive container: full-width on mobile, vw-based on desktop.
     <div
-      className="w-[46.354vw] h-[35vh] py-[7vh] px-[1vw] bg-green-950 rounded-[0.521vw] outline outline-[0.052vw] outline-offset-[-0.052vw] outline-gray-100 flex justify-center items-start"
+      className="w-full md:w-[46.354vw] h-auto md:h-[35vh] p-4 md:py-[7vh] md:px-[1vw] bg-green-950 rounded-lg md:rounded-[0.521vw] outline outline-1 outline-offset-[-1px] outline-gray-100 flex justify-center items-center"
     >
-      <div className="flex justify-start items-center gap-[0.729vw]">
+      {/* Responsive layout for cards:
+        - Mobile: A 2x2 grid for optimal space usage.
+        - Desktop (md): The original horizontal flex layout.
+      */}
+      <div className="grid grid-cols-2 gap-4 md:flex md:justify-start md:items-center md:gap-[0.729vw]">
         {categories.map((cat, index) => {
-          // Check if the current card's index matches the selectedIndex from our state
           const isSelected = selectedIndex === index;
 
           return (
             <div
               key={cat.name}
               className={`
-                w-[10.5vw] h-[22vh] py-[1.5vh] bg-gray-800/30 rounded-[0.521vw] 
-                inline-flex flex-col justify-start items-center gap-[1.563vh]
+                w-full md:w-[10.5vw] h-48 md:h-[22vh] p-2 md:py-[1.5vh] bg-gray-800/30 rounded-lg md:rounded-[0.521vw] 
+                inline-flex flex-col justify-start items-center gap-2 md:gap-[1.563vh]
                 transition-all duration-300 ease-in-out
                 border-2
                 ${isSelected ? 'scale-105 border-green-500' : 'border-transparent'}
               `}
             >
+              {/* Responsive image size */}
               <img 
-                className="w-[6vw] h-[14vh] object-contain" 
+                className="w-16 h-24 md:w-[6vw] md:h-[14vh] object-contain" 
                 src={cat.image} 
                 alt={cat.name} 
               />
-              <div className="w-[13.542vw] inline-flex justify-center items-center">
-                <div className="text-center justify-center text-slate-100 text-[1vw] leading-[1.042vw]">
+              {/* Responsive text container and font size */}
+              <div className="w-full md:w-[13.542vw] inline-flex justify-center items-center">
+                <div className="text-center justify-center text-slate-100 text-sm md:text-[1vw] leading-tight md:leading-[1.042vw]">
                   {cat.name.replace('–', '- ')}
                 </div>
               </div>
