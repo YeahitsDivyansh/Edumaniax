@@ -4,42 +4,53 @@ import ScenarioContent from './ScenarioContent.jsx';
 
 const InstructionsScreen = ({ onStartGame }) => {
   return (
-    // Add the background color class to the top-level div of this component
-    <div className="main-container bg-[#0A160E] relative mx-auto my-0 flex flex-col items-center justify-center h-screen w-screen">
-      <div className="h-[7vh] absolute top-15 right-45 z-[68]">
-        <CrossButton onClick={onStartGame} />
-      </div> 
-      <div className="flex flex-row items-center w-[90vw] h-[80vh] bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/WxAZj0TxFZ.png)] bg-[length:100%_100%] bg-no-repeat absolute top-20 right-20 z-[1]">
-        <span className=" font-['Lilita_One'] text-[30px] font-normal text-[#fff] relative text-left whitespace-nowrap z-[2] -mt-[73vh] mr-0 mb-0 ml-[38vw]">
-          How to Play?{" "}
-        </span>
-        <div className="flex flex-col w-[70vw] h-[64.5vh] relative z-[65] mt-[128px] mr-0 mb-0 ">
-          <div className="flex"><ScenarioContent/></div>
-          <div className="flex flex-row">
-            <span className="flex w-[50vw] justify-start items-center lilita text-[15px] font-normal leading-[28px] text-[#fff] tracking-[-0.1px] absolute top-5 left-36 text-left overflow-hidden z-[63]">
-              You have ₹500 and 3 minutes for each scenario!
-              <br />
-              Select 3 items that best support sustainability in school.
-              <br />
-              Scoring:
-              <br />
-              +5 = All 3 eco-wise
-              <br />
-              +2 = 2 sustainable
-              <br />
-              0 = Mostly unsustainable
-              <br />
-              Time Limit: 3 minutes per scenario
-            </span>
-            <div className="flex flex-col justify-start items-start w-[20vw] h-[11vh] text-white bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/KoaHzD7HnK.png)] bg-cover bg-no-repeat absolute top-[31vh] left-[9.5vw] z-[65] pt-[0.5vw] px-[1vw]">
-              <span className="flex lilita text-[1.2vw] font-normal text-[#fff] tracking-[0.04vw] whitespace-nowrap">
+    // Main container to center the pop-up
+    <div className="main-container bg-[#0A160E] flex flex-col items-center justify-center min-h-screen w-screen p-4">
+      
+      {/* Pop-up box with responsive width, height, and padding */}
+      <div className="relative w-full max-w-4xl md:w-[75vw] h-auto bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/WxAZj0TxFZ.png)] bg-no-repeat bg-cover flex flex-col items-center py-8 px-4 md:p-8 ">
+        
+        {/* Cross button with responsive size and position */}
+        <div className="absolute w-12 h-12 md:w-16 md:h-16 -top-5 -right-5 md:-top-6 md:-right-8 z-10">
+          <CrossButton onClick={onStartGame} />
+        </div> 
+        
+        <h2 className="lilita text-3xl md:text-4xl text-white mb-6">
+          How to Play?
+        </h2>
+        
+        {/* Main content area: Stacks on mobile, row on desktop */}
+        <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center w-full gap-8">
+          
+          {/* Left Column: Instructions & Learning Outcome */}
+          <div className="w-full lg:w-2/5 flex flex-col items-center lg:items-start text-center lg:text-left">
+            <div className="lilita text-base md:text-lg leading-relaxed text-white">
+              <p className="mb-2">You have ₹500 and 3 minutes for each scenario!</p>
+              <p className="mb-4">Select 3 items that best support sustainability in school.</p>
+              <p className="font-bold">Scoring:</p>
+              <ul className="list-none ml-0">
+                <li>+5 = All 3 eco-wise</li>
+                <li>+2 = 2 sustainable</li>
+                <li>0 = Mostly unsustainable</li>
+              </ul>
+            </div>
+            
+            {/* Learning Outcome Box */}
+            <div className="w-full max-w-sm mt-6 text-white bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/KoaHzD7HnK.png)] bg-cover bg-no-repeat p-4 rounded-lg">
+              <span className="lilita text-lg md:text-xl font-normal text-white tracking-wide">
                 LEARNING OUTCOME:
               </span>
-              <span className="flex w-full font-['Lilita_One'] text-[0.9vw] font-normal leading-[2vh] text-[#fff] tracking-[0.01vw]">
-                Students experience the trade-offs and unexpected costs of real life
+              <span className="block mt-1 font-sans text-sm md:text-base leading-snug">
+                Students experience the trade-offs and unexpected costs of real life.
               </span>
             </div>
           </div>
+
+          {/* Right Column: ScenarioContent Demo */}
+          <div className="w-full lg:w-3/5 flex justify-center">
+            <ScenarioContent />
+          </div>
+
         </div>
       </div>
     </div>
