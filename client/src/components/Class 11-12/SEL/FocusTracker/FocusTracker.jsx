@@ -38,6 +38,7 @@ export default function FocusTracker() {
         studyTimeMinutes: Math.ceil(durationSec / 60),
         completed: true,
       });
+      completeSELChallenge(1, 0);
       setStartTime(Date.now());
     }
   }, [step]);
@@ -136,8 +137,7 @@ export default function FocusTracker() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                  completeSELChallenge(1, 0); // ✅ Mark challenge as complete
-                  setStep(4);
+                  setStep(2);
                 }}
                 className="bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-300 text-white font-semibold py-3 px-10 rounded-full shadow-xl transition-all duration-300 tracking-wide"
               >

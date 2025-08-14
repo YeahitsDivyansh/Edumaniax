@@ -4,18 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
-  const { user, role, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // New state for dropdown
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const sidebarRef = useRef(null);
   const dropdownRef = useRef(null); // New ref for dropdown
 
   // Effect to handle clicks outside the sidebar and dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (showLogoutConfirm) return;
       // Check if click is outside the sidebar
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsSidebarOpen(false);
@@ -31,7 +33,7 @@ const Navbar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []); // Run this effect only once on mount
+  }, [showLogoutConfirm]); // Run this effect only once on mount
 
   const handleItemClick = () => {
     setIsSidebarOpen(false);
@@ -39,10 +41,22 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
 
-  const handleLogout = () => {
-    logout(navigate);
-    setIsDropdownOpen(false); // Close dropdown after logout
-  };
+  const handleLogoutClick = () => {
+  setIsDropdownOpen(false); // Close dropdown if open
+  setIsSidebarOpen(false);  // Close sidebar if open
+  setShowLogoutConfirm(true); // Show the confirmation modal
+};
+
+// This function performs the actual logout
+const confirmLogout = () => {
+  logout(navigate);
+  setShowLogoutConfirm(false); // Hide modal after logging out
+};
+
+// This function cancels the logout and closes the modal
+const cancelLogout = () => {
+  setShowLogoutConfirm(false);
+};
 
   const isActive = (path) => {
     if (path === "/") {
@@ -80,7 +94,7 @@ const Navbar = () => {
   const dropdownLinkClasses =
     "block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-300";
 
-  return (
+  return (<>
     <nav className="bg-white text-black sticky top-0 z-200 w-full rounded-bl-4xl rounded-br-4xl shadow-lg">
       <div className="w-full py-4 px-6 flex justify-between items-center max-w-7xl mx-auto">
         {/* Logo Section */}
@@ -144,21 +158,21 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-100">
                   <div className="py-1">
                     <Link
-                      to="/dashboard"
+                      to="/dashboard?section=profile"
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       My Profile
                     </Link>
                     <Link
-                      to="/dashboard"
+                      to="/dashboard?section=modules"
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       My Modules
                     </Link>
                     <Link
-                      to="/dashboard"
+                      to="/dashboard?section=subscriptions"
                       className={dropdownLinkClasses}
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -167,7 +181,7 @@ const Navbar = () => {
                   </div>
                   <hr className="my-1 border-gray-200" />
                   <button
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     className="w-full text-left px-4 py-2 text-red-700 hover:bg-gray-100 transition duration-300"
                   >
                     Logout
@@ -289,20 +303,11 @@ const Navbar = () => {
                   onClick={handleItemClick}
                   className="w-full flex items-center justify-center bg-green-600 text-white hover:bg-green-700 transition duration-300 px-4 py-3 rounded-lg font-medium overflow-hidden"
                 >
-                  <img
-                    src={getCharacterIconPath()}
-                    alt="User Dashboard"
-                    className={`${
-                      user?.avatar
-                        ? "h-8 w-8 object-cover rounded-full"
-                        : "h-6 w-6 object-cover rounded-full"
-                    }`}
-                  />
-                  <span className="ml-2 text-black">{user.name}</span>
+                  Dashboard
                 </Link>
                 <button
-                  onClick={handleLogout}
-                  className="w-full border border-green-600 text-green-600 hover:bg-green-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
+                  onClick={handleLogoutClick}
+                  className="w-full border border-red-600 text-red-600 hover:bg-red-50 transition duration-300 px-4 py-3 rounded-lg font-medium"
                 >
                   Logout
                 </button>
@@ -329,6 +334,33 @@ const Navbar = () => {
         </div>
       )}
     </nav>
+{showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-300">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold text-gray-800">Logout Confirmation</h2>
+            </div>
+            <p className="text-gray-600 mt-4">
+              Are you sure you want to logout?
+            </p>
+            <div className="mt-6 flex justify-end gap-4">
+              <button
+                onClick={cancelLogout}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+</>
   );
 };
 
