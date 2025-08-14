@@ -43,10 +43,141 @@ const Dashboard = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   const { getUserComments } = useBlog();
-  const { accessStatus, hasModuleAccess } = useAccessControl(
-    subscriptions,
-    selectedModule
+  const {
+    accessStatus,
+    hasModuleAccess,
+    currentPlan,
+    isModulePurchased,
+    soloModules,
+  } = useAccessControl(subscriptions, selectedModule);
+
+  // Plan-aware access check: SOLO => only purchased modules; PRO/INSTITUTIONAL => all; STARTER/fallback => hasModuleAccess
+  const computeHasAccess = (moduleKey) => {
+    if (currentPlan === "PRO" || currentPlan === "INSTITUTIONAL") return true;
+    if (currentPlan === "SOLO") return Boolean(isModulePurchased(moduleKey));
+    return hasModuleAccess(moduleKey);
+  };
+
+  // Determine whether the user has any active subscription or unlocked modules
+  const allModules = [
+    { key: "finance", name: "Fundamentals of Finance" },
+    { key: "computers", name: "Computer Science" },
+    { key: "law", name: "Fundamentals of Law" },
+    { key: "communication", name: "Communication Mastery" },
+    { key: "entrepreneurship", name: "Entrepreneurship Bootcamp" },
+    { key: "digital-marketing", name: "Digital Marketing Pro" },
+    { key: "leadership", name: "Leadership & Adaptability" },
+    { key: "environment", name: "Environmental Sustainability" },
+    { key: "sel", name: "Wellness & Mental Health" },
+  ];
+
+  const activeSubscription = subscriptions?.find(
+    (sub) => sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
   );
+
+  // subscriptionPlan normalised to upper-case plan name if available
+  const subscriptionPlan =
+    accessStatus?.subscription?.plan ||
+    (activeSubscription?.planType ? activeSubscription.planType.toUpperCase() : null);
+
+  // Determine whether user has purchased modules (PRO/INSTITUTIONAL => all, SOLO => purchased modules only)
+  const hasPurchasedModules =
+    currentPlan === "PRO" ||
+    currentPlan === "INSTITUTIONAL" ||
+    (currentPlan === "SOLO" && Array.isArray(soloModules) && soloModules.length > 0);
+
+  const modulesAvailable = Boolean(hasPurchasedModules);
+
+  // Compute modules to display depending on plan
+  const displayedModules = (() => {
+    if (currentPlan === "PRO" || currentPlan === "INSTITUTIONAL") return allModules;
+    if (currentPlan === "SOLO") return allModules.filter(m => soloModules.includes(m.key));
+    return []; // STARTER / no plan -> no modules listed
+  })();
+
+  // Hoist subscription/payment fetch so multiple effects can call it without temporal-deadzone
+  const userId = user && user.id;
+
+  const fetchUserSubscriptionData = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setLoadingSubscriptions(true);
+      setLoadingPayments(true);
+
+      const [subscriptionResponse, paymentResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/payment/subscriptions/${userId}`),
+        fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/payment/payments/${userId}`),
+      ]);
+
+      // Process subscription data
+      if (subscriptionResponse.ok) {
+        const subscriptionData = await subscriptionResponse.json();
+        const userSubscriptions = subscriptionData.success ? subscriptionData.subscriptions : [];
+        setSubscriptions(userSubscriptions);
+
+        if (userSubscriptions.length > 0) {
+          const firstActiveSubscription = userSubscriptions.find(
+            (sub) => (sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()) || (sub.isExpired === false && sub.remainingDays > 0)
+          );
+
+          if (firstActiveSubscription && firstActiveSubscription.notes && firstActiveSubscription.planType === "SOLO") {
+            try {
+              const parsedNotes = JSON.parse(firstActiveSubscription.notes);
+              const rawModule = parsedNotes.selectedModule;
+
+              const moduleMapping = {
+                "Fundamentals of Finance": "finance",
+                "Computer Science": "computers",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
+                "Wellness & Mental Health": "sel",
+              };
+
+              const mappedModule = moduleMapping[rawModule] || rawModule?.toLowerCase();
+              setSelectedModule(mappedModule);
+            } catch {
+              const moduleMapping = {
+                "Fundamentals of Finance": "finance",
+                "Computer Science": "computers",
+                "Fundamentals of Law": "law",
+                "Communication Mastery": "communication",
+                "Entrepreneurship Bootcamp": "entrepreneurship",
+                "Digital Marketing Pro": "digital-marketing",
+                "Leadership & Adaptability": "leadership",
+                "Environmental Sustainability": "environment",
+                "Wellness & Mental Health": "sel",
+              };
+
+              const mappedModule = moduleMapping[firstActiveSubscription.notes] || firstActiveSubscription.notes?.toLowerCase();
+              setSelectedModule(mappedModule);
+            }
+          }
+        }
+      } else {
+        setSubscriptions([]);
+      }
+
+      // Process payment data
+      if (paymentResponse.ok) {
+        const paymentData = await paymentResponse.json();
+        setPayments(Array.isArray(paymentData) ? paymentData : []);
+      } else {
+        setPayments([]);
+      }
+    } catch (error) {
+      console.error("Error fetching user subscription/payment data:", error);
+      setSubscriptions([]);
+      setPayments([]);
+    } finally {
+      setLoadingSubscriptions(false);
+      setLoadingPayments(false);
+    }
+  }, [userId]);
 
   // Sync avatar state with user context (fixes issue after page refresh)
   useEffect(() => {
@@ -64,42 +195,18 @@ const Dashboard = () => {
     }
   }, [user, avatar]);
 
+  // Refresh user comments when the user ID becomes available or changes
   useEffect(() => {
-    const fetchUserComments = async () => {
-      if (user?.id) {
-        // Use user ID for fetching comments to avoid issues when name changes
-        // console.log("Fetching comments for user ID:", user.id);
-        try {
-          const comments = await getUserComments(user.id, true); // true means use userId
-          // console.log("Received comments:", comments);
-          setUserComments(Array.isArray(comments) ? comments : []);
-        } catch (error) {
-          console.log("Failed to fetch user comments:", error);
-          setUserComments([]);
-        }
-      } else if (
-        user?.name &&
-        typeof user.name === "string" &&
-        user.name.trim()
-      ) {
-        // Fallback to name-based fetching for backward compatibility
-        // console.log("Fetching comments for user name:", user.name);
-        try {
-          const comments = await getUserComments(user.name.trim(), false); // false means use name
-          // console.log("Received comments:", comments);
-          setUserComments(Array.isArray(comments) ? comments : []);
-        } catch (error) {
-          console.log("Failed to fetch user comments:", error);
-          setUserComments([]);
-        }
-      } else {
-        // console.log("No valid user ID or name found:", user);
-        setUserComments([]);
-      }
-    };
+    if (!user || !user.id) return;
+    getUserComments(user.id, true)
+      .then((comments) => setUserComments(Array.isArray(comments) ? comments : []))
+      .catch((err) => console.log("Failed to fetch comments:", err));
+  }, [user, getUserComments]);
 
-    fetchUserComments();
-  }, [user?.id, user?.name, getUserComments]);
+  // Fetch user subscription and payment data on component mount
+  useEffect(() => {
+    fetchUserSubscriptionData();
+  }, [user?.id, fetchUserSubscriptionData]);
 
   // Auto-refresh subscription data daily and handle real-time updates
   useEffect(() => {
@@ -137,237 +244,26 @@ const Dashboard = () => {
       clearInterval(hourlyRefreshInterval);
       window.removeEventListener("focus", handleWindowFocus);
     };
-  }, [user?.id]);
+  }, [user?.id, fetchUserSubscriptionData]);
 
-  // Move fetchUserSubscriptionData function outside useEffect so it can be reused
-  const fetchUserSubscriptionData = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      setLoadingSubscriptions(true);
-      setLoadingPayments(true);
-
-      // Use Promise.all to fetch both subscription and payment data in parallel
-      const [subscriptionResponse, paymentResponse] = await Promise.all([
-        fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/subscriptions/${user.id}`
-        ),
-        fetch(
-          `${
-            import.meta.env.VITE_API_URL || "http://localhost:3000"
-          }/payment/payments/${user.id}`
-        ),
-      ]);
-
-      // Process subscription data
-      if (subscriptionResponse.ok) {
-        const subscriptionData = await subscriptionResponse.json();
-        // Handle the API response format {success: true, subscriptions: [...]}
-        const userSubscriptions = subscriptionData.success
-          ? subscriptionData.subscriptions
-          : [];
-        setSubscriptions(userSubscriptions);
-
-        console.log("📊 Updated subscription data:", userSubscriptions);
-
-        // For multiple SOLO subscriptions, we'll use the first one for selectedModule
-        // but the access control will handle all purchased modules
-        if (userSubscriptions.length > 0) {
-          const firstActiveSubscription = userSubscriptions.find(
-            (sub) =>
-              (sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()) ||
-              (sub.isExpired === false && sub.remainingDays > 0)
-          );
-
-          if (firstActiveSubscription) {
-            // Parse notes to get selectedModule if it exists (for SOLO plans)
-            if (
-              firstActiveSubscription.notes &&
-              firstActiveSubscription.planType === "SOLO"
-            ) {
-              try {
-                const parsedNotes = JSON.parse(firstActiveSubscription.notes);
-                const rawModule = parsedNotes.selectedModule;
-
-                // Map the display name to the correct module key
-                const moduleMapping = {
-                  "Fundamentals of Finance": "finance",
-                  "Computer Science": "computers",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                  "Wellness & Mental Health": "sel",
-                };
-
-                const mappedModule =
-                  moduleMapping[rawModule] || rawModule?.toLowerCase();
-                setSelectedModule(mappedModule);
-              } catch {
-                // If notes is not JSON, treat as plain text and map it
-                const moduleMapping = {
-                  "Fundamentals of Finance": "finance",
-                  "Computer Science": "computers",
-                  "Fundamentals of Law": "law",
-                  "Communication Mastery": "communication",
-                  "Entrepreneurship Bootcamp": "entrepreneurship",
-                  "Digital Marketing Pro": "digital-marketing",
-                  "Leadership & Adaptability": "leadership",
-                  "Environmental Sustainability": "environment",
-                  "Wellness & Mental Health": "sel",
-                };
-
-                const mappedModule =
-                  moduleMapping[firstActiveSubscription.notes] ||
-                  firstActiveSubscription.notes?.toLowerCase();
-                setSelectedModule(mappedModule);
-              }
-            }
-          }
-        }
-      }
-
-      // Process payment data
-      if (paymentResponse.ok) {
-        const paymentData = await paymentResponse.json();
-        setPayments(Array.isArray(paymentData) ? paymentData : []);
-      }
-    } catch (error) {
-      console.error("Error fetching user subscription/payment data:", error);
-      setSubscriptions([]);
-      setPayments([]);
-    } finally {
-      setLoadingSubscriptions(false);
-      setLoadingPayments(false);
-    }
-  }, [user?.id]);
-
-  // Fetch user subscription and payment data on component mount
+  // Call the hoisted fetch function on mount and wire subscriptionUpdated events
   useEffect(() => {
     fetchUserSubscriptionData();
-  }, [user?.id]);
 
-  // Original fetch useEffect (keeping for compatibility but moving logic to function above)
-  useEffect(() => {
-    const fetchUserSubscriptionData = async () => {
-      if (!user?.id) return;
-
-      try {
-        setLoadingSubscriptions(true);
-        setLoadingPayments(true);
-
-        // Use Promise.all to fetch both subscription and payment data in parallel
-        const [subscriptionResponse, paymentResponse] = await Promise.all([
-          fetch(
-            `${
-              import.meta.env.VITE_API_URL || "http://localhost:3000"
-            }/payment/subscriptions/${user.id}`
-          ),
-          fetch(
-            `${
-              import.meta.env.VITE_API_URL || "http://localhost:3000"
-            }/payment/payments/${user.id}`
-          ),
-        ]);
-
-        // Process subscription data
-        if (subscriptionResponse.ok) {
-          const subscriptionData = await subscriptionResponse.json();
-          // Handle the API response format {success: true, subscriptions: [...]}
-          const userSubscriptions = subscriptionData.success
-            ? subscriptionData.subscriptions
-            : [];
-          setSubscriptions(userSubscriptions);
-
-          // For multiple SOLO subscriptions, we'll use the first one for selectedModule
-          // but the access control will handle all purchased modules
-          if (userSubscriptions.length > 0) {
-            const firstActiveSubscription = userSubscriptions.find(
-              (sub) =>
-                sub.status === "ACTIVE" && new Date(sub.endDate) > new Date()
-            );
-
-            if (firstActiveSubscription) {
-              // Parse notes to get selectedModule if it exists (for SOLO plans)
-              if (
-                firstActiveSubscription.notes &&
-                firstActiveSubscription.planType === "SOLO"
-              ) {
-                try {
-                  const parsedNotes = JSON.parse(firstActiveSubscription.notes);
-                  const rawModule = parsedNotes.selectedModule;
-
-                  // Map the display name to the correct module key
-                  const moduleMapping = {
-                    "Fundamentals of Finance": "finance",
-                    "Computer Science": "computers",
-                    "Fundamentals of Law": "law",
-                    "Communication Mastery": "communication",
-                    "Entrepreneurship Bootcamp": "entrepreneurship",
-                    "Digital Marketing Pro": "digital-marketing",
-                    "Leadership & Adaptability": "leadership",
-                    "Environmental Sustainability": "environment",
-                    "Wellness & Mental Health": "sel",
-                  };
-
-                  const mappedModule = moduleMapping[rawModule] || rawModule;
-                  setSelectedModule(mappedModule);
-                } catch (error) {
-                  console.error("Error parsing subscription notes:", error);
-                }
-              }
-            }
-          } else {
-            setSelectedModule(null);
-          }
-        } else {
-          console.log(
-            "Failed to fetch subscriptions:",
-            subscriptionResponse.statusText
-          );
-          setSubscriptions([]);
-        }
-
-        // Process payment data
-        if (paymentResponse.ok) {
-          const paymentData = await paymentResponse.json();
-          setPayments(Array.isArray(paymentData) ? paymentData : []);
-        } else {
-          console.log("Failed to fetch payments:", paymentResponse.statusText);
-          setPayments([]);
-        }
-      } catch (error) {
-        console.error("Error fetching subscription/payment data:", error);
-        setSubscriptions([]);
-        setPayments([]);
-      } finally {
-        setLoadingSubscriptions(false);
-        setLoadingPayments(false);
-      }
-    };
-
-    fetchUserSubscriptionData();
-
-    // Listen for subscription updates from payment completion
     const handleSubscriptionUpdate = (event) => {
-      console.log("Subscription updated event received:", event.detail);
-      fetchUserSubscriptionData(); // Re-fetch subscription data
+      console.log("Dashboard: Subscription update detected", event.detail);
+      if (event.detail?.subscriptions) {
+        setSubscriptions(event.detail.subscriptions);
+      }
+      fetchUserSubscriptionData();
     };
 
     window.addEventListener("subscriptionUpdated", handleSubscriptionUpdate);
 
-    // Cleanup event listener
     return () => {
-      window.removeEventListener(
-        "subscriptionUpdated",
-        handleSubscriptionUpdate
-      );
+      window.removeEventListener("subscriptionUpdated", handleSubscriptionUpdate);
     };
-  }, [user?.id]);
+  }, [fetchUserSubscriptionData]);
 
   // Refresh comments when user returns to the dashboard (page focus)
   useEffect(() => {
@@ -1028,7 +924,7 @@ const cancelLogout = () => {
 
                 {/* Modules Grid */}
                 <div className="bg-white w-full max-w-6xl rounded-lg shadow-md p-6">
-                  {accessStatus?.subscription ? (
+                  {modulesAvailable ? (
                     <div>
                       <div className="flex justify-between items-center mb-6">
                         <div>
@@ -1036,12 +932,14 @@ const cancelLogout = () => {
                             My Learning Journey
                           </h3>
                           <p className="text-gray-600 text-sm">
-                            {accessStatus.subscription.plan.toUpperCase()} Plan
-                            - Continue your progress
+                            {subscriptionPlan
+                              ? subscriptionPlan.toUpperCase() + " Plan"
+                              : "Plan"}{" "}- Continue your progress
                           </p>
                         </div>
-                        {accessStatus.subscription.plan !== "PRO" &&
-                          accessStatus.subscription.plan !==
+                        {(accessStatus?.subscription?.plan || subscriptionPlan) !==
+                          "PRO" &&
+                          (accessStatus?.subscription?.plan || subscriptionPlan) !==
                             "INSTITUTIONAL" && (
                             <Link
                               to="/pricing"
@@ -1058,7 +956,7 @@ const cancelLogout = () => {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-green-800 font-semibold">
-                                Modules Unlocked
+                                Modules Unlocked 
                               </p>
                               <p className="text-2xl font-bold text-green-600">
                                 {
@@ -1097,7 +995,7 @@ const cancelLogout = () => {
                                       name: "Wellness & Mental Health",
                                     },
                                   ].filter((module) =>
-                                    hasModuleAccess(module.key)
+                                    computeHasAccess(module.key)
                                   ).length
                                 }
                               </p>
@@ -1137,72 +1035,8 @@ const cancelLogout = () => {
 
                       {/* Module Cards with Progress */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[
-                          {
-                            key: "finance",
-                            name: "Finance Management",
-                            icon: "💰",
-                            progress: 85,
-                            color: "green",
-                          },
-                          {
-                            key: "digital-marketing",
-                            name: "Digital Marketing",
-                            icon: "📱",
-                            progress: 60,
-                            color: "blue",
-                          },
-                          {
-                            key: "communication",
-                            name: "Communication Skills",
-                            icon: "🗣️",
-                            progress: 45,
-                            color: "orange",
-                          },
-                          {
-                            key: "computers",
-                            name: "Computer Science",
-                            icon: "💻",
-                            progress: 30,
-                            color: "purple",
-                          },
-                          {
-                            key: "entrepreneurship",
-                            name: "Entrepreneurship",
-                            icon: "🚀",
-                            progress: 0,
-                            color: "red",
-                          },
-                          {
-                            key: "environment",
-                            name: "Environmental Science",
-                            icon: "🌍",
-                            progress: 0,
-                            color: "green",
-                          },
-                          {
-                            key: "law",
-                            name: "Legal Awareness",
-                            icon: "⚖️",
-                            progress: 0,
-                            color: "indigo",
-                          },
-                          {
-                            key: "leadership",
-                            name: "Leadership Skills",
-                            icon: "👑",
-                            progress: 75,
-                            color: "yellow",
-                          },
-                          {
-                            key: "sel",
-                            name: "Social Emotional Learning",
-                            icon: "❤️",
-                            progress: 90,
-                            color: "pink",
-                          },
-                        ].map((module) => {
-                          const hasAccess = hasModuleAccess(module.key);
+                        {displayedModules.map((module) => {
+                          const hasAccess = computeHasAccess(module.key);
                           const colorClasses = {
                             green:
                               "border-green-200 bg-green-50 hover:border-green-300",
@@ -1224,14 +1058,22 @@ const cancelLogout = () => {
                               key={module.key}
                               className={`border-2 rounded-xl p-6 transition-all duration-300 ${
                                 hasAccess
-                                  ? `${
-                                      colorClasses[module.color]
-                                    } hover:shadow-lg cursor-pointer transform hover:-translate-y-1`
+                                  ? `${colorClasses[module.color]} hover:shadow-lg cursor-pointer transform hover:-translate-y-1`
                                   : "border-gray-200 bg-gray-50 opacity-60"
                               }`}
                             >
                               <div className="flex items-center justify-between mb-4">
-                                <div className="text-2xl">{module.icon}</div>
+                                <div className="text-2xl">{module.icon || ( {
+                                  finance: '💰',
+                                  computers: '💻',
+                                  law: '⚖️',
+                                  communication: '🗣️',
+                                  entrepreneurship: '🚀',
+                                  'digital-marketing': '📣',
+                                  leadership: '🧭',
+                                  environment: '🌿',
+                                  sel: '🧠'
+                                }[module.key] || '📘')}</div>
                                 {hasAccess ? (
                                   <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 bg-green-500 rounded-full"></span>
@@ -1320,8 +1162,8 @@ const cancelLogout = () => {
                       </div>
 
                       {/* Special message for SOLO plan */}
-                      {accessStatus.subscription.plan === "SOLO" &&
-                        accessStatus.subscription.selectedModule && (
+                      {accessStatus?.subscription?.plan === "SOLO" &&
+                        accessStatus?.subscription?.selectedModule && (
                           <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
                             <div className="flex items-center gap-3 mb-3">
                               <div className="text-2xl">⭐</div>
@@ -1331,8 +1173,8 @@ const cancelLogout = () => {
                             </div>
                             <p className="text-blue-700">
                               With your SOLO plan, you have premium access to:{" "}
-                              <strong>
-                                {accessStatus.subscription.selectedModule}
+                                <strong>
+                                {accessStatus?.subscription?.selectedModule}
                               </strong>
                             </p>
                             <p className="text-blue-600 text-sm mt-2">
@@ -1371,6 +1213,8 @@ const cancelLogout = () => {
                 </div>
               </div>
             )}
+
+                      
 
             {selectedSection === "profile" && (
               <div className="max-w-6xl mx-auto px-6 pt-6">
@@ -2149,64 +1993,7 @@ const cancelLogout = () => {
                   )}
                 </div>
 
-                {/* Accessible Modules Section */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Accessible Modules
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[
-                      { name: "Fundamentals of Finance", key: "finance" },
-                      { name: "Computer Science", key: "computers" },
-                      { name: "Fundamentals of Law", key: "law" },
-                      { name: "Communication Mastery", key: "communication" },
-                      {
-                        name: "Entrepreneurship Bootcamp",
-                        key: "entrepreneurship",
-                      },
-                      {
-                        name: "Digital Marketing Pro",
-                        key: "digital-marketing",
-                      },
-                      { name: "Leadership & Adaptability", key: "leadership" },
-                      {
-                        name: "Environmental Sustainability",
-                        key: "environment",
-                      },
-                      { name: "Wellness & Mental Health", key: "sel" },
-                    ].map((module) => {
-                      const hasAccess = hasModuleAccess(module.key);
-                      return (
-                        <div
-                          key={module.key}
-                          className={`border rounded-lg p-4 ${
-                            hasAccess
-                              ? "border-green-200 bg-green-50"
-                              : "border-gray-200 bg-gray-50"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-gray-800">
-                              {module.name}
-                            </h4>
-                            <span
-                              className={`w-3 h-3 rounded-full ${
-                                hasAccess ? "bg-green-500" : "bg-gray-400"
-                              }`}
-                            />
-                          </div>
-                          <p
-                            className={`text-sm ${
-                              hasAccess ? "text-green-600" : "text-gray-500"
-                            }`}
-                          >
-                            {hasAccess ? "Accessible" : "Premium Required"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                
 
                 {/* Payment History Section */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-6">

@@ -213,7 +213,6 @@ const CourseCard = ({
   isLoading,
 }) => {
   const {
-    hasModuleAccess,
     hasGameAccess,
     currentPlan: cardCurrentPlan,
     getRemainingTrialDays: cardGetRemainingTrialDays,
@@ -221,34 +220,32 @@ const CourseCard = ({
     isModulePurchased,
   } = useAccessControl(userSubscriptions, userSelectedModule);
 
-  const moduleKey =
-    MODULE_MAPPING[course.title] || course.category?.toLowerCase();
+  // Derive a normalized moduleKey. Try exact mapping, then fuzzy-match title, then category.
+  let moduleKey = MODULE_MAPPING[course.title] || course.category?.toLowerCase();
+  if (!Object.values(MODULE_MAPPING).includes(moduleKey)) {
+    for (const [display, key] of Object.entries(MODULE_MAPPING)) {
+      if (course.title && course.title.toLowerCase().includes(display.toLowerCase())) {
+        moduleKey = key;
+        break;
+      }
+    }
+  }
+
   // Access control calculations
-  const hasAccess = hasModuleAccess(moduleKey); // eslint-disable-line no-unused-vars
-  const hasGamesAccess = hasGameAccess(moduleKey);
+  const rawHasGamesAccess = hasGameAccess(moduleKey);
   const needsUpgrade = shouldShowUpgradePrompt(moduleKey); // eslint-disable-line no-unused-vars
   const remainingDays = cardGetRemainingTrialDays();
   const isPurchased = isModulePurchased(moduleKey);
 
-  // Debug logging for trial access
-  console.log("CourseCard:", course.title, {
-    moduleKey,
-    hasAccess,
-    hasGamesAccess,
-    cardCurrentPlan,
-    remainingDays,
-    isPurchased,
-    userSubscriptions: userSubscriptions?.length || 0,
-  });
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate API/data loading
-    setTimeout(() => setLoading(false), 3000);
-  }, []);
-
-  if (loading) return <CoursesSkeleton />;
+  // Compute effective games access for UI: PRO/INSTITUTIONAL => full access; SOLO => only purchased modules; STARTER/fallback => raw controller
+  const effectiveHasGamesAccess =
+    cardCurrentPlan === 'PRO' || cardCurrentPlan === 'INSTITUTIONAL'
+      ? true
+      : cardCurrentPlan === 'SOLO'
+      ? Boolean(isPurchased)
+      : rawHasGamesAccess;
+  // Keep the variable name used further down in the component
+  const hasGamesAccess = effectiveHasGamesAccess;
 
   // Helper function to get level icon
   const getLevelIcon = (level) => {
@@ -267,6 +264,8 @@ const CourseCard = ({
   return (
     <motion.div
       className="bg-white rounded-2xl w-full overflow-hidden shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+      data-module-key={moduleKey}
+      data-is-purchased={isPurchased}
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
@@ -377,7 +376,7 @@ const CourseCard = ({
                   }
                   // Show "Play Now" for purchased modules (SOLO users who bought this module)
                   if (isPurchased) {
-                    return "Play";
+                    return "Let's Play >";
                   }
                   // Show "Play Now (X days left)" for STARTER users with trial access
                   if (
@@ -393,21 +392,26 @@ const CourseCard = ({
               </motion.button>
             </Link>
           ) : (
-            <Link to="/pricing" className="flex-1">
+            <Link to={`${course.gamesLink}?trial=level1`} className="flex-1">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-gray-400 text-white font-medium py-2.5 px-3 rounded-lg hover:bg-gray-500 transition duration-300 text-sm flex items-center justify-center gap-2"
-                title="Upgrade to access games"
+                className="w-full bg-[#10903E] text-white font-medium py-2.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center justify-center gap-2"
+                title="Play Level 1 Challenge (Trial)"
               >
-                <img
-                  src="/game.png"
-                  alt="Game"
-                  className="w-5 h-5 opacity-70"
-                />
-                {cardCurrentPlan === "STARTER"
-                  ? "Upgrade for Full Access"
-                  : "Upgrade"}
+                <img src="/game.png" alt="Game" className="w-5 h-5" />
+                {(() => {
+                  if (isLoading) return "Loading...";
+                  if (isPurchased) return "Play >";
+                  if (
+                    cardCurrentPlan === "STARTER" &&
+                    remainingDays !== null &&
+                    remainingDays > 0
+                  ) {
+                    return `Play Now`;
+                  }
+                  return "Try Now";
+                })()}
               </motion.button>
             </Link>
           )}
