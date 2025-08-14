@@ -1861,27 +1861,49 @@ const cancelLogout = () => {
             {selectedSection === "subscriptions" && (
               <div className="max-w-6xl mx-auto px-6 pt-6">
                 {/* DASHBOARD HEADER */}
+                {/* <div className="bg-gradient-to-r from-green-50 to-green-100 w-full max-w-6xl rounded-lg shadow-sm px-8 py-6 mb-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-green-200/30 to-transparent rounded-full -mr-32 -mt-32"></div>
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-green-200/30 to-transparent rounded-full -ml-16 -mb-16"></div>
+                  <h2 className="text-3xl font-bold text-gray-900 relative z-10 flex items-center">
+                    <span className="text-green-600 mr-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+                        <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+                        <path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path>
+                      </svg>
+                    </span>
+                    My Subscriptions
+                  </h2>
+                  <p className="text-gray-600 mt-2 ml-10 max-w-xl relative z-10">
+                    Manage your current plans and view payment history
+                  </p>
+                </div> */}
+    
+                 {/* Top Heading Box */}
                 <div className="bg-white w-full max-w-6xl rounded-lg shadow-sm px-6 py-4 mb-6">
                   <h2 className="text-3xl font-bold text-gray-900">
-                    My Subscription
+                    My Subscriptions
                   </h2>
-                            
                 </div>
 
                 {/* Current Plan Section */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                <div className="bg-white rounded-xl shadow-md p-8 mb-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-green-400 to-green-600"></div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     Current Plans
                   </h3>
                   {loadingSubscriptions ? (
-                    <div className="flex justify-center items-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">
+                    <div className="flex justify-center items-center py-12">
+                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-green-200 border-t-green-600"></div>
+                      <span className="ml-3 text-gray-600 font-medium">
                         Loading subscription data...
                       </span>
                     </div>
                   ) : subscriptions && subscriptions.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {subscriptions
                         .filter(
                           (sub) =>
@@ -1906,144 +1928,132 @@ const cancelLogout = () => {
                               );
                             }
                           }
+                          
+                          // Use enriched data if available, otherwise calculate manually
+                          let remainingDays;
+                          let isExpired = false;
+
+                          if (
+                            subscription.remainingDays !== undefined
+                          ) {
+                            // Use enriched data from subscription manager
+                            remainingDays = subscription.remainingDays;
+                            isExpired =
+                              subscription.isExpired ||
+                              remainingDays <= 0;
+                          } else {
+                            // Fallback to manual calculation
+                            const endDate = new Date(
+                              subscription.endDate
+                            );
+                            const currentDate = new Date();
+                            const timeDiff =
+                              endDate.getTime() - currentDate.getTime();
+                            remainingDays = Math.ceil(
+                              timeDiff / (1000 * 3600 * 24)
+                            );
+                            isExpired = remainingDays <= 0;
+                          }
+
+                          // Calculate percentage of time remaining for progress bar
+                          const startDate = new Date(subscription.startDate);
+                          const endDate = new Date(subscription.endDate);
+                          const totalDuration = endDate.getTime() - startDate.getTime();
+                          const elapsedDuration = new Date().getTime() - startDate.getTime();
+                          const percentageRemaining = Math.max(0, Math.min(100, 100 - (elapsedDuration / totalDuration * 100)));
+                          
+                          // Determine colors and status message based on remaining days
+                          let statusColor = "bg-green-500";
+                          let statusMessage = "Active";
+                          let progressColor = "bg-green-500";
+                          
+                          if (isExpired) {
+                            statusColor = "bg-red-500";
+                            statusMessage = "Expired";
+                            progressColor = "bg-red-500";
+                          } else if (remainingDays <= 3) {
+                            statusColor = "bg-red-500";
+                            progressColor = "bg-red-500";
+                            statusMessage = "Ending Soon";
+                          } else if (remainingDays <= 7) {
+                            statusColor = "bg-yellow-500";
+                            progressColor = "bg-yellow-500";
+                            statusMessage = "Ending Soon";
+                          }
+
+                          // Emoji/icon based on plan type
+                          let planIcon;
+                          switch(subscription.planType.toUpperCase()) {
+                            case 'PRO':
+                              planIcon = "✨";
+                              break;
+                            case 'SOLO':
+                              planIcon = "🎯";
+                              break;
+                            case 'INSTITUTIONAL':
+                              planIcon = "🏛️";
+                              break;
+                            default:
+                              planIcon = "📚";
+                          }
 
                           return (
                             <div
                               key={subscription.id || index}
-                              className="border border-green-200 rounded-lg p-4 bg-green-50"
+                              className="border-2 rounded-xl p-4 transition-all duration-300 hover:shadow-md bg-white hover:border-green-300 cursor-pointer transform hover:-translate-y-1"
                             >
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <h4 className="text-xl font-semibold text-green-800">
-                                    {subscription.planType.toUpperCase()} PLAN
+                              {/* Card Header with Status */}
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center">
+                                  <div className="text-2xl mr-2">{planIcon}</div>
+                                  <h4 className="font-bold text-gray-800">
+                                    {subscription.planType.toUpperCase()}
                                   </h4>
-                                  <p className="text-gray-600 text-sm">
-                                    Subscribed on:{" "}
-                                    {new Date(
-                                      subscription.startDate
-                                    ).toLocaleDateString()}
-                                  </p>
                                 </div>
-                                <div className="text-right">
-                                  <span
-                                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                      subscription.status === "ACTIVE"
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {subscription.status}
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-2 h-2 ${statusColor} rounded-full`}></span>
+                                  <span className="text-xs font-medium">
+                                    {statusMessage}
                                   </span>
                                 </div>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <p className="text-gray-500">Valid Until:</p>
-                                  <p className="font-semibold">
-                                    {new Date(
-                                      subscription.endDate
-                                    ).toLocaleDateString()}
-                                  </p>
+                              
+                              {/* Subscription Details */}
+                              <div className="mb-3">
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                  <span className="text-gray-500">Start Date:</span>
+                                  <span className="font-medium">{new Date(subscription.startDate).toLocaleDateString()}</span>
                                 </div>
-                                <div>
-                                  <p className="text-gray-500">Plan Type:</p>
-                                  <p className="font-semibold">
-                                    {subscription.planType}
-                                  </p>
+                                <div className="flex items-center justify-between text-sm mb-1">
+                                  <span className="text-gray-500">End Date:</span>
+                                  <span className="font-medium">{new Date(subscription.endDate).toLocaleDateString()}</span>
                                 </div>
                                 {selectedModule && (
-                                  <div className="md:col-span-2">
-                                    <p className="text-gray-500">
-                                      Selected Module:
-                                    </p>
-                                    <p className="font-semibold">
-                                      {selectedModule}
-                                    </p>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-500">Module:</span>
+                                    <span className="font-medium text-right">{selectedModule}</span>
                                   </div>
                                 )}
                               </div>
-
-                              {/* Show remaining days with enhanced display */}
-                              <div className="mt-3 pt-3 border-t border-green-200">
-                                {(() => {
-                                  // Use enriched data if available, otherwise calculate manually
-                                  let remainingDays;
-                                  let isExpired = false;
-
-                                  if (
-                                    subscription.remainingDays !== undefined
-                                  ) {
-                                    // Use enriched data from subscription manager
-                                    remainingDays = subscription.remainingDays;
-                                    isExpired =
-                                      subscription.isExpired ||
-                                      remainingDays <= 0;
-                                  } else {
-                                    // Fallback to manual calculation
-                                    const endDate = new Date(
-                                      subscription.endDate
-                                    );
-                                    const currentDate = new Date();
-                                    const timeDiff =
-                                      endDate.getTime() - currentDate.getTime();
-                                    remainingDays = Math.ceil(
-                                      timeDiff / (1000 * 3600 * 24)
-                                    );
-                                    isExpired = remainingDays <= 0;
-                                  }
-
-                                  if (!isExpired && remainingDays > 0) {
-                                    // Active subscription
-                                    let textColor = "text-green-600";
-                                    let bgColor = "bg-green-50";
-
-                                    // Change color based on urgency
-                                    if (remainingDays <= 3) {
-                                      textColor = "text-red-600";
-                                      bgColor = "bg-red-50";
-                                    } else if (remainingDays <= 7) {
-                                      textColor = "text-yellow-600";
-                                      bgColor = "bg-yellow-50";
-                                    }
-
-                                    return (
-                                      <div
-                                        className={`p-2 rounded-lg ${bgColor}`}
-                                      >
-                                        <p
-                                          className={`${textColor} text-sm font-medium flex items-center gap-2`}
-                                        >
-                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
-                                          {remainingDays} day
-                                          {remainingDays !== 1 ? "s" : ""}{" "}
-                                          remaining
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                          Expires on{" "}
-                                          {new Date(
-                                            subscription.endDate
-                                          ).toLocaleDateString()}
-                                        </p>
-                                      </div>
-                                    );
-                                  } else {
-                                    // Expired subscription
-                                    return (
-                                      <div className="p-2 rounded-lg bg-red-50">
-                                        <p className="text-red-600 text-sm font-medium flex items-center gap-2">
-                                          <span className="inline-block w-2 h-2 bg-current rounded-full"></span>
-                                          Expired
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                          Expired on{" "}
-                                          {new Date(
-                                            subscription.endDate
-                                          ).toLocaleDateString()}
-                                        </p>
-                                      </div>
-                                    );
-                                  }
-                                })()}
+                              
+                              {/* Progress Bar */}
+                              <div className="mt-3 pt-2 border-t border-gray-100">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs text-gray-500">Subscription Progress</span>
+                                  <span className="text-xs font-medium">
+                                    {!isExpired && remainingDays > 0 ? (
+                                      `${remainingDays} day${remainingDays !== 1 ? 's' : ''} left`
+                                    ) : (
+                                      'Expired'
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                  <div 
+                                    className={`h-1.5 rounded-full ${progressColor}`} 
+                                    style={{ width: `${percentageRemaining}%` }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
                           );
@@ -2051,13 +2061,22 @@ const cancelLogout = () => {
                     </div>
                   ) : (
                     <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
-                      <p className="text-gray-600 mb-4">
-                        You don't have any active subscriptions yet.
+                      <div className="w-12 h-12 mx-auto mb-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4M4 12l6-6m0 12l-6-6" />
+                        </svg>
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-800 mb-2">No Active Subscriptions</h4>
+                      <p className="text-gray-600 mb-4 text-sm">
+                        Subscribe to unlock premium content.
                       </p>
                       <Link
                         to="/courses"
-                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        className="bg-green-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-green-700 transition-colors inline-flex items-center"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                        </svg>
                         Browse Plans
                       </Link>
                     </div>
@@ -2067,110 +2086,144 @@ const cancelLogout = () => {
                 
 
                 {/* Payment History Section */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-purple-600"></div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     Payment History
                   </h3>
                   {loadingPayments ? (
                     <div className="flex justify-center items-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">
+                      <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-200 border-t-indigo-600"></div>
+                      <span className="ml-2 text-gray-600 font-medium">
                         Loading payment history...
                       </span>
                     </div>
                   ) : payments.length > 0 ? (
-                    <div className="space-y-4">
-                      {payments.slice(0, 5).map((payment) => (
-                        <div
-                          key={payment.id}
-                          className="border border-gray-200 rounded-lg p-4"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-semibold text-gray-800">
-                                {payment.planType} Plan - ₹{payment.amount}
-                              </h4>
-                              <p className="text-sm text-gray-500">
-                                {new Date(
-                                  payment.createdAt
-                                ).toLocaleDateString()}{" "}
-                                at{" "}
-                                {new Date(
-                                  payment.createdAt
-                                ).toLocaleTimeString()}
-                              </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {payments.slice(0, 6).map((payment) => {
+                        // Determine status color and icon
+                        let statusColor, statusBg;
+                        let statusIcon;
+                        
+                        if (payment.status === "COMPLETED") {
+                          statusColor = "text-green-700";
+                          statusBg = "bg-green-100";
+                          statusIcon = (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          );
+                        } else if (payment.status === "PENDING") {
+                          statusColor = "text-yellow-700";
+                          statusBg = "bg-yellow-100";
+                          statusIcon = (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          );
+                        } else {
+                          statusColor = "text-red-700";
+                          statusBg = "bg-red-100";
+                          statusIcon = (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          );
+                        }
+                        
+                        // Parse date
+                        const paymentDate = new Date(payment.createdAt);
+                        const formattedDate = paymentDate.toLocaleDateString();
+                        const formattedTime = paymentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        return (
+                          <div
+                            key={payment.id}
+                            className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow bg-white"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium text-gray-800 text-sm flex items-center">
+                                  <span className="inline-flex items-center justify-center bg-indigo-100 text-indigo-800 w-6 h-6 rounded-full mr-2 text-xs">₹</span>
+                                  {payment.planType} - ₹{payment.amount}
+                                </h4>
+                                <p className="text-xs text-gray-500">
+                                  {formattedDate} at {formattedTime}
+                                </p>
+                              </div>
+                              <div className={`flex items-center ${statusBg} ${statusColor} text-xs px-2 py-1 rounded-full`}>
+                                {statusIcon}
+                                <span className="ml-1">{payment.status}</span>
+                              </div>
                             </div>
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                payment.status === "COMPLETED"
-                                  ? "bg-green-100 text-green-800"
-                                  : payment.status === "PENDING"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {payment.status}
-                            </span>
+                              <div className="grid grid-cols-2 gap-2 text-xs mt-2">
+                              <div className="overflow-hidden">
+                                <p className="text-gray-500">Payment ID:</p>
+                                <p className="font-mono truncate">
+                                  {payment.razorpayPaymentId || "Pending"}
+                                </p>
+                              </div>
+                              <div className="overflow-hidden">
+                                <p className="text-gray-500">Order ID:</p>
+                                <p className="font-mono truncate">
+                                  {payment.razorpayOrderId || "Pending"}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {payment.notes && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-gray-500 text-xs flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  Module:
+                                </p>
+                                <p className="text-xs font-medium">
+                                  {(() => {
+                                    try {
+                                      const parsedNotes = JSON.parse(payment.notes);
+                                      return parsedNotes.selectedModule || "All Modules";
+                                    } catch {
+                                      return payment.notes || "All Modules";
+                                    }
+                                  })()}
+                                </p>
+                              </div>
+                            )}
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-500">Payment ID:</p>
-                              <p className="font-mono text-xs">
-                                {payment.razorpayPaymentId || "Pending"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Order ID:</p>
-                              <p className="font-mono text-xs">
-                                {payment.razorpayOrderId}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Currency:</p>
-                              <p>{payment.currency}</p>
-                            </div>
-                          </div>
-                          {payment.notes && (
-                            <div className="mt-2 pt-2 border-t border-gray-100">
-                              <p className="text-gray-500 text-sm">
-                                Selected Module:
-                              </p>
-                              <p className="text-sm font-medium">
-                                {(() => {
-                                  try {
-                                    const parsedNotes = JSON.parse(
-                                      payment.notes
-                                    );
-                                    return (
-                                      parsedNotes.selectedModule ||
-                                      "All Modules"
-                                    );
-                                  } catch {
-                                    return payment.notes || "All Modules";
-                                  }
-                                })()}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {payments.length > 5 && (
-                        <div className="text-center">
-                          <p className="text-gray-500 text-sm">
-                            Showing latest 5 payments
+                        );
+                      })}
+                      
+                      {payments.length > 6 && (
+                        <div className="md:col-span-2 text-center mt-2">
+                          <p className="text-indigo-600 text-sm font-medium hover:text-indigo-800 cursor-pointer">
+                            View All Payment History
                           </p>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-600 mb-4">
-                        No payment history found.
+                    <div className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="w-12 h-12 mx-auto mb-3 text-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-base font-medium text-gray-800 mb-1">No Payment History</h4>
+                      <p className="text-gray-600 mb-4 text-sm">
+                        Your purchase history will appear here.
                       </p>
                       <Link
                         to="/courses"
-                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        className="bg-indigo-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                        </svg>
                         Make Your First Purchase
                       </Link>
                     </div>
