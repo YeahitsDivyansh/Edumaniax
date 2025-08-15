@@ -322,6 +322,25 @@ Remark can have one of these values : "Excellent", "Great", "Smart", "Impressive
 
   console.log(feedbackAvatarType);
 
+  // Map options to their icons
+  const expenseIcons = {
+    Food: "/financeGames6to8/level-3/food.svg",
+    Travel: "/financeGames6to8/level-3/travel.svg",
+    Lunch: "/financeGames6to8/level-3/lunch.svg",
+    Movie: "/financeGames6to8/level-3/movie.svg",
+    Books: "/financeGames6to8/level-3/books.svg",
+    Other: "/financeGames6to8/level-3/others.svg",
+  };
+
+  const strategyIcons = {
+    "Use piggy bank": "/financeGames6to8/level-3/piggyBank.svg",
+    "Avoid impulse buys": "/financeGames6to8/level-3/impulseBuying.svg",
+    "Track spending": "/financeGames6to8/level-3/trackSpending.svg",
+    "Limit outings": "/financeGames6to8/level-3/limitOutings.svg",
+    "Buy second-hand items": "/financeGames6to8/level-3/secondHanditems.svg", // ✅ Exact match
+    Other: "/financeGames6to8/level-3/otherSavings.svg",
+  };
+
   return (
     <>
       {hasWon ? (
@@ -458,6 +477,7 @@ Remark can have one of these values : "Excellent", "Great", "Smart", "Impressive
                     {expenseOptions.map((option) => (
                       <div key={option} className="mb-3">
                         <label className="inline-flex items-center">
+                          {/* Checkbox */}
                           <input
                             type="checkbox"
                             value={option}
@@ -467,6 +487,13 @@ Remark can have one of these values : "Excellent", "Great", "Smart", "Impressive
                             }
                             className="mr-3 h-5 w-5 text-white"
                           />
+                          {/* Icon */}
+                          <img
+                            src={expenseIcons[option]}
+                            alt={option}
+                            className="w-9 h-9 mr-2"
+                          />
+                          {/* Text */}
                           <span className="text-base text-white lilita-one-regular font-medium">
                             {option}
                           </span>
@@ -506,21 +533,32 @@ Remark can have one of these values : "Excellent", "Great", "Smart", "Impressive
                       💡 Select Saving Strategies:
                     </p>
                     {strategyOptions.map((option) => (
-                      <label key={option} className="block mb-2">
-                        <input
-                          type="checkbox"
-                          value={option}
-                          checked={selectedStrategies.includes(option)}
-                          onChange={(e) =>
-                            handleStrategyChange(option, e.target.checked)
-                          }
-                          className="mr-3 h-5 w-5 text-white"
-                        />
-                        <span className="text-base text-white lilita-one-regular font-medium">
-                          {option}
-                        </span>
-                      </label>
+                      <div key={option} className="mb-3">
+                        <label className="inline-flex items-center">
+                          {/* Checkbox */}
+                          <input
+                            type="checkbox"
+                            value={option}
+                            checked={selectedStrategies.includes(option)}
+                            onChange={(e) =>
+                              handleStrategyChange(option, e.target.checked)
+                            }
+                            className="mr-3 h-5 w-5 text-white"
+                          />
+                          {/* Icon */}
+                          <img
+                            src={strategyIcons[option]}
+                            alt={option}
+                            className="w-9 h-9 mr-2"
+                          />
+                          {/* Text */}
+                          <span className="text-base text-white lilita-one-regular font-medium">
+                            {option}
+                          </span>
+                        </label>
+                      </div>
                     ))}
+
                     {selectedStrategies.includes("Other") && (
                       <textarea
                         placeholder="Enter custom strategy"
