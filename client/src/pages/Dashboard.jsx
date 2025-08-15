@@ -7,6 +7,9 @@ import { useAccessControl } from "../utils/accessControl";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import useGameProgress from "../hooks/useGameProgress";
+import AiFeedback from "./AiFeedback";
+
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -778,6 +781,30 @@ const cancelLogout = () => {
               </button>
             )}
 
+
+            {/* AI Feedback - Only show for PRO plan users */}
+            {subscriptions?.[0]?.planType?.toUpperCase() === "PRO" && (
+              <button
+                className={`flex items-center gap-3 hover:text-green-700 ${selectedSection === "ai-feedback"
+                    ? "text-green-600"
+                    : "text-gray-400"
+                  }`}
+                onClick={() => setSelectedSection("ai-feedback")}
+              >
+                <img
+                  src={
+                    selectedSection === "ai-feedback"
+                      ? "/dashboardDesign/aiFeedbackgray.svg"
+                      : "/dashboardDesign/aiFeedbackGreen.svg"
+                  }
+                  alt="AI Feedback"
+                  className="w-5 h-5"
+                />
+                <span className="font-bold">AI Feedback</span>
+              </button>
+            )}
+
+
             {/* Sales Dashboard Link - Only for SALES role */}
             {role === "SALES" && (
               <Link
@@ -1285,7 +1312,7 @@ const cancelLogout = () => {
               </div>
             )}
 
-                      
+                      {selectedSection === "ai-feedback" && <AiFeedback />}
 
             {selectedSection === "profile" && (
               <div className="max-w-6xl mx-auto px-6 pt-6">
@@ -2234,6 +2261,10 @@ const cancelLogout = () => {
           </>
         )}
       </main>
+
+        
+
+
 
       {/* Image Crop Modal */}
       {showCropModal && (
