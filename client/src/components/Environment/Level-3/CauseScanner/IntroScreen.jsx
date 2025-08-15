@@ -69,7 +69,8 @@ const IntroScreen = ({ onShowInstructions }) => {
       {/* Exit Button */}
       <Link
         to="/environmental/games"
-        className="absolute top-4 left-4 w-[7vw] h-[7vh] mt-7 ml-7 transition transform active:scale-95"
+        className="absolute top-4 left-4 w-[7vw] h-[7vh] w-[82px] h-[48px] sm:w-[120px] sm:h-[64px] 
+          md:w-[202px] md:h-[82px] mt-11 ml-7 transition transform active:scale-95"
       >
         <img
           src={btnExit}
@@ -83,7 +84,8 @@ const IntroScreen = ({ onShowInstructions }) => {
         onClick={toggleAudio}
         className="absolute top-15 right-11 transition-transform active:scale-95"
       >
-        <Vol isPlaying={isPlaying && !isMuted} />
+        <Vol isPlaying={isPlaying && !isMuted} className="w-[82px] h-[48px] sm:w-[120px] sm:h-[64px] 
+          md:w-[202px] md:h-[82px]"/>
       </button>
 
       {/* Center Content */}

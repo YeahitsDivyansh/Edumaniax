@@ -1,57 +1,58 @@
 import React from 'react';
 import CrossButton from '@/components/icon/GreenBudget/CrossButton';
-import ScenarioContent from './ScenarioContext';
+import ScenarioContent from './ScenarioContext'; // Corrected import from ScenarioContext
 
 const InstructionsScreen = ({ onStartGame }) => {
   return (
-    // Main container to center the entire pop-up
-    <div className="main-container bg-[#0A160E] flex flex-col items-center justify-center h-screen w-screen">
+    // Main container to center the pop-up
+    <div className="main-container bg-[#0A160E] flex flex-col items-center justify-center min-h-screen w-screen p-4">
       
-      {/* Pop-up box with the background image */}
-      <div className="relative w-[75vw] h-[80vh] bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/WxAZj0TxFZ.png)] bg-no-repeat bg-cover flex flex-col items-center pt-[5vh]">
+      {/* Pop-up box with responsive width, height, and padding */}
+      <div className="relative w-full max-w-4xl lg:w-[75vw] h-auto bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/WxAZj0TxFZ.png)] bg-no-repeat bg-cover flex flex-col items-center py-8 px-4 md:p-8 ">
         
-        {/* Cross button positioned in the top-right corner */}
-        <div className="absolute w-[7vw] h-[7vh] -top-[3vh] -right-[3.5vw] z-[68]">
+        {/* Cross button with responsive size and position */}
+        <div className="absolute w-12 h-12 md:w-16 md:h-16 -top-5 -right-5 md:-top-6 md:-right-8 z-10">
           <CrossButton onClick={onStartGame} />
         </div> 
         
-        {/* "How to Play?" title */}
-        <h2 className="lilita text-[30px] -mt-6 text-[#fff] z-[2]">
+        <h2 className="lilita text-3xl md:text-4xl text-white mb-6">
           How to Play?
         </h2>
         
-        {/* Container for the main content area (ScenarioContent and text) */}
-        <div className="flex flex-row items-start justify-center w-[85vw] mt-[15vh] gap-[1vw]">
+        {/* Main content area: Stacks on mobile, row on desktop (lg) */}
+        <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center w-full gap-8">
           
-          {/* Left column: ScenarioContent */}
-          <div className="flex justify-center">
+          {/* Left Column: ScenarioContent Demo */}
+          <div className="w-full lg:w-3/5 flex justify-center mt-7 md:mt-0">
             <ScenarioContent />
           </div>
           
-          {/* Right column: Text and learning outcome */}
-          <div className="flex flex-col items-center w-[25vw]">
-            <span className="lilita text-[15px] font-normal leading-[28px] text-[#fff] text-left">
-              You're shown a table of human actions in one column and 
-              <br/>
-              environmental consequences in another — but shuffled. 
-              <br/>
-              Match the correct pairs.
-              <br/>
-              • Scoring: +2 per correct match
-              <br/>
-              • Time Limit: 2 minutes 
-            </span>
+          {/* Right Column: Instructions & Learning Outcome */}
+          <div className="w-full lg:w-2/5 flex flex-col items-center lg:items-start text-center lg:text-left">
+            <div className="lilita text-base md:text-lg leading-relaxed text-white">
+              <p className="mb-2">
+                You're shown human actions and environmental consequences—but shuffled.
+              </p>
+              <p className="mb-4">
+                Your task is to match the correct pairs.
+              </p>
+              <ul className="list-none ml-0">
+                <li><span className="font-bold">Scoring:</span> +2 per correct match</li>
+                <li><span className="font-bold">Time Limit:</span> 2 minutes</li>
+              </ul>
+            </div>
             
-            {/* Learning Outcome box */}
-            <div className="flex flex-col justify-start items-start w-[25vw] text-white bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/KoaHzD7HnK.png)] bg-cover bg-no-repeat mt-[2vh] p-[1vw]">
-              <span className="lilita text-[1.2vw] font-normal text-[#fff] tracking-[0.04vw]">
+            {/* Learning Outcome Box */}
+            <div className="w-full max-w-sm mt-6 text-white bg-[url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-08-07/KoaHzD7HnK.png)] bg-cover bg-no-repeat p-4 rounded-lg">
+              <span className="lilita text-lg md:text-xl font-normal text-white tracking-wide">
                 LEARNING OUTCOME:
               </span>
-              <span className="w-full font-['Lilita_One'] text-[0.9vw] font-normal leading-[2vh] text-[#fff] tracking-[0.01vw]">
-                You will learn to classify your surroundings into layers of earth.
+              <span className="block mt-1 font-sans text-sm md:text-base leading-snug">
+                You will learn to identify the consequences of human actions on the environment.
               </span>
             </div>
           </div>
+
         </div>
       </div>
     </div>
